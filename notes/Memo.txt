@@ -1,0 +1,17 @@
+
+
+                    this._IconDownloader.DownloadDataAsync(
+                new Uri(string.Format("http://media.steamcommunity.com/steamcommunity/public/images/apps/{0}/{1}",
+                                      this._GameId,
+                                      info.IsAchieved == true ? info.IconNormal : info.IconLocked)),
+                info);
+
+
+        https://github.com/jshackles/idle_master/blob/master/steam-idle%20Source/steam-idle/Program.cs
+
+
+Most recent logged in user (useless) from cache:
+/home/paul/.local/share/Steam/config/loginusers.vdf
+
+All owned games from cache (WRONG):
+/home/paul/.local/share/Steam/userdata/<steamid3>/config/localconfig.vdf
