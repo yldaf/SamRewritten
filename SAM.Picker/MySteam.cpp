@@ -7,13 +7,12 @@
 #include "MySteam.h"
 
 MySteam::MySteam() : m_child_pid(-1) {
-    get_all_owned_games();
+    //Not necessary, going to call it only when neededs
+    //refresh_owned_apps();
 }
 
 MySteam::~MySteam() {
-    #ifdef DEBUG
-    puts("MySteam deleted");
-    #endif
+
 }
 
 MySteam* MySteam::get_instance() {
@@ -69,29 +68,35 @@ bool MySteam::quit_game() {
     return true;
 }
 
-void MySteam::get_all_owned_games() {
-    ISteamApps* steamapps = SteamApps();
-    ISteamAppList* list = SteamAppList();
-    //ISteamUserStats* stats = SteamUserStats();
-
-    AppId_t appid;
-    char name[256];
-    Game_t app;
-    int name_length;
+/**
+ * This does NOT retrieves all owned games.
+ * It does retrieve all owned games WITH STATS or ACHIEVEMENTS
+ * Stores the owned games in m_all_subscribed_apps
+ * We assume the user didn't put any garbage in his steam folder as well.
+ */
+void MySteam::refresh_owned_apps() {
+    const std::string path_to_cache_dir(MySteam::get_steam_install_path() + "/appcache/stats/");
+    DIR* dirp = opendir(path_to_cache_dir.c_str());
+    struct dirent * dp;
+    std::string filename;
+    const std::string prefix("UserGameStats_" + MySteam::get_user_steamId3() + "_");
+    const std::string input_scheme_c(prefix + "%lu.bin");
+    Game_t game;
+    unsigned long app_id;
 
     m_all_subscribed_apps.clear();
-    for(unsigned long i = 10; i < 10000; i++) {
-        appid = i;
-        if(steamapps->BIsSubscribedApp(appid)) {
-            name_length = list->GetAppName(i, name, 256);
-            if(name_length > 0) {
-                app.app_name = std::string(name);
-                app.app_id = i;
-                app.number_achievements = 1; // TODO put a real value here
-                m_all_subscribed_apps.push_back(app);
+    while ((dp = readdir(dirp)) != NULL) {
+        filename = dp->d_name;
+        if(filename.rfind(prefix, 0) == 0) {
+            if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
+                game.app_id = app_id;
+                game.app_name = "To retrieve";
+                m_all_subscribed_apps.push_back(game);
             }
         }
     }
+
+    closedir(dirp);
 }
 
 /**
@@ -101,7 +106,7 @@ void MySteam::get_all_owned_games() {
  * Returns empty string on error
  */
 std::string MySteam::get_user_steamId3() {
-    static const std::string file_path(std::string(getenv("HOME")) + "/.local/share/Steam/logs/parental_log.txt");
+    static const std::string file_path(MySteam::get_steam_install_path() + "/logs/parental_log.txt");
     std::ifstream input(file_path, std::ios::in);
     std::string word;
     
@@ -130,13 +135,27 @@ std::string MySteam::get_user_steamId3() {
 
     input.close();
 
-    std::cerr << "User ID is " << latest_id << std::endl;
-
     return latest_id;
 }
 
+std::string MySteam::get_steam_install_path() {
+    static const std::string home_path(getenv("HOME"));
+    if(file_exists(home_path + "/.local/share/Steam/appcache/appinfo.vdf")) {
+        return std::string(home_path + "/.local/share/Steam");
+    }
+    else if(file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
+        return std::string(home_path + "/.steam");
+    }
+    else {
+        std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+}
+
 void MySteam::print_all_owned_games() const {
+    std::cerr << "Summary of owned apps with stats or achievements" << std::endl << "========================" << std::endl;
+
     for(Game_t i : m_all_subscribed_apps) {
-        std::cerr << "App owned: " << i.app_name << std::endl;
+        std::cerr << i.app_id << " -> " << i.app_name << std::endl;
     }
 }

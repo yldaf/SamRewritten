@@ -8,7 +8,7 @@
             "name": "(gdb) Launch launcher",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/a.out",
+            "program": "${workspaceFolder}/bin/samrewritten",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
