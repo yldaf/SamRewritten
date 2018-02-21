@@ -10,12 +10,12 @@
 #include <gmodule.h>
 #include "MySteam.h"
 #include "MainPickerWindow.h"
+#include "SteamAppDAO.h"
 
 int launcher_main();
 
 //Globals
-//Reason for the globals is that it's easier to access
-//in GTK callbacks
+//Reason for the globals is that it's easier to access them in GTK callbacks
 MySteam *g_steam = nullptr; // The Model
 MainPickerWindow *g_main_gui = nullptr; // The view
 
@@ -59,22 +59,26 @@ extern "C"
     on_close_button_clicked() {
         gtk_main_quit();
         std::cerr << "Gtk did main quit" << std::endl;
-        delete g_main_gui;
-        g_main_gui = nullptr;
+        gtk_widget_destroy(g_main_gui->get_main_window());
     }
 
     void 
     on_ask_game_refresh() {
-        std::cerr << "Game refresh started." << std::endl;
+        // Draw the loading screen on the view
         g_main_gui->reset_game_list();
+        std::cerr << "Game refresh started." << std::endl;
 
-        //Only call that here so that the constructor is executed when the 
-        //window is already showing.
+        // Do the backend work only when the view is already showing
         g_steam = MySteam::get_instance();
         g_steam->refresh_owned_apps();
 
-        g_main_gui->add_to_game_list("My Game name");
-
+        // Add everything to the view
+        for(Game_t i : g_steam->get_all_games_with_stats()) {
+            g_main_gui->add_to_game_list(i.app_name.c_str());
+        }
+        
+        // And draw it
+        g_main_gui->confirm_game_list();
     }
 
     void 

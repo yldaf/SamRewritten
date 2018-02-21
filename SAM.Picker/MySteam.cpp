@@ -84,13 +84,17 @@ void MySteam::refresh_owned_apps() {
     Game_t game;
     unsigned long app_id;
 
+    // The whole update will really occur only once in a while, no worries
+    SteamAppDAO::update_name_database();
     m_all_subscribed_apps.clear();
+
     while ((dp = readdir(dirp)) != NULL) {
         filename = dp->d_name;
         if(filename.rfind(prefix, 0) == 0) {
             if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
                 game.app_id = app_id;
                 game.app_name = "To retrieve";
+
                 m_all_subscribed_apps.push_back(game);
             }
         }

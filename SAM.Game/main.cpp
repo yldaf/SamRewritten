@@ -22,6 +22,7 @@ int main(int argc, char * argv[]) {
     signal(SIGTERM, handle_sigterm);
     signal(SIGINT, handle_sigterm);
     std::set_terminate(terminate_func);
+    
     if(argc != 2) {
         std::cout << "Incorrect number of arguments. Expected one, received " << argc << std::endl;
         return EXIT_FAILURE;
