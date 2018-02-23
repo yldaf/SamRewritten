@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <curl/curl.h>
+#include <fstream>
+#include <sstream>
 #include "../common/c_processes.h"
 
 class SteamAppDAO {
@@ -29,6 +31,12 @@ public:
      * If it fails, nothing is written.
      */
     static void download_app_icon(const unsigned long& app_id);
+
+    /**
+     * Path name to the root of the cache folder. By now it is
+     * ~/.SamRewritten
+     */
+    static const char *CACHE_FOLDER;
 
 private:
     static void download_file(const std::string& file_url, const std::string& local_path);

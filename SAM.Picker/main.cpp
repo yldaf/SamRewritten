@@ -73,8 +73,8 @@ extern "C"
         g_steam->refresh_owned_apps();
 
         // Add everything to the view
-        for(Game_t i : g_steam->get_all_games_with_stats()) {
-            g_main_gui->add_to_game_list(i.app_name.c_str());
+        for(Game_t app : g_steam->get_all_games_with_stats()) {
+            g_main_gui->add_to_game_list(app);
         }
         
         // And draw it

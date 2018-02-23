@@ -7,8 +7,7 @@
 #include "MySteam.h"
 
 MySteam::MySteam() : m_child_pid(-1) {
-    //Not necessary, going to call it only when neededs
-    //refresh_owned_apps();
+
 }
 
 MySteam::~MySteam() {
@@ -93,7 +92,8 @@ void MySteam::refresh_owned_apps() {
         if(filename.rfind(prefix, 0) == 0) {
             if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
                 game.app_id = app_id;
-                game.app_name = "To retrieve";
+                game.app_name = SteamAppDAO::get_app_name(app_id);
+                SteamAppDAO::download_app_icon(app_id);
 
                 m_all_subscribed_apps.push_back(game);
             }
@@ -104,7 +104,7 @@ void MySteam::refresh_owned_apps() {
 }
 
 /**
- * Could parse /home/paul/.local/share/Steam/config/loginusers.vdf, but wrong id type
+ * Could parse /home/user/.local/share/Steam/config/loginusers.vdf, but wrong id type
  * Parses STEAM/logs/parental_log.txt, hoping those logs can't be disabled
  * Return the most recently logged in user id
  * Returns empty string on error

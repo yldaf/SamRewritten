@@ -28,18 +28,20 @@ m_builder(nullptr)
 
 // See https://stackoverflow.com/questions/9192223/remove-gtk-container-children-repopulate-it-then-refresh
 void MainPickerWindow::reset_game_list() {
-    GList *children, *iter;
+    /*GList *children, *iter;
     children = gtk_container_get_children(GTK_CONTAINER(m_game_list));
 
     for(iter = children; iter != NULL; iter = g_list_next(iter))
-        gtk_container_remove(GTK_CONTAINER(m_game_list), GTK_WIDGET(iter->data));
+        gtk_widget_destroy(GTK_WIDGET(iter->data));
     
-    g_list_free(children);
+    g_list_free(children);*/
+
+    gtk_container_foreach(GTK_CONTAINER(m_game_list), (GtkCallback)gtk_widget_destroy, NULL);
+    //TODO refresh the view but I dont know how to
 
 }
 
-// Todo: Add more parameters (AppId, icon path...)
-void MainPickerWindow::add_to_game_list(const char app_name[]) {
+void MainPickerWindow::add_to_game_list(const Game_t& app) {
     // Because you can't clone widgets with GTK, I'm going to recreate 
     // GTK_LIST_BOX_ROW(gtk_builder_get_object(m_builder, "game_entry"));
     // By hand. Which is dead stupid.
@@ -51,8 +53,8 @@ void MainPickerWindow::add_to_game_list(const char app_name[]) {
 
     GtkWidget *wrapper = gtk_list_box_row_new();
     GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *label = gtk_label_new(app_name);
-    GtkWidget *game_logo = gtk_image_new_from_file("");
+    GtkWidget *label = gtk_label_new(app.app_name.c_str());
+    GtkWidget *game_logo = gtk_image_new_from_icon_name ("gtk-missing-image", GTK_ICON_SIZE_DIALOG);
     GtkWidget *nice_arrow = gtk_arrow_new(GTK_ARROW_RIGHT, GTK_SHADOW_OUT);
 
     #pragma GCC diagnostic pop
