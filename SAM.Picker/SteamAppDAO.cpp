@@ -3,17 +3,16 @@
 // Wtf am I doing? Anyway thanks StackOverflow
 //TODO: Find a more elegant way to fix this shit.
 std::map<unsigned long, std::string> SteamAppDAO::m_app_names = std::map<unsigned long, std::string>();
-const char* SteamAppDAO::CACHE_FOLDER = concat(getenv("HOME"), "/.SamRewritten");
 
 void 
 SteamAppDAO::update_name_database() {
     bool need_to_redownload = false;
     struct stat file_info;
-    static const char* local_file_name = concat(SteamAppDAO::CACHE_FOLDER, "/app_names");
+    static const char* local_file_name = concat(g_cache_folder, "/app_names");
     const std::time_t current_time(std::time(0));
 
 	// Make sure the cache folder is there
-    const int mkdir_error = mkdir(SteamAppDAO::CACHE_FOLDER, S_IRWXU | S_IRWXG | S_IROTH);
+    const int mkdir_error = mkdir(g_cache_folder, S_IRWXU | S_IRWXG | S_IROTH);
     if(mkdir_error != 0 && errno != EEXIST) {
 		std::cerr << "Unable to create the cache folder ( ~/.SamRewritten/, errno " << errno << ")." << std::endl;
         std::cerr << "Don't tell me you're running this as root.." << std::endl;
@@ -62,7 +61,7 @@ SteamAppDAO::get_app_name(const unsigned long& app_id) {
 
 void 
 SteamAppDAO::download_app_icon(const unsigned long& app_id) {
-    const std::string local_folder(std::string(SteamAppDAO::CACHE_FOLDER) + "/" + std::to_string(app_id));
+    const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
     const std::string local_path(local_folder + "/banner");
     const std::string url("http://cdn.akamai.steamstatic.com/steam/apps/" + std::to_string(app_id) + "/header_292x136.jpg");
 
@@ -79,7 +78,7 @@ void
 SteamAppDAO::parse_app_names() {
     m_app_names.clear();
 
-    static const std::string file_path(std::string(SteamAppDAO::CACHE_FOLDER) + "/app_names");
+    static const std::string file_path(std::string(g_cache_folder) + "/app_names");
     std::ifstream input(file_path, std::ios::in);
     std::string word;
     std::string app_name;

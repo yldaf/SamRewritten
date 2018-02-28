@@ -10,6 +10,7 @@
 #include "../common/c_processes.h"
 #include "../common/Downloader.h"
 #include "globals.h"
+#include "MainPickerWindow.h"
 
 class SteamAppDAO : public Observer<unsigned long> {
 public:
@@ -34,17 +35,14 @@ public:
 
     /**
      * Download the app's banner ASYNCHRONOUSLY.
-     * If it fails, nothing is written.
+     * If it fails, nothing is written on the disk.
      */
     void download_app_icon(const unsigned long& app_id);
 
     /**
-     * Path name to the root of the cache folder. By now it is
-     * ~/.SamRewritten
+     * Observer inherited method. The update will refresh 
+     * the image for app id "i" on the view.
      */
-    static const char* CACHE_FOLDER;
-
-    //TODO tidy
     void update(unsigned long i);
     
     SteamAppDAO(SteamAppDAO const&)                 = delete;

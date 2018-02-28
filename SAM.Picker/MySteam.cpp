@@ -1,28 +1,30 @@
-/**
- * Steam is a class that serves the purpose of being a "launcher" for thesteam games and apps.
- * It will refuse to do anything unless a real Steam client can be accessed, with a user logged in.
- */
-
-#define MAX_PATH 1000
 #include "MySteam.h"
+#define MAX_PATH 1000
 
-MySteam::MySteam() : m_child_pid(-1) {
+
+MySteam::MySteam() 
+: 
+m_child_pid(-1) {
 
 }
+// => Constructor
 
-MySteam::~MySteam() {
-
-}
-
-MySteam* MySteam::get_instance() {
+/**
+ * Gets the unique instance. See "Singleton design pattern" for help
+ */
+MySteam* 
+MySteam::get_instance() {
     static MySteam instance;
     return &instance;
 }
+// => get_instance
+
 
 /**
  * Fakes a new game being launched. Keeps running in the background until quit_game is called.
  */
-bool MySteam::launch_game(std::string appID) {
+bool 
+MySteam::launch_game(std::string appID) {
     // Print an error if a game is already launched, maybe allow multiple games at the same time in the future?
     if(m_child_pid > 0) {
         std::cout << "Sorry, a game is already running. Please try again later." << std::endl;
@@ -53,8 +55,14 @@ bool MySteam::launch_game(std::string appID) {
     }
     return false;
 }
+// => launch_game
 
-bool MySteam::quit_game() {
+
+/**
+ * If a fake game is running, stops it and returns true, else false.
+ */
+bool 
+MySteam::quit_game() {
     if(m_child_pid > 0) {
         kill(m_child_pid, SIGTERM);
     }
@@ -66,6 +74,8 @@ bool MySteam::quit_game() {
     m_child_pid = -1;
     return true;
 }
+// => quit_game
+
 
 /**
  * This does NOT retrieves all owned games.
@@ -73,7 +83,8 @@ bool MySteam::quit_game() {
  * Stores the owned games in m_all_subscribed_apps
  * We assume the user didn't put any garbage in his steam folder as well.
  */
-void MySteam::refresh_owned_apps() {
+void 
+MySteam::refresh_owned_apps() {
     const std::string path_to_cache_dir(MySteam::get_steam_install_path() + "/appcache/stats/");
     DIR* dirp = opendir(path_to_cache_dir.c_str());
     struct dirent * dp;
@@ -94,7 +105,6 @@ void MySteam::refresh_owned_apps() {
             if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
                 game.app_id = app_id;
                 game.app_name = appDAO->get_app_name(app_id);
-                appDAO->download_app_icon(app_id);
 
                 m_all_subscribed_apps.push_back(game);
             }
@@ -103,6 +113,8 @@ void MySteam::refresh_owned_apps() {
 
     closedir(dirp);
 }
+// => refresh_owned_apps
+
 
 /**
  * Could parse /home/user/.local/share/Steam/config/loginusers.vdf, but wrong id type
@@ -110,7 +122,8 @@ void MySteam::refresh_owned_apps() {
  * Return the most recently logged in user id
  * Returns empty string on error
  */
-std::string MySteam::get_user_steamId3() {
+std::string 
+MySteam::get_user_steamId3() {
     static const std::string file_path(MySteam::get_steam_install_path() + "/logs/parental_log.txt");
     std::ifstream input(file_path, std::ios::in);
     std::string word;
@@ -142,8 +155,15 @@ std::string MySteam::get_user_steamId3() {
 
     return latest_id;
 }
+// => get_user_steamId3
 
-std::string MySteam::get_steam_install_path() {
+
+/**
+ * Tries to locate the steam folder in multiple locations,
+ * which is not a failsafe implementation.
+ */
+std::string 
+MySteam::get_steam_install_path() {
     static const std::string home_path(getenv("HOME"));
     if(file_exists(home_path + "/.local/share/Steam/appcache/appinfo.vdf")) {
         return std::string(home_path + "/.local/share/Steam");
@@ -156,11 +176,34 @@ std::string MySteam::get_steam_install_path() {
         exit(EXIT_FAILURE);
     }
 }
+// => get_steam_install_path
 
-void MySteam::print_all_owned_games() const {
+
+/**
+ * Mostly used for debug purposes
+ */
+void 
+MySteam::print_all_owned_games() const {
     std::cerr << "Summary of owned apps with stats or achievements" << std::endl << "========================" << std::endl;
 
     for(Game_t i : m_all_subscribed_apps) {
         std::cerr << i.app_id << " -> " << i.app_name << std::endl;
     }
 }
+// => print_all_owned_games
+
+
+/**
+ * Reminder that download_app_icon does check if the file is 
+ * already there before attempting to download from the web.
+ * It also has a "callback" that will refresh the view.
+ */
+void 
+MySteam::refresh_icons() {
+    SteamAppDAO *appDAO = SteamAppDAO::get_instance();
+    
+    for(Game_t i : m_all_subscribed_apps) {
+        appDAO->download_app_icon(i.app_id);
+    }
+}
+// => refresh_icons
