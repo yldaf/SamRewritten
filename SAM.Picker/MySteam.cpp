@@ -82,9 +82,10 @@ void MySteam::refresh_owned_apps() {
     const std::string input_scheme_c(prefix + "%lu.bin");
     Game_t game;
     unsigned long app_id;
+    SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
     // The whole update will really occur only once in a while, no worries
-    SteamAppDAO::update_name_database();
+    appDAO->update_name_database();
     m_all_subscribed_apps.clear();
 
     while ((dp = readdir(dirp)) != NULL) {
@@ -92,8 +93,8 @@ void MySteam::refresh_owned_apps() {
         if(filename.rfind(prefix, 0) == 0) {
             if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
                 game.app_id = app_id;
-                game.app_name = SteamAppDAO::get_app_name(app_id);
-                SteamAppDAO::download_app_icon(app_id);
+                game.app_name = appDAO->get_app_name(app_id);
+                appDAO->download_app_icon(app_id);
 
                 m_all_subscribed_apps.push_back(game);
             }

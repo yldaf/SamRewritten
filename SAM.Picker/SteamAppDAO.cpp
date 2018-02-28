@@ -49,7 +49,7 @@ SteamAppDAO::update_name_database() {
     }
 
     if(need_to_redownload) {
-        SteamAppDAO::download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name);
+        Downloader::get_instance()->download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name, 0);
         SteamAppDAO::parse_app_names();
     }
 }
@@ -72,43 +72,7 @@ SteamAppDAO::download_app_icon(const unsigned long& app_id) {
         exit(EXIT_FAILURE);
 	}
 
-    if(!file_exists(local_path)){
-        SteamAppDAO::download_file(url, local_path);
-    }
-}
-
-void 
-SteamAppDAO::download_file(const std::string& file_url, const std::string& local_path) {
-    std::cerr << "Downloading " << file_url << std::endl;
-    
-    CURL *curl;
-    FILE *fp;
-    CURLcode res;
-
-    curl = curl_easy_init();
-    if (curl) {
-        fp = fopen(local_path.c_str(),"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, file_url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
-        /* always cleanup */
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-    else {
-        std::cerr << "An error occurred creating curl. Please report to the developers!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    if(res != 0) {
-        std::cerr << "Curl returned with status " << res << ", which is unexpected. Make sure you are connected to the internet, and you have access";
-        std::cerr << " to Steam, and try again." << std::endl;
-        std::cerr << "Unable to fetch file " << file_url << std::endl;
-        //TODO make a gui for this
-
-        exit(EXIT_FAILURE);
-    }
+    Downloader::get_instance()->download_file_async(url, local_path, app_id);
 }
 
 void 
@@ -162,4 +126,9 @@ SteamAppDAO::parse_app_names() {
         std::cerr << "Could not retrieve app names. Unable to open " << file_path << std::endl;
         exit(EXIT_FAILURE);
     }
+}
+
+void
+SteamAppDAO::update(unsigned long i) {
+    g_main_gui->refresh_app_icon(i);
 }

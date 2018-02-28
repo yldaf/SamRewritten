@@ -5,41 +5,53 @@
 #include <ctime>
 #include <sys/stat.h>
 #include <dirent.h>
-#include <curl/curl.h>
 #include <fstream>
 #include <sstream>
 #include "../common/c_processes.h"
+#include "../common/Downloader.h"
+#include "globals.h"
 
-class SteamAppDAO {
+class SteamAppDAO : public Observer<unsigned long> {
 public:
+    //TODO tidy
+    static SteamAppDAO* get_instance() {
+        static SteamAppDAO me;
+        return &me;
+    }
     /**
      * Redownloads http://api.steampowered.com/ISteamApps/GetAppList/v0002/
      * if necessary. Redownloads every few days.
      * TODO: Maybe pass a boolean too as argument for "Override redownload"
      */
-    static void update_name_database();
+    void update_name_database();
 
     /**
      * Feed it an appId, returns the app name.
      * Make sure to call update_name_database at least once 
      * before using.
      */
-    static std::string get_app_name(const unsigned long& app_id);
+    std::string get_app_name(const unsigned long& app_id);
 
     /**
      * Download the app's banner ASYNCHRONOUSLY.
      * If it fails, nothing is written.
      */
-    static void download_app_icon(const unsigned long& app_id);
+    void download_app_icon(const unsigned long& app_id);
 
     /**
      * Path name to the root of the cache folder. By now it is
      * ~/.SamRewritten
      */
-    static const char *CACHE_FOLDER;
+    static const char* CACHE_FOLDER;
 
+    //TODO tidy
+    void update(unsigned long i);
+    
+    SteamAppDAO(SteamAppDAO const&)                 = delete;
+    void operator=(SteamAppDAO const&)              = delete;
 private:
-    static void download_file(const std::string& file_url, const std::string& local_path);
+    SteamAppDAO() {Downloader::get_instance()->attach(this);};
+    ~SteamAppDAO() {};
     static void parse_app_names();
 
     static std::map<unsigned long, std::string> m_app_names;

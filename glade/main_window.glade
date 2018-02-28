@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.20.2 -->
+<!-- Generated with glade 3.20.3 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkListBoxRow" id="game_entry">
@@ -145,6 +145,18 @@
       </packing>
     </child>
   </object>
+  <object class="GtkPopover" id="search_popover">
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkSearchEntry">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="primary_icon_name">edit-find-symbolic</property>
+        <property name="primary_icon_activatable">False</property>
+        <property name="primary_icon_sensitive">False</property>
+      </object>
+    </child>
+  </object>
   <object class="GtkApplicationWindow" id="main_window">
     <property name="width_request">800</property>
     <property name="height_request">500</property>
@@ -232,6 +244,26 @@
               </object>
             </child>
           </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popover">search_popover</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">edit-find-symbolic</property>
+                <property name="icon_size">1</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
         </child>
       </object>
     </child>

@@ -6,11 +6,12 @@
 
 class MainPickerWindow {
 public:
-    //Todo: destructor
+    //Todo: destructor and tidy
     MainPickerWindow();
     void reset_game_list();
     void add_to_game_list(const Game_t& app);
     void confirm_game_list();
+    void refresh_app_icon(const unsigned long app_id);
     GtkWidget* get_main_window() { return m_main_window; };
 
 private:

@@ -4,20 +4,17 @@
  */
 
 #include <iostream>
-#include <stdlib.h>
 #include <unistd.h>
 #include <gtk/gtk.h>
 #include <gmodule.h>
 #include "MySteam.h"
 #include "MainPickerWindow.h"
-#include "SteamAppDAO.h"
+#include "globals.h"
 
 int launcher_main();
 
-//Globals
-//Reason for the globals is that it's easier to access them in GTK callbacks
-MySteam *g_steam = nullptr; // The Model
-MainPickerWindow *g_main_gui = nullptr; // The view
+MySteam* g_steam = nullptr;
+MainPickerWindow* g_main_gui = nullptr;
 
 int 
 main(int argc, char *argv[])

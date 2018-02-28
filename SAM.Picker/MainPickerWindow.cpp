@@ -28,14 +28,6 @@ m_builder(nullptr)
 
 // See https://stackoverflow.com/questions/9192223/remove-gtk-container-children-repopulate-it-then-refresh
 void MainPickerWindow::reset_game_list() {
-    /*GList *children, *iter;
-    children = gtk_container_get_children(GTK_CONTAINER(m_game_list));
-
-    for(iter = children; iter != NULL; iter = g_list_next(iter))
-        gtk_widget_destroy(GTK_WIDGET(iter->data));
-    
-    g_list_free(children);*/
-
     gtk_container_foreach(GTK_CONTAINER(m_game_list), (GtkCallback)gtk_widget_destroy, NULL);
     //TODO refresh the view but I dont know how to
 
@@ -60,6 +52,7 @@ void MainPickerWindow::add_to_game_list(const Game_t& app) {
     #pragma GCC diagnostic pop
 
     gtk_widget_set_size_request(wrapper, -1, 80);
+    gtk_buildable_set_name(GTK_BUILDABLE(game_logo), std::to_string(app.app_id).c_str());
 
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(game_logo), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(label), TRUE, TRUE, 0);
@@ -74,4 +67,29 @@ void MainPickerWindow::add_to_game_list(const Game_t& app) {
 void MainPickerWindow::confirm_game_list() {
     gtk_widget_show_all(GTK_WIDGET(m_game_list));
     // Show all widgetss
+}
+
+void 
+MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
+
+    std::cerr << "Gotta renew " << app_id << "'s icon" << std::endl;
+
+    GList *children, *iter;
+    char id[256];
+    char req_id[256];
+
+    children = gtk_container_get_children(GTK_CONTAINER(m_game_list));
+    strncpy(req_id, std::to_string(app_id).c_str(), 256);
+    
+    std::cerr << "length: " << g_list_length(children); //0 TO DEBUG
+
+    for(iter = children; iter != NULL; iter = g_list_next(iter)) {
+        strncpy(id, gtk_buildable_get_name(GTK_BUILDABLE(iter->data)), 256);
+        if(strcmp(id, req_id) == 0) {
+            //TODO
+        }
+    }
+    
+    g_list_free(children);
+
 }
