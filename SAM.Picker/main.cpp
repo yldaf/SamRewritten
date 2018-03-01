@@ -95,4 +95,14 @@ extern "C"
     on_main_window_show() {
         on_ask_game_refresh(); //Run this async?
     }
+
+    void
+    on_search_changed(GtkWidget* search_widget) {
+        const char* filter_text = gtk_entry_get_text( GTK_ENTRY(search_widget) );
+
+        //if !g_steam->isgamerunning
+        g_main_gui->filter_games(filter_text);
+        //else 
+        //g_main_gui->filter_stats()
+    }
 }

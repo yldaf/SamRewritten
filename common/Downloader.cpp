@@ -1,5 +1,11 @@
 #include "Downloader.h"
 
+Downloader*
+Downloader::get_instance() {
+    static Downloader me;
+    return &me;
+}
+
 void 
 Downloader::download_file(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id) {
     //If the file exists, there's no need to download it again.

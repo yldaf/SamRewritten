@@ -4,6 +4,17 @@
 //TODO: Find a more elegant way to fix this shit.
 std::map<unsigned long, std::string> SteamAppDAO::m_app_names = std::map<unsigned long, std::string>();
 
+/**
+ * Lazy singleton pattern
+ */
+SteamAppDAO*
+SteamAppDAO::get_instance() {
+    static SteamAppDAO me;
+    return &me;
+}
+// => get_instance
+
+
 void 
 SteamAppDAO::update_name_database() {
     bool need_to_redownload = false;

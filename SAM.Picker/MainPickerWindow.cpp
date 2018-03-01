@@ -39,13 +39,12 @@ m_builder(nullptr)
  */
 void 
 MainPickerWindow::reset_game_list() {
-    //TODO
-    //for each m_rows
-    // gtk_widget_destroy
+    for (std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    {
+        gtk_widget_destroy( GTK_WIDGET(it->second) );
+    }
 
-    gtk_container_foreach(GTK_CONTAINER(m_game_list), (GtkCallback)gtk_widget_destroy, NULL);
-    //TODO refresh the view but I dont know how to
-
+    m_rows.clear();
 }
 // => reset_game_list
 
@@ -108,14 +107,18 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     //TODO make sure app_id is index of m_rows
     GList *children;
     GtkImage *img;
+    GdkPixbuf *pixbuf;
+    GError *error;
     std::string path(g_cache_folder);
+
+    error = nullptr;
     path += "/";
     path += std::to_string(app_id);
     path += "/banner";
 
     children = gtk_container_get_children(GTK_CONTAINER(m_rows[app_id])); //children = the layout
     children = gtk_container_get_children(GTK_CONTAINER(children->data)); //children = first element of layout    
-    //children = g_list_next(children);     //children = second element of layout...
+    //children = g_list_next(children);                                   //children = second element of layout...
 
     img = GTK_IMAGE(children->data);
     if( !GTK_IS_IMAGE(img) ) {
@@ -125,6 +128,53 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     }
     
     g_list_free(children);
-    gtk_image_set_from_file(img, path.c_str());
+
+    pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
+    if (error != NULL) {
+        std::cerr << "Error while loading an app's logo: " << std::endl;
+        std::cerr << "AppId: " << app_id << std::endl;
+        std::cerr << "Message: "  << error->message << std::endl;
+    }
+    else {
+        //Quick and jerky, quality isn't key here
+        // Is the excess of memory freed though?
+        pixbuf = gdk_pixbuf_scale_simple(pixbuf, 146, 68, GDK_INTERP_NEAREST);
+        gtk_image_set_from_pixbuf(img, pixbuf);
+    }
+
 }
 // => refresh_app_icon
+
+void
+MainPickerWindow::filter_games(const char* filter_text) {
+    const std::string text_filter(filter_text);
+    std::string text_label;
+        
+    gtk_widget_show_all( GTK_WIDGET(m_game_list) );
+    if(text_filter.empty()) {
+        return;
+    }
+
+    for (std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    {
+        GList *children;
+        GtkLabel* label;
+        children = gtk_container_get_children(GTK_CONTAINER(it->second)); //children = the layout
+        children = gtk_container_get_children(GTK_CONTAINER(children->data)); //children = first element of layout
+        children = g_list_next(children); //children = label
+        label = GTK_LABEL( children->data );
+
+        if( !GTK_IS_LABEL(label) ) {
+            std::cerr << "The layout may have been modified, please tell me you're a dev, look at MainPikerWindow Blah blah TODO" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        text_label = std::string( gtk_label_get_text( GTK_LABEL(label) ) );
+
+        //Holy shit C++, why can't you even do case insensitive comparisons wtf
+        //strstri is just a shitty workaround there's no way to do this properly
+        if(!strstri(text_label, text_filter)) {
+            gtk_widget_hide( GTK_WIDGET(it->second) );
+        }
+    }
+}

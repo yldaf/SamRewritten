@@ -6,7 +6,7 @@
 #include <vector>
 #include <cstring>
 #include <iostream>
-#include "../common/c_processes.h"
+#include "../common/functions.h"
 #include "../steam/steam_api.h"
 
 class CAchievementsDAO 

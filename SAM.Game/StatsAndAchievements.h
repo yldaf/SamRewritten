@@ -14,7 +14,7 @@
 #include <vector>
 #include "Achievement_t.h"
 #include "AchievementsDAO.h"
-#include "../common/c_processes.h"
+#include "../common/functions.h"
 #include "../common/lodepng.h"
 #include "../steam/steam_api.h"
 

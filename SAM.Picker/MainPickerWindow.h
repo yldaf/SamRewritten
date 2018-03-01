@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <iostream>
 #include <map>
+#include "../common/functions.h"
 #include "globals.h"
 #include "Game.h"
 
@@ -44,6 +45,12 @@ public:
      * to set the right image retrieved from Steam
      */
     void refresh_app_icon(const unsigned long app_id);
+
+    /**
+     * Filters the game list. For a title to stay displayed,
+     * filter_text must be included in it
+     */
+    void filter_games(const char* filter_text);
 
     /**
      * Getter for the main window

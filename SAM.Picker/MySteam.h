@@ -9,7 +9,7 @@
 #include <dirent.h>
 #include "Game.h"
 #include "SteamAppDAO.h"
-#include "../common/c_processes.h"
+#include "../common/functions.h"
 
 /**
  * MySteam is a class that aims to retrieve as much data as

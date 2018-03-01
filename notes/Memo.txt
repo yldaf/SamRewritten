@@ -1,7 +1,0 @@
-Most recent logged in user (useless) from cache:
-/home/paul/.local/share/Steam/config/loginusers.vdf
-
-All owned games from cache (WRONG):
-/home/paul/.local/share/Steam/userdata/<steamid3>/config/localconfig.vdf
-
-SEE if I cannot get all owned games with stats from /appcache.

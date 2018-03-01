@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <cstring>
+#include <algorithm>
+#include <cctype>
 
 /**
  * Wrapper for fork()
@@ -21,3 +23,8 @@ bool file_exists(const std::string& name);
  * Concatenates two C strings
  */
 char* concat(const char *s1, const char *s2);
+
+/**
+ * Insensitive "string in string"
+ */
+bool strstri(const std::string & strHaystack, const std::string & strNeedle);

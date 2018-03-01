@@ -18,11 +18,11 @@
       </packing>
     </child>
     <child>
-      <object class="GtkSpinner">
+      <object class="GtkImage">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_right">7</property>
-        <property name="active">True</property>
+        <property name="pixel_size">35</property>
+        <property name="icon_name">face-glasses</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -34,11 +34,13 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Loading your game library</property>
+        <property name="label" translatable="yes">It doesn't look like Sam could find anything interesting here...
+You can still wait for him to bring more results</property>
       </object>
       <packing>
         <property name="expand">False</property>
         <property name="fill">True</property>
+        <property name="padding">7</property>
         <property name="position">2</property>
       </packing>
     </child>
@@ -105,6 +107,9 @@
         <property name="primary_icon_name">edit-find-symbolic</property>
         <property name="primary_icon_activatable">False</property>
         <property name="primary_icon_sensitive">False</property>
+        <property name="placeholder_text" translatable="yes">Name of the game...</property>
+        <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+        <signal name="search-changed" handler="on_search_changed" swapped="no"/>
       </object>
     </child>
   </object>
@@ -113,7 +118,6 @@
     <property name="height_request">500</property>
     <property name="can_focus">False</property>
     <property name="icon_name">face-wink</property>
-    <signal name="action-removed" handler="on_close_button_clicked" swapped="no"/>
     <signal name="delete-event" handler="on_close_button_clicked" swapped="no"/>
     <signal name="show" handler="on_main_window_show" swapped="no"/>
     <child>

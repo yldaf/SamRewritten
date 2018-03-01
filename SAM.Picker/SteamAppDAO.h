@@ -7,18 +7,18 @@
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
-#include "../common/c_processes.h"
+#include "../common/functions.h"
 #include "../common/Downloader.h"
 #include "globals.h"
 #include "MainPickerWindow.h"
 
 class SteamAppDAO : public Observer<unsigned long> {
 public:
-    //TODO tidy
-    static SteamAppDAO* get_instance() {
-        static SteamAppDAO me;
-        return &me;
-    }
+    /**
+     * Singleton method to get the unique instance
+     */
+    static SteamAppDAO* get_instance();
+    
     /**
      * Redownloads http://api.steampowered.com/ISteamApps/GetAppList/v0002/
      * if necessary. Redownloads every few days.
@@ -45,6 +45,9 @@ public:
      */
     void update(unsigned long i);
     
+    /**
+     * Delete these to avoid any singleton bypass
+     */
     SteamAppDAO(SteamAppDAO const&)                 = delete;
     void operator=(SteamAppDAO const&)              = delete;
 private:
