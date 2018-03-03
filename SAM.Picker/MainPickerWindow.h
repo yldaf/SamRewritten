@@ -6,6 +6,7 @@
 #include "../common/functions.h"
 #include "globals.h"
 #include "Game.h"
+#include "gtk_callbacks.h"
 
 /**
  * The main GUI class to display both the games ans the achievements to the user

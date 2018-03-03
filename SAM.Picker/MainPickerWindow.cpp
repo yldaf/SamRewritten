@@ -84,6 +84,8 @@ MainPickerWindow::add_to_game_list(const Game_t& app) {
     gtk_container_add(GTK_CONTAINER(wrapper), GTK_WIDGET(layout));
 
     gtk_list_box_insert(m_game_list, GTK_WIDGET(wrapper), -1);
+
+    //g_signal_connect(m_game_list, "row-activated", (GCallback)on_game_row_activated, NULL/*&app.app_id*/);
     
     //Save the created row somewhere for EZ access
     m_rows.insert(std::pair<unsigned long, GtkWidget*>(app.app_id, wrapper));
@@ -101,9 +103,13 @@ MainPickerWindow::confirm_game_list() {
 
 /**
  * Refreshes the icon for the specified app ID
+ * if app_id is zero, it means the downloaded file isn't an app icon
  */
 void 
 MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
+    if(app_id == 0)
+        return;
+
     //TODO make sure app_id is index of m_rows
     GList *children;
     GtkImage *img;
