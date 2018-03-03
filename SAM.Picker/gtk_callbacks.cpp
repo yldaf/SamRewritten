@@ -48,8 +48,24 @@ extern "C"
 
 
     void 
-    on_game_row_activated(GtkListBox *box, GtkListBoxRow *row, gpointer) {
-        std::cerr << "Row activated";
+    on_game_row_activated(GtkListBox *box, GtkListBoxRow *row) {
+        const std::string app_id( std::to_string( g_main_gui->get_corresponding_appid_for_row(row) ) );
+
+        if( app_id != "0" ) {
+            g_main_gui->switch_to_stats_page();
+            std::cerr << "Loading stats and achievements for appid " << app_id << std::endl;
+        } else {
+            std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
+        }
+
     }
     // => on_game_row_activated
+
+    void
+    on_back_button_clicked() {
+        // g_steam->quit_game();
+        g_main_gui->switch_to_games_page();
+        std::cerr << "Back to the games list" << std::endl;
+    }
+    // => on_back_button_clicked
 }

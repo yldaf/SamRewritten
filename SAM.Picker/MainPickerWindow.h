@@ -54,13 +54,34 @@ public:
     void filter_games(const char* filter_text);
 
     /**
+     * Give it a pointer to a row from the main game list, returns the associated
+     * appid. Returns 0 on error;
+     */
+    unsigned long get_corresponding_appid_for_row(GtkListBoxRow *row);
+
+    /**
+     * Shows the achievements list instead of the game list
+     */
+    void switch_to_stats_page();
+
+    /**
+     * Shows the games list instead of the stats and achievements list
+     */
+    void switch_to_games_page();
+
+    /**
      * Getter for the main window
      */
     GtkWidget* get_main_window() { return m_main_window; };
 
 private:
     GtkWidget *m_main_window;
-    GtkListBox *m_game_list;  
+    GtkButton *m_back_button;    
+    GtkListBox *m_game_list;
+    GtkListBox *m_stats_list;
     GtkBuilder *m_builder;
+    GtkStack *m_main_stack;
+    GtkScrolledWindow *m_game_list_view;
+    GtkScrolledWindow *m_stats_list_view;
     std::map<unsigned long, GtkWidget*> m_rows;
 };

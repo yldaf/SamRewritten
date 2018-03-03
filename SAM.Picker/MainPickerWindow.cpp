@@ -3,8 +3,13 @@
 MainPickerWindow::MainPickerWindow() 
 : 
 m_main_window(nullptr),
+m_back_button(nullptr),
 m_game_list(nullptr),
-m_builder(nullptr)
+m_stats_list(nullptr),
+m_builder(nullptr),
+m_main_stack(nullptr),
+m_game_list_view(nullptr),
+m_stats_list_view(nullptr)
 {
     GError *error = NULL;
     m_builder = gtk_builder_new();
@@ -16,15 +21,25 @@ m_builder(nullptr)
         std::cerr << "An error occurred opening the main window.. Make sure " << ui_file << " exists and is a valid file." << std::endl;
         exit(EXIT_FAILURE);
     }
-    gtk_builder_connect_signals(m_builder, NULL);
 
     // Load the required widgets through the builder
     m_game_list = GTK_LIST_BOX(gtk_builder_get_object(m_builder, "game_list"));
+    m_stats_list = GTK_LIST_BOX(gtk_builder_get_object(m_builder, "stats_list"));
     m_main_window = GTK_WIDGET(gtk_builder_get_object(m_builder, "main_window"));
+    m_main_stack = GTK_STACK(gtk_builder_get_object(m_builder, "main_stack"));
+    m_game_list_view = GTK_SCROLLED_WINDOW(gtk_builder_get_object(m_builder, "game_list_view"));
+    m_stats_list_view = GTK_SCROLLED_WINDOW(gtk_builder_get_object(m_builder, "stats_list_view"));
+    m_back_button = GTK_BUTTON(gtk_builder_get_object(m_builder, "back_button"));
     GtkWidget* game_placeholder = GTK_WIDGET(gtk_builder_get_object(m_builder, "game_placeholder"));
+    GtkWidget* stats_placeholder = GTK_WIDGET(gtk_builder_get_object(m_builder, "stats_placeholder"));
+
+    g_signal_connect(m_game_list, "row-activated", (GCallback)on_game_row_activated, NULL);
+    gtk_builder_connect_signals(m_builder, NULL);
+    
 
     // Show the placeholder widget right away, which is the loading widget
     gtk_list_box_set_placeholder(m_game_list, game_placeholder);
+    gtk_list_box_set_placeholder(m_stats_list, stats_placeholder);
     gtk_widget_show(game_placeholder);
 }
 // => Constructor
@@ -84,8 +99,6 @@ MainPickerWindow::add_to_game_list(const Game_t& app) {
     gtk_container_add(GTK_CONTAINER(wrapper), GTK_WIDGET(layout));
 
     gtk_list_box_insert(m_game_list, GTK_WIDGET(wrapper), -1);
-
-    //g_signal_connect(m_game_list, "row-activated", (GCallback)on_game_row_activated, NULL/*&app.app_id*/);
     
     //Save the created row somewhere for EZ access
     m_rows.insert(std::pair<unsigned long, GtkWidget*>(app.app_id, wrapper));
@@ -184,3 +197,31 @@ MainPickerWindow::filter_games(const char* filter_text) {
         }
     }
 }
+// => filter_games
+
+unsigned long 
+MainPickerWindow::get_corresponding_appid_for_row(GtkListBoxRow *row) {
+    for(std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    {
+        if((gpointer)it->second == (gpointer)row) {
+            return it->first;
+        }
+    }
+    return 0;
+}
+// => get_corresponding_appid_for_row
+
+void
+MainPickerWindow::switch_to_stats_page() {
+    gtk_widget_set_visible(GTK_WIDGET(m_back_button), TRUE);
+    gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_stats_list_view));
+}
+// => switch_to_stats_page
+
+
+void
+MainPickerWindow::switch_to_games_page() {
+    gtk_widget_set_visible(GTK_WIDGET(m_back_button), FALSE);
+    gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_game_list_view));
+}
+// => switch_to_games_page

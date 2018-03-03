@@ -43,5 +43,8 @@ extern "C"
     on_search_changed(GtkWidget* search_widget);
 
     void 
-    on_game_row_activated(GtkListBox *box, GtkListBoxRow *row, gpointer);
+    on_game_row_activated(GtkListBox *box, GtkListBoxRow *row);
+
+    void
+    on_back_button_clicked();
 }
