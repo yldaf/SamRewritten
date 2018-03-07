@@ -223,5 +223,7 @@ void
 MainPickerWindow::switch_to_games_page() {
     gtk_widget_set_visible(GTK_WIDGET(m_back_button), FALSE);
     gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_game_list_view));
+
+    //TODO Clear achievments list
 }
 // => switch_to_games_page

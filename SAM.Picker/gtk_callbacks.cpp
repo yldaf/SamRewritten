@@ -53,6 +53,7 @@ extern "C"
 
         if( app_id != "0" ) {
             g_main_gui->switch_to_stats_page();
+            g_steam->launch_game(app_id);
             std::cerr << "Loading stats and achievements for appid " << app_id << std::endl;
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
@@ -63,9 +64,8 @@ extern "C"
 
     void
     on_back_button_clicked() {
-        // g_steam->quit_game();
+        g_steam->quit_game();
         g_main_gui->switch_to_games_page();
-        std::cerr << "Back to the games list" << std::endl;
     }
     // => on_back_button_clicked
 }

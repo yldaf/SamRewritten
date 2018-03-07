@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <gmodule.h>
+//#include <X11/Xlib.h>
 #include "MySteam.h"
 #include "MainPickerWindow.h"
 #include "globals.h"
@@ -30,6 +31,7 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
+    //XInitThreads();
     gtk_init(&argc, &argv);
     
     g_cache_folder = concat(getenv("HOME"), "/.SamRewritten");

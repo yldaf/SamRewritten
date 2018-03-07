@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include "Game.h"
 #include "SteamAppDAO.h"
+#include "GameEmulator.h"
 #include "../common/functions.h"
 
 /**
@@ -82,6 +83,5 @@ public:
 private:
     MySteam();
 
-    pid_t m_child_pid;
     std::vector<Game_t> m_all_subscribed_apps;
 };

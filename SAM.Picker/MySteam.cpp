@@ -2,9 +2,7 @@
 #define MAX_PATH 1000
 
 
-MySteam::MySteam() 
-: 
-m_child_pid(-1) {
+MySteam::MySteam() {
 
 }
 // => Constructor
@@ -26,33 +24,11 @@ MySteam::get_instance() {
 bool 
 MySteam::launch_game(std::string appID) {
     // Print an error if a game is already launched, maybe allow multiple games at the same time in the future?
-    if(m_child_pid > 0) {
-        std::cout << "Sorry, a game is already running. Please try again later." << std::endl;
-        return false;
-    }
+    GameEmulator* emulator = GameEmulator::get_instance();
+    
+    //TODO if
+    emulator->init_app(appID);
 
-    //TODO Change this for release as the cwd will be different
-    if(!file_exists("./bin/samgame")) {
-        std::cout << "samgame doesn't exist. Aborting launch." << std::endl;
-        return false;
-    }
-
-    m_child_pid = create_process();
-
-    switch(m_child_pid) {
-        case -1:
-            std::cout << "An error occurred while creating the cild process." << std::endl;
-            perror("fork");
-            break;
-
-        case 0:
-            execl("./bin/samgame", "samgame", appID.c_str(), (char*) NULL);
-            break;
-
-        default:
-            return true;
-            break;
-    }
     return false;
 }
 // => launch_game
@@ -63,16 +39,8 @@ MySteam::launch_game(std::string appID) {
  */
 bool 
 MySteam::quit_game() {
-    if(m_child_pid > 0) {
-        kill(m_child_pid, SIGTERM);
-    }
-    else {
-        std::cout << "Cannot quit game, no game launched." << std::endl;
-        return false;
-    }
-
-    m_child_pid = -1;
-    return true;
+    GameEmulator* emulator = GameEmulator::get_instance();
+    return emulator->kill_running_app();
 }
 // => quit_game
 
