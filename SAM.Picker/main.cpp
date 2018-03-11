@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <gmodule.h>
-//#include <X11/Xlib.h>
 #include "MySteam.h"
 #include "MainPickerWindow.h"
 #include "globals.h"
@@ -26,23 +25,19 @@ int
 main(int argc, char *argv[])
 {
     // Test if glib2 is installed, gtk will not work without it.
-    if(!g_module_supported()) {
+    if( !g_module_supported() ) {
         std::cerr << "Sorry, but gmodules are not supported on your platform :(. Try installing as many gnome libs as you can maybe.." << std::endl;
         exit(EXIT_FAILURE);
     }
     
-    //XInitThreads();
     gtk_init(&argc, &argv);
     
-    g_cache_folder = concat(getenv("HOME"), "/.SamRewritten");
+    g_cache_folder = concat( getenv("HOME"), "/.SamRewritten" );
     g_steam = MySteam::get_instance();
     g_main_gui = new MainPickerWindow();
 
-    gtk_widget_show(g_main_gui->get_main_window());
+    gtk_widget_show( g_main_gui->get_main_window() );
     gtk_main();
-
-    //steam->launch_game("368230");
-    //steam->quit_game();
 
     return 0;
 }

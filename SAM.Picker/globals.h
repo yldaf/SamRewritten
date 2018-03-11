@@ -21,7 +21,7 @@ extern MainPickerWindow *g_main_gui;
 
 /**
  * The absolute path to the cache folder. It's global, because everyone will
- * need to write or read into it at some point. 
+ * need to write or read into this folder at some point. 
  * As of right now the default path is:
  * 
  *      ~/.SamRewritten
