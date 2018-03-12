@@ -3,13 +3,17 @@
 #include <gtk/gtk.h>
 #include <iostream>
 #include <map>
+#include <vector>
 #include "../common/functions.h"
 #include "globals.h"
 #include "Game.h"
+#include "Achievement.h"
 #include "gtk_callbacks.h"
+#include "GtkAchievementBoxRow.h"
 
 /**
  * The main GUI class to display both the games ans the achievements to the user
+ * TODO: make a GtkGameBoxRow class?
  */
 class MainPickerWindow {
 public:
@@ -34,11 +38,22 @@ public:
     void add_to_game_list(const Game_t& app);
 
     /**
-     * Commits all the changes made since the last commit
+     * Adds an achievement to the achievement list. The new item will be added 
+     * and saved, but not drawn.
+     */
+    void add_to_achievement_list(const Achievement_t& achievement);
+
+    /**
      * Shows all widget that has been added to the list, removes all
      * the deleted entries from the GUI list.
      */
     void confirm_game_list();
+
+    /**
+     * Shows all widget that has been added to the list, removes all
+     * the deleted entries from the GUI list.
+     */
+    void confirm_stats_list();
 
     /**
      * When a game is added to the list, the "missing icon" is used by default
@@ -83,5 +98,6 @@ private:
     GtkStack *m_main_stack;
     GtkScrolledWindow *m_game_list_view;
     GtkScrolledWindow *m_stats_list_view;
-    std::map<unsigned long, GtkWidget*> m_rows;
+    std::map<unsigned long, GtkWidget*> m_game_list_rows;
+    std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;
 };

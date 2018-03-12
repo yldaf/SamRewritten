@@ -54,12 +54,12 @@ m_stats_list_view(nullptr)
  */
 void 
 MainPickerWindow::reset_game_list() {
-    for (std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    for (std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         gtk_widget_destroy( GTK_WIDGET(it->second) );
     }
 
-    m_rows.clear();
+    m_game_list_rows.clear();
 }
 // => reset_game_list
 
@@ -68,7 +68,7 @@ MainPickerWindow::reset_game_list() {
  * Add a game to the list. Ignores warnings for the obsolete GtkArrow.
  * Such a classy widget, I don't get why I should bother creating a shitty 
  * gtkImage instead when it does just what I want out of the box.
- * The entry created is pushed on m_rows, to be easily acccessed later.
+ * The entry created is pushed on m_game_list_rows, to be easily acccessed later.
  * The new entry is not shown yet, call confirm_game_list for that.
  */
 void 
@@ -101,16 +101,31 @@ MainPickerWindow::add_to_game_list(const Game_t& app) {
     gtk_list_box_insert(m_game_list, GTK_WIDGET(wrapper), -1);
     
     //Save the created row somewhere for EZ access
-    m_rows.insert(std::pair<unsigned long, GtkWidget*>(app.app_id, wrapper));
+    m_game_list_rows.insert(std::pair<unsigned long, GtkWidget*>(app.app_id, wrapper));
 }
 // => add_to_game_list
+
+void
+MainPickerWindow::add_to_achievement_list(const Achievement_t& achievement) {
+    GtkAchievementBoxRow *row = new GtkAchievementBoxRow(achievement);
+    m_achievement_list_rows.push_back(row);
+
+    gtk_list_box_insert(m_stats_list, GTK_WIDGET( row->get_main_widget() ), -1);
+}
+// => add_to_achievement_list
+
+void
+MainPickerWindow::confirm_stats_list() {
+    gtk_widget_show_all( GTK_WIDGET(m_stats_list) );
+}
+// => confirm_stat_list
 
 /**
  * Draws all the games that have not been shown yet
  */
 void 
 MainPickerWindow::confirm_game_list() {
-    gtk_widget_show_all(GTK_WIDGET(m_game_list));
+    gtk_widget_show_all( GTK_WIDGET(m_game_list) );
 }
 // => confirm_game_list
 
@@ -123,7 +138,7 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     if(app_id == 0)
         return;
 
-    //TODO make sure app_id is index of m_rows
+    //TODO make sure app_id is index of m_game_list_rows
     GList *children;
     GtkImage *img;
     GdkPixbuf *pixbuf;
@@ -135,7 +150,7 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     path += std::to_string(app_id);
     path += "/banner";
 
-    children = gtk_container_get_children(GTK_CONTAINER(m_rows[app_id])); //children = the layout
+    children = gtk_container_get_children(GTK_CONTAINER(m_game_list_rows[app_id])); //children = the layout
     children = gtk_container_get_children(GTK_CONTAINER(children->data)); //children = first element of layout    
     //children = g_list_next(children);                                   //children = second element of layout...
 
@@ -174,7 +189,7 @@ MainPickerWindow::filter_games(const char* filter_text) {
         return;
     }
 
-    for (std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    for (std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         GList *children;
         GtkLabel* label;
@@ -201,7 +216,7 @@ MainPickerWindow::filter_games(const char* filter_text) {
 
 unsigned long 
 MainPickerWindow::get_corresponding_appid_for_row(GtkListBoxRow *row) {
-    for(std::map<unsigned long, GtkWidget*>::iterator it = m_rows.begin(); it != m_rows.end(); ++it)
+    for(std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         if((gpointer)it->second == (gpointer)row) {
             return it->first;
@@ -225,5 +240,11 @@ MainPickerWindow::switch_to_games_page() {
     gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_game_list_view));
 
     //TODO Clear achievments list
+    //TODO MAKE THIS WORK
+    for(GtkAchievementBoxRow* i : m_achievement_list_rows) {
+        gtk_widget_destroy( GTK_WIDGET(i->get_main_widget()) );
+        delete i;
+    }
+    m_achievement_list_rows.clear();
 }
 // => switch_to_games_page

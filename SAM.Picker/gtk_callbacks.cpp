@@ -9,6 +9,11 @@ extern "C"
     on_close_button_clicked() {
         gtk_main_quit();
         gtk_widget_destroy(g_main_gui->get_main_window());
+
+        delete g_main_gui;
+        g_main_gui = NULL;
+
+        g_steam->quit_game();
     }
     // => on_close_button_clicked
 
@@ -54,7 +59,7 @@ extern "C"
         if( app_id != "0" ) {
             g_main_gui->switch_to_stats_page();
             g_steam->launch_game(app_id);
-            std::cerr << "Loading stats and achievements for appid " << app_id << std::endl;
+            
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
         }

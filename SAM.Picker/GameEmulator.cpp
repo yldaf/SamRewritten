@@ -1,12 +1,23 @@
 #include "GameEmulator.h"
 
+/****************************
+ * SIGNAL CALLBACKS
+ ****************************/
+
+/**
+ * Used by the child process when the parent tells him to 
+ * stop the steam app. The child process will die.
+ */
 void 
 handle_sigterm(int signum) {
     SteamAPI_Shutdown();
     exit(EXIT_SUCCESS);
 }
 
-// Terminate the zombie process
+/**
+ * Used by the parent process to remove the zombie process
+ * of the child, once it terminated
+ */
 void 
 handle_sigchld(int signum) {
     pid_t pid;
@@ -26,23 +37,29 @@ handle_sigchld(int signum) {
 }
 
 /**
- * The parent has to read the pipe
+ * When the parent receives SIGUSR1, it will read the pipe,
+ * and if everything goes well, it should fill the member 
+ * achievements list, and the achievement count.
+ * Once done, will update the view
+ * 
+ * TODO: Check for errors
  */
 void handle_sigusr1_parent(int signum) {
     GameEmulator *inst = GameEmulator::get_instance();
-    unsigned num_ach;
     Achievement_t achievement;
 
-    read(inst->m_pipe[0], &num_ach, sizeof(unsigned));
+    read(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
 
-    inst->m_achievement_list = (Achievement_t*)malloc(num_ach * sizeof(Achievement_t));
+    inst->m_achievement_list = (Achievement_t*)malloc(inst->m_achievement_count * sizeof(Achievement_t));
     
     if( !inst->m_achievement_list ) {
         std::cerr << "ERROR: could not allocate memory." << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    for(unsigned i = 0; i < num_ach; i++) {
+    //TODO see if I can read directly in the achievements list
+    //That would avoid the memcpy
+    for(unsigned i = 0; i < inst->m_achievement_count; i++) {
         read(inst->m_pipe[0], &achievement, sizeof(Achievement_t));
         memcpy(&(inst->m_achievement_list[i]), &achievement, sizeof(Achievement_t));
     }
@@ -51,14 +68,19 @@ void handle_sigusr1_parent(int signum) {
 }
 
 /**
- * The son must update stats and achievements and pipe
- * everything to parent
+ * When the son process receives SIGUSR1, it will retrieve all achievements,
+ * and send a SIGUSR1 signal to the parent when done, and start writing 
+ * to the pipe.
  */
 void handle_sigusr1_child(int signum) {
     GameEmulator *inst = GameEmulator::get_instance();
     inst->retrieve_achievements();
 }
 
+
+/*********************************
+ * CLASS METHODS DEFINITION
+ ********************************/
 
 GameEmulator::GameEmulator() : 
 m_CallbackUserStatsReceived( this, &GameEmulator::OnUserStatsReceived ),
@@ -68,13 +90,14 @@ m_have_stats_been_requested( false )
 {
 
 }
-
+// => Constructor
 
 GameEmulator*
 GameEmulator::get_instance() {
     static GameEmulator me;
     return &me;
 }
+// => get_instance
 
 bool
 GameEmulator::init_app(const std::string& app_id) {
@@ -128,6 +151,7 @@ GameEmulator::init_app(const std::string& app_id) {
     //Only a successful parent will reach this
     return true;
 }
+// => init_app
 
 
 bool
@@ -141,12 +165,16 @@ GameEmulator::kill_running_app() {
         return true;
     }
     else {
-        std::cerr << "Warning: trying to kill the Steam Game while it's not running." << std::endl;
+        if (g_main_gui != NULL)
+            std::cerr << "Warning: trying to kill the Steam Game while it's not running." << std::endl;
+        
         return true;
     }
 
     return true;
 }
+// => kill_running app
+
 
 void
 GameEmulator::retrieve_achievements() {
@@ -160,11 +188,18 @@ GameEmulator::retrieve_achievements() {
         stats_api->RequestCurrentStats();
     }
 }
+// => retrieve_achievements
+
 
 void
 GameEmulator::update_view() {
-    //TODO
+    for(unsigned i = 0; i < m_achievement_count; i++) {
+        g_main_gui->add_to_achievement_list(m_achievement_list[i]);
+    }
+
+    g_main_gui->confirm_stats_list();
 }
+// => update_view
 
 /*****************************************
  * STEAM API CALLBACKS BELOW
@@ -209,13 +244,6 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute( m_achievement_list[i].id, "hidden" ), "0");
                 m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon( m_achievement_list[i].id );
             }
-
-            // std::cerr << m_achievement_list[0].id << std::endl;
-            // std::cerr << m_achievement_list[0].name << std::endl;
-            // std::cerr << m_achievement_list[0].global_achieved_rate << std::endl;
-            // std::cerr << m_achievement_list[0].desc << std::endl;
-
-            //TODO: pipe the achievement list to daddy
 
             //Tell parent that he must read
             kill(getppid(), SIGUSR1);
