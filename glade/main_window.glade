@@ -34,8 +34,8 @@
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">It doesn't look like Sam could find anything interesting here...
-You can still wait for him to bring more results</property>
+        <property name="label" translatable="yes">Sam is currently fetching your games!
+He's pretty confident they won't take much longer to arrive, but is also wrong most of the time.</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -262,11 +262,13 @@ You can still wait for him to bring more results</property>
       </packing>
     </child>
     <child>
-      <object class="GtkImage">
+      <object class="GtkSpinner">
+        <property name="width_request">34</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="pixel_size">35</property>
-        <property name="icon_name">face-glasses</property>
+        <property name="hexpand">False</property>
+        <property name="vexpand">False</property>
+        <property name="active">True</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -278,8 +280,7 @@ You can still wait for him to bring more results</property>
       <object class="GtkLabel">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Sam is still fetching the stats and achievements. 
-He's pretty confident they won't take much longer to arrive, but is also wrong most of the time.</property>
+        <property name="label" translatable="yes">Please wait while SAM fetches the results</property>
       </object>
       <packing>
         <property name="expand">False</property>
