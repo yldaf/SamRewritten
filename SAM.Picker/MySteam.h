@@ -78,6 +78,18 @@ public:
      */
     std::vector<Game_t> get_all_games_with_stats() { return m_all_subscribed_apps; };
 
+    /**
+     * Adds a modification to be done on the launched app.
+     * Commit the change with commit_modifications.
+     */
+    //void add_modification_ach(const std::string& ach_id, const bool& new_value); //TODO IMPLEMENT
+
+    /**
+     * Adds a modification to be done on the launched app.
+     * Commit the change with commit_modifications.
+     */
+    //void add_modification_stat(const std::string& stat_id, const double& new_value); // THIS TOO
+
     MySteam(MySteam const&)                 = delete;
     void operator=(MySteam const&)          = delete;
 private:

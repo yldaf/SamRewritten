@@ -239,7 +239,10 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
                     stats_api->GetAchievementDisplayAttribute(m_achievement_list[i].id, "desc"),
                     MAX_ACHIEVEMENT_DESC_LENGTH);
 
-                stats_api->GetAchievementAchievedPercent(m_achievement_list[i].id, &(m_achievement_list[i].global_achieved_rate));
+                // TODO
+                // https://partner.steamgames.com/doc/api/ISteamUserStats#RequestGlobalAchievementPercentages
+                //stats_api->GetAchievementAchievedPercent(m_achievement_list[i].id, &(m_achievement_list[i].global_achieved_rate));
+                m_achievement_list[i].global_achieved_rate = 0;
                 stats_api->GetAchievement(m_achievement_list[i].id, &(m_achievement_list[i].achieved));
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute( m_achievement_list[i].id, "hidden" ), "0");
                 m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon( m_achievement_list[i].id );
