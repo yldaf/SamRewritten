@@ -175,3 +175,27 @@ MySteam::refresh_icons() {
     }
 }
 // => refresh_icons
+
+/**
+ * Adds an achievement to the list of achievements to unlock/lock
+ */
+void 
+MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) {
+    std::cout << ach_id << ": " << (new_value ? "to unlock" : "to relock") << std::endl;
+    m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+}
+// => add_modification_ach
+
+/**
+ * Removes an achievement to the list of achievements to unlock/lock
+ */
+void 
+MySteam::remove_modification_ach(const std::string& ach_id) {
+    std::cout << ach_id << ": Cancel modification" << std::endl;
+    if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
+        std::cerr << "WARNING: Could not cancel: modification was not pending";
+    } else {
+        m_pending_ach_modifications.erase(ach_id);
+    }
+}
+// => remove_modification_ach

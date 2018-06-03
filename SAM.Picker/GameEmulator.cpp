@@ -205,6 +205,10 @@ GameEmulator::update_view() {
  * STEAM API CALLBACKS BELOW
  ****************************************/
 
+/**
+ * Retrieves all achievemnts data, then pipes the data to the 
+ * parent process.
+ */
 void
 GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
     // Check if we received the values for the good app
@@ -267,3 +271,4 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
         }
     }
 }
+// => OnUserStatsReceived

@@ -41,6 +41,16 @@ public:
     static std::string get_steam_install_path();
 
     /**
+     * Simple getter for m_pending_ach_modifications
+     */
+    std::map<std::string, bool> get_pending_ach_modifications() const { return m_pending_ach_modifications; };
+
+    /**
+     * Simple getter for m_pending_stat_modifications
+     */
+    std::map<std::string, double> get_pending_stat_modifications() const { return m_pending_stat_modifications; };
+
+    /**
      * Starts a process that will emulate a steam game with the 
      * given appId. Returns false if this process failed to launch.
      * The process may start successfully but fail during execution.
@@ -82,13 +92,19 @@ public:
      * Adds a modification to be done on the launched app.
      * Commit the change with commit_modifications.
      */
-    //void add_modification_ach(const std::string& ach_id, const bool& new_value); //TODO IMPLEMENT
+    void add_modification_ach(const std::string& ach_id, const bool& new_value);
 
     /**
      * Adds a modification to be done on the launched app.
      * Commit the change with commit_modifications.
      */
-    //void add_modification_stat(const std::string& stat_id, const double& new_value); // THIS TOO
+    void remove_modification_ach(const std::string& ach_id);
+
+    /**
+     * Adds a modification to be done on the launched app.
+     * Commit the change with commit_modifications.
+     */
+    //void add_modification_stat(const std::string& stat_id, const double& new_value); // TODO: IMPLEMENT
 
     MySteam(MySteam const&)                 = delete;
     void operator=(MySteam const&)          = delete;
@@ -96,4 +112,6 @@ private:
     MySteam();
 
     std::vector<Game_t> m_all_subscribed_apps;
+    std::map<std::string, bool> m_pending_ach_modifications;
+    std::map<std::string, double> m_pending_stat_modifications;
 };

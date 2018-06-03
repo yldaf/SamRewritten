@@ -17,6 +17,25 @@ extern "C"
     }
     // => on_close_button_clicked
 
+    void
+    on_store_button_clicked() {
+        std::cerr << "Saving stats and achievements." << std::endl;
+        const std::map<std::string, bool> pending_achs = g_steam->get_pending_ach_modifications();
+        const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
+
+        // TODO: JUST DO IT
+
+        /**
+         * foreach(pending_achs as &val) {
+         * if(val.second == true)
+         *  gameEmulator->unlock(val.first)
+         * } else {
+         *  gameEmulator->relock(val.first)
+         * }
+         * }
+         */
+    }
+    // => on_store_button_clicked
 
     void 
     on_ask_game_refresh() {

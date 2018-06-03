@@ -1,4 +1,6 @@
 #include "GtkAchievementBoxRow.h"
+#include "MySteam.h"
+#include "globals.h"
 
 extern "C"
 {
@@ -6,18 +8,23 @@ extern "C"
     on_achievement_button_toggle(GtkToggleButton* but, gpointer achievement) {
         const bool active = gtk_toggle_button_get_active(but);
         const bool achieved = (*(Achievement_t *)achievement).achieved;
+        const std::string ach_id = std::string((*(Achievement_t *)achievement).id);
 
         if(active && achieved) {
             gtk_button_set_label(GTK_BUTTON(but), "Unlocked");
+            g_steam->remove_modification_ach(ach_id);
         }
         else if (active && !achieved) {
-            gtk_button_set_label(GTK_BUTTON(but), "To unlock");            
+            gtk_button_set_label(GTK_BUTTON(but), "To unlock");
+            g_steam->add_modification_ach(ach_id, true);
         }
         else if (!active && achieved) {
-            gtk_button_set_label(GTK_BUTTON(but), "To relock");            
+            gtk_button_set_label(GTK_BUTTON(but), "To relock");
+            g_steam->add_modification_ach(ach_id, false);
         }
         else if (!active && !achieved) {
-            gtk_button_set_label(GTK_BUTTON(but), "Locked");            
+            gtk_button_set_label(GTK_BUTTON(but), "Locked");
+            g_steam->remove_modification_ach(ach_id);
         }
     }
 }

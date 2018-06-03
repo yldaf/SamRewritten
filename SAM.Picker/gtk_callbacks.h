@@ -47,4 +47,7 @@ extern "C"
 
     void
     on_back_button_clicked();
+
+    void
+    on_store_button_clicked();
 }

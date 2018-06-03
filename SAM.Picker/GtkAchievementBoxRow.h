@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <gtk/gtk.h>
 #include "Achievement.h"
 

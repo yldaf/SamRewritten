@@ -30,6 +30,7 @@ m_stats_list_view(nullptr)
     m_game_list_view = GTK_SCROLLED_WINDOW(gtk_builder_get_object(m_builder, "game_list_view"));
     m_stats_list_view = GTK_SCROLLED_WINDOW(gtk_builder_get_object(m_builder, "stats_list_view"));
     m_back_button = GTK_BUTTON(gtk_builder_get_object(m_builder, "back_button"));
+    m_store_button = GTK_BUTTON(gtk_builder_get_object(m_builder, "store_button"));
     GtkWidget* game_placeholder = GTK_WIDGET(gtk_builder_get_object(m_builder, "game_placeholder"));
     GtkWidget* stats_placeholder = GTK_WIDGET(gtk_builder_get_object(m_builder, "stats_placeholder"));
 
@@ -218,7 +219,7 @@ unsigned long
 MainPickerWindow::get_corresponding_appid_for_row(GtkListBoxRow *row) {
     for(std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
-        if((gpointer)it->second == (gpointer)row) {
+        if( (gpointer)it->second == (gpointer)row ) {
             return it->first;
         }
     }
@@ -229,6 +230,7 @@ MainPickerWindow::get_corresponding_appid_for_row(GtkListBoxRow *row) {
 void
 MainPickerWindow::switch_to_stats_page() {
     gtk_widget_set_visible(GTK_WIDGET(m_back_button), TRUE);
+    gtk_widget_set_visible(GTK_WIDGET(m_store_button), TRUE);
     gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_stats_list_view));
 }
 // => switch_to_stats_page
@@ -237,6 +239,7 @@ MainPickerWindow::switch_to_stats_page() {
 void
 MainPickerWindow::switch_to_games_page() {
     gtk_widget_set_visible(GTK_WIDGET(m_back_button), FALSE);
+    gtk_widget_set_visible(GTK_WIDGET(m_store_button), FALSE);
     gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_game_list_view));
 
     //TODO Clear achievments list

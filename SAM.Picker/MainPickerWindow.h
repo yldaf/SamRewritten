@@ -91,7 +91,8 @@ public:
 
 private:
     GtkWidget *m_main_window;
-    GtkButton *m_back_button;    
+    GtkButton *m_back_button;
+    GtkButton *m_store_button;
     GtkListBox *m_game_list;
     GtkListBox *m_stats_list;
     GtkBuilder *m_builder;
