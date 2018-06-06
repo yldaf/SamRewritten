@@ -191,7 +191,6 @@ MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) 
  */
 void 
 MySteam::remove_modification_ach(const std::string& ach_id) {
-    std::cout << ach_id << ": Cancel modification" << std::endl;
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
         std::cerr << "WARNING: Could not cancel: modification was not pending";
     } else {

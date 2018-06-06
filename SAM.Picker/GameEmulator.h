@@ -48,6 +48,27 @@ public:
     void update_view();
 
     /**
+     * Will refetch data from the steam API.
+     * Will update the main view, adding all achievements to the 
+     * list of achievements
+     */
+    void update_data_and_view();
+
+    /**
+     * Will unlock the achivement given it's API name.
+     * Will return the value of SetAchievement.
+     * https://partner.steamgames.com/doc/api/ISteamUserStats#SetAchievement
+     */
+    bool unlock_achievement(const char* ach_api_name) const;
+
+    /**
+     * Will relock the achivement given it's API name.
+     * Will return the value of ClearAchievement.
+     * https://partner.steamgames.com/doc/api/ISteamUserStats#ClearAchievement
+     */
+    bool relock_achievement(const char* ach_api_name) const;
+
+    /**
      * Steam API callback to handle the received stats and achievements
      */
     STEAM_CALLBACK( GameEmulator, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived );

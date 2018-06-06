@@ -7,6 +7,7 @@
 class GtkAchievementBoxRow {
 public:
     GtkAchievementBoxRow(const Achievement_t& data);
+    ~GtkAchievementBoxRow();
 
     GtkWidget* get_main_widget() { return m_main_box; };
 

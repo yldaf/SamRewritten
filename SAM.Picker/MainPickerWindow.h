@@ -32,6 +32,12 @@ public:
     void reset_game_list();
 
     /**
+     * Empty the achievements list, leaving only the placeholder widget,
+     * which means the loading widget.
+     */
+    void reset_achievements_list();
+
+    /**
      * Adds a game to the game list. The new item will be added and saved,
      * but not drawn.
      */

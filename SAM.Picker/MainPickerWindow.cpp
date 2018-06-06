@@ -64,6 +64,18 @@ MainPickerWindow::reset_game_list() {
 }
 // => reset_game_list
 
+void 
+MainPickerWindow::reset_achievements_list() {
+    for ( GtkAchievementBoxRow* row : m_achievement_list_rows )
+    {
+        delete row;
+        row = nullptr;
+    }
+
+    m_achievement_list_rows.clear(); // Just to be sure
+}
+// => reset_achievements_list
+
 
 /**
  * Add a game to the list. Ignores warnings for the obsolete GtkArrow.
@@ -119,7 +131,7 @@ void
 MainPickerWindow::confirm_stats_list() {
     gtk_widget_show_all( GTK_WIDGET(m_stats_list) );
 }
-// => confirm_stat_list
+// => confirm_stats_list
 
 /**
  * Draws all the games that have not been shown yet

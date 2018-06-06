@@ -22,9 +22,9 @@ extern "C"
         std::cerr << "Saving stats and achievements." << std::endl;
         const std::map<std::string, bool> pending_achs = g_steam->get_pending_ach_modifications();
         const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
+        GameEmulator* emulator = GameEmulator::get_instance();
 
         // TODO: JUST DO IT
-
         /**
          * foreach(pending_achs as &val) {
          * if(val.second == true)
@@ -34,6 +34,24 @@ extern "C"
          * }
          * }
          */
+        
+        /**
+         * TODO: Check for failures. But unlocking is done async because
+         * the son process has to deal with it. 
+         */
+        for (auto const& [key, val] : pending_achs) {
+            if(val) {
+                std::cout << "Unlocking " << key << std::endl;
+                emulator->unlock_achievement( key.c_str() );
+                g_steam->remove_modification_ach(key);
+            } else {
+                std::cout << "Relocking " << key << std::endl;
+                emulator->relock_achievement( key.c_str() );
+                g_steam->remove_modification_ach(key);                
+            }
+        }
+
+        emulator->update_data_and_view(); // This is async
     }
     // => on_store_button_clicked
 

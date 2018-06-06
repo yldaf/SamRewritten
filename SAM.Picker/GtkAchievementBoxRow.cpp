@@ -106,3 +106,8 @@ m_data(data)
 
     g_signal_connect(lock_unlock_button, "toggled", (GCallback)on_achievement_button_toggle,  (gpointer)&data);
 }
+
+GtkAchievementBoxRow::~GtkAchievementBoxRow() {
+    //std::cerr << "Deleting a row" << std::endl;
+    gtk_widget_destroy( GTK_WIDGET(m_main_box) );
+}

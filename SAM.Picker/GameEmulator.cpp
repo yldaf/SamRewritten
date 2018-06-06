@@ -50,6 +50,11 @@ void handle_sigusr1_parent(int signum) {
 
     read(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
 
+    if(inst->m_achievement_list != nullptr) {
+        free(inst->m_achievement_list);
+        inst->m_achievement_list = nullptr;
+    }
+
     inst->m_achievement_list = (Achievement_t*)malloc(inst->m_achievement_count * sizeof(Achievement_t));
     
     if( !inst->m_achievement_list ) {
@@ -73,6 +78,7 @@ void handle_sigusr1_parent(int signum) {
  * to the pipe.
  */
 void handle_sigusr1_child(int signum) {
+    std::cerr << "I'm the child, adn I received SIGUSR1, which means I must retrieve achievements and tell them to my parent through a pipe." << std::endl;
     GameEmulator *inst = GameEmulator::get_instance();
     inst->retrieve_achievements();
 }
@@ -201,6 +207,40 @@ GameEmulator::update_view() {
 }
 // => update_view
 
+/**
+ * This one might need a little more documentation on the technical side.
+ * This method must only be called on the parent process. It will send 
+ * SIGUSR1 to the son, if a son there is. The son, upon receiving the signal,
+ * will retrieve the stats and achievements from steam, and once it is done,
+ * it will send a SIGUSR1 to the parent back. The parent will then save the
+ * new data, and update the view accordingly.
+ */
+void
+GameEmulator::update_data_and_view() {
+    // Must be run by the parent
+    if(m_son_pid > 0) {
+        g_main_gui->reset_achievements_list();
+        g_main_gui->confirm_stats_list();
+
+        kill(m_son_pid, SIGUSR1);
+    } else {
+        std::cerr << "Could not update data & view, no child found." << std::endl;
+    }
+}
+// => update_data_and_view
+
+bool 
+GameEmulator::unlock_achievement(const char* ach_api_name) const {
+    return false; // TODO
+}
+// => unlock_achievement
+
+bool 
+GameEmulator::relock_achievement(const char* ach_api_name) const {
+    return false; // TODO
+}
+// => relock_achievement
+
 /*****************************************
  * STEAM API CALLBACKS BELOW
  ****************************************/
@@ -221,6 +261,12 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
             // RETRIEVE IDS
             // ==============================
             const unsigned num_ach = stats_api->GetNumAchievements();
+
+            if (m_achievement_list != nullptr) {
+                free(m_achievement_list);
+                m_achievement_list = nullptr;
+            } 
+
             m_achievement_list = (Achievement_t*)malloc(num_ach * sizeof(Achievement_t));
 
             for (unsigned i = 0; i < num_ach ; i++) {
