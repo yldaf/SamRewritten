@@ -7,6 +7,9 @@
 #include <dirent.h>
 #include <fstream>
 #include <sstream>
+#include <yajl/yajl_tree.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../common/functions.h"
 #include "../common/Downloader.h"
 #include "globals.h"
@@ -53,7 +56,7 @@ public:
 private:
     SteamAppDAO() {Downloader::get_instance()->attach(this);};
     ~SteamAppDAO() {};
-    static void parse_app_names();
+    static void parse_app_names_v2();
 
     static std::map<unsigned long, std::string> m_app_names;
 };

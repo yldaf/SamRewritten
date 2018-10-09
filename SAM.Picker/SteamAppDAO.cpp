@@ -42,7 +42,7 @@ SteamAppDAO::update_name_database() {
                 // If our map is already filled, there's no need to refill it.
                 // If the program was just launched, we need to fill it.
                 if(SteamAppDAO::m_app_names.empty()) {
-                    SteamAppDAO::parse_app_names();
+                    SteamAppDAO::parse_app_names_v2();
                 }
             }
         }
@@ -60,7 +60,7 @@ SteamAppDAO::update_name_database() {
 
     if(need_to_redownload) {
         Downloader::get_instance()->download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name, 0);
-        SteamAppDAO::parse_app_names();
+        SteamAppDAO::parse_app_names_v2();
     }
 }
 
@@ -85,56 +85,58 @@ SteamAppDAO::download_app_icon(const unsigned long& app_id) {
     Downloader::get_instance()->download_file_async(url, local_path, app_id);
 }
 
-void 
-SteamAppDAO::parse_app_names() {
+void
+SteamAppDAO::parse_app_names_v2() {
     m_app_names.clear();
 
+    size_t rd;
+    yajl_val node;
+    char errbuf[1024];
+    char fileData[5000000];
     static const std::string file_path(std::string(g_cache_folder) + "/app_names");
-    std::ifstream input(file_path, std::ios::in);
-    std::string word;
-    std::string app_name;
-    bool next_is_appId = false;
-    bool next_is_name = false;
-    unsigned long curr_id;
-    std::stringstream converter;
+    FILE *f = fopen(file_path.c_str(), "rb");
 
-    if(input) {
-        while(input >> word) {
-            if(next_is_appId) {
-                converter.clear();
-                converter << word.substr(0, word.size() - 1); //Remove the comma
-                if(!(converter >> curr_id)) {
-                    std::cerr << "An error occurred parsing the files. Make sure you left " << file_path << " unaltered." << std::endl;
-                    std::cerr << "Error on word: " << word.substr(0, word.size() - 1) << std::endl;
-                    exit(EXIT_FAILURE);
-                }
-                next_is_appId = false;
-                continue;
-            }
-            else if(next_is_name) {
-                if(word == "}," || word == "}") {
-                    app_name = app_name.substr(1, app_name.size() - 3);
-                    m_app_names.insert(std::pair<unsigned long, std::string>(curr_id, app_name));
-                    next_is_name = false;
-                    app_name.clear();
-                    continue;
-                }
-                app_name += word + " ";
-                continue;
-            }
-            else if (word == "\"appid\":") {
-                next_is_appId = true;
-                continue;
-            }
-            else if (word == "\"name\":") {
-                next_is_name = true;
-                continue;
-            }
-        }
-    }
-    else {
-        std::cerr << "Could not retrieve app names. Unable to open " << file_path << std::endl;
+    /* null plug buffers */
+    fileData[0] = errbuf[0] = 0;
+
+    /* read the entire config file */
+    rd = fread((void *) fileData, 1, sizeof(fileData) - 1, f);
+
+    /* file read error handling */
+    if (rd == 0 && !feof(stdin)) {
+        std::cerr << "error encountered on file read" << std::endl;
         exit(EXIT_FAILURE);
+    } else if (rd >= sizeof(fileData) - 1) {
+        std::cerr << "app_names file too big (just increase the buffer size)" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    /* we have the whole config file in memory.  let's parse it ... */
+    node = yajl_tree_parse((const char *) fileData, errbuf, sizeof(errbuf));
+
+    /* parse error handling */
+    if (node == NULL) {
+        std::cerr << "Parsing error: ";
+        if (strlen(errbuf)) {
+            std::cerr << errbuf << std::endl;
+        } else {
+            std::cerr << "Unknown error" << std::endl;
+        }
+        exit(EXIT_FAILURE);
+    }
+
+    /* Save the result */
+    const char * path[] = { "applist", "apps" };
+    yajl_val v = yajl_tree_get(node, path, yajl_t_array);
+    unsigned array_length = v->u.array.len;
+    unsigned long tmp_appid;
+    std::string tmp_appname;
+    for(unsigned i = 0; i < array_length; i++) {
+        yajl_val obj = v->u.array.values[i];
+        //std::cerr << "Appid: " << obj->u.object.values[0]->u.number.i << ", name: " << obj->u.object.values[1]->u.string << std::endl;
+        tmp_appid = obj->u.object.values[0]->u.number.i;
+        tmp_appname = (std::string)obj->u.object.values[1]->u.string;
+        m_app_names.insert(std::pair<unsigned long, std::string>(tmp_appid, tmp_appname));
     }
 }
 
