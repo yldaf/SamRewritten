@@ -6,5 +6,6 @@
         "list": "cpp",
         "unordered_map": "cpp",
         "vector": "cpp"
-    }
+    },
+    "C_Cpp.intelliSenseEngine": "Tag Parser"
 }

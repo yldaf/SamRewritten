@@ -23,6 +23,7 @@ extern "C"
         const std::map<std::string, bool> pending_achs = g_steam->get_pending_ach_modifications();
         const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
         GameEmulator* emulator = GameEmulator::get_instance();
+        char tmp_id[MAX_ACHIEVEMENT_ID_LENGTH];
 
         // TODO: JUST DO IT
         /**
@@ -42,7 +43,8 @@ extern "C"
         for (auto const& [key, val] : pending_achs) {
             if(val) {
                 std::cout << "Unlocking " << key << std::endl;
-                emulator->unlock_achievement( key.c_str() );
+                strncpy(tmp_id, key.c_str(), MAX_ACHIEVEMENT_ID_LENGTH); // TODO REMOVE ME IT WAS FOR TESTING JUST USE C_STR INLINE
+                emulator->unlock_achievement( tmp_id );
                 g_steam->remove_modification_ach(key);
             } else {
                 std::cout << "Relocking " << key << std::endl;

@@ -33,8 +33,8 @@ GtkAchievementBoxRow::GtkAchievementBoxRow(const Achievement_t& data)
 :
 m_data(data)
 {
-    //TODO achievement icons
-    // TODO REwrite. Ugly AF for unknown reasons
+    // TODO achievement icons
+    // TODO Rewrite. Ugly AF for unknown reasons
     char ach_title_text[MAX_ACHIEVEMENT_NAME_LENGTH + 7];
     char ach_player_percent_text[50];
     char ach_locked_text[9];

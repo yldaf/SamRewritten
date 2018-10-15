@@ -92,6 +92,7 @@ private:
     friend void handle_sigchld(int);
     friend void handle_sigusr1_parent(int);
     friend void handle_sigusr1_child(int);
+    friend void handle_sigusr2_child(int);
 
     GameEmulator();
     ~GameEmulator() {};
