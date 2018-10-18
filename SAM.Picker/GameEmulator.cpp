@@ -107,22 +107,19 @@ void handle_sigusr2_child(int signum) {
     read(pipe[0], &value, sizeof(unsigned));
     read(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
-    std::cout << "Read a bunch of shit: " << type << " - " << value << " - " << std::string(achievement_id) << std::endl;
-
     if (type == 'a') {
         // We want to edit an achievement
         if (value == 0) {
             // We want to relock an achievement
+            stats_api->ClearAchievement(achievement_id);
         } else {
             // We want to unlock an achievement
-            std::cout << "Yo wanna unlock it" << std::endl;
-            //stats_api->SetAchievement(achievement_id);
+            stats_api->SetAchievement(achievement_id);
         }
 
     } else {
         // We want to edit a stat
     }
-    stats_api->SetAchievement(achievement_id);
 }
 
 
@@ -296,7 +293,18 @@ GameEmulator::unlock_achievement(const char* ach_api_name) const {
 
 bool 
 GameEmulator::relock_achievement(const char* ach_api_name) const {
-    return false; // TODO
+        // We assume the son process is already running
+    static const unsigned unlock_state = 0;
+
+    // Send it a signal
+    kill(m_son_pid, SIGUSR2);
+
+    // Write "a1" (for achievement unlock) then the achievement id
+    write(m_pipe[1], "a", sizeof(char));
+    write(m_pipe[1], &unlock_state, sizeof(unsigned));
+    write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
+    return false; // Yeah error handling? Maybe later (TODO)
 }
 // => relock_achievement
 
