@@ -18,6 +18,8 @@ Thanks :)
 
 Just run ./make.sh. Makefiles? Never heard of it. Packaging? What's that?
 
+Packages needed vary on distros, but make sure to install at least Steam, yajl, GTK 3, and GLib.
+
 To run it, launch ./bin/launch.sh
 
 Once again, all contributions are VERY welcome, even though this code is already aging and very badly written.
