@@ -139,6 +139,9 @@ MySteam::get_steam_install_path() {
     else if(file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
         return std::string(home_path + "/.steam");
     }
+    else if(file_exists(home_path + "/.steam/steam/appcache/appinfo.vdf")) {
+        return std::string(home_path + "/.steam/steam");
+    }
     else {
         std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
         exit(EXIT_FAILURE);
