@@ -5,4 +5,6 @@ SCRIPTPATH=`dirname $SCRIPT`
 
 export LD_LIBRARY_PATH=$SCRIPTPATH
 echo "Library path is" $LD_LIBRARY_PATH
+cd $SCRIPTPATH
+cd ../
 $SCRIPTPATH/samrewritten
