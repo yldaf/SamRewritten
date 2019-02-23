@@ -128,6 +128,11 @@ SteamAppDAO::parse_app_names_v2() {
     /* Save the result */
     const char * path[] = { "applist", "apps" };
     yajl_val v = yajl_tree_get(node, path, yajl_t_array);
+    if (v == NULL) {
+        std::cerr << "app_names contains valid JSON, but it's format is not supported" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     unsigned array_length = v->u.array.len;
     unsigned long tmp_appid;
     std::string tmp_appname;
