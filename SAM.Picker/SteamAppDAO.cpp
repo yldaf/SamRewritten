@@ -143,6 +143,8 @@ SteamAppDAO::parse_app_names_v2() {
         tmp_appname = (std::string)obj->u.object.values[1]->u.string;
         m_app_names.insert(std::pair<unsigned long, std::string>(tmp_appid, tmp_appname));
     }
+
+    yajl_tree_free(node);
 }
 
 void
