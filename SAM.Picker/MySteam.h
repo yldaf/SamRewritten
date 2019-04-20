@@ -111,6 +111,11 @@ public:
 private:
     MySteam();
 
+    /**
+     * Compare the app_name of a Game_t for sorting
+     */
+    static bool comp_app_name(Game_t app1, Game_t app2);
+
     std::vector<Game_t> m_all_subscribed_apps;
     std::map<std::string, bool> m_pending_ach_modifications;
     std::map<std::string, double> m_pending_stat_modifications;
