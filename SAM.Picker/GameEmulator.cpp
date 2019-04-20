@@ -46,9 +46,8 @@ handle_sigchld(int signum) {
  */
 void handle_sigusr1_parent(int signum) {
     GameEmulator *inst = GameEmulator::get_instance();
-    Achievement_t achievement;
 
-    read(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
+    read_count(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
 
     if (inst->m_achievement_list != nullptr) {
         free(inst->m_achievement_list);
@@ -62,11 +61,8 @@ void handle_sigusr1_parent(int signum) {
         exit(EXIT_FAILURE);
     }
 
-    //TODO see if I can read directly in the achievements list
-    //That would avoid the memcpy
     for (unsigned i = 0; i < inst->m_achievement_count; i++) {
-        read(inst->m_pipe[0], &achievement, sizeof(Achievement_t));
-        memcpy(&(inst->m_achievement_list[i]), &achievement, sizeof(Achievement_t));
+        read_count(inst->m_pipe[0], &(inst->m_achievement_list[i]), sizeof(Achievement_t));
     }
 
     inst->update_view();
@@ -103,9 +99,9 @@ void handle_sigusr2_child(int signum) {
     unsigned value;
     char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
 
-    read(pipe[0], &type, sizeof(char));
-    read(pipe[0], &value, sizeof(unsigned));
-    read(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+    read_count(pipe[0], &type, sizeof(char));
+    read_count(pipe[0], &value, sizeof(unsigned));
+    read_count(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
     if (type == 'a') {
         // We want to edit an achievement
@@ -279,13 +275,13 @@ GameEmulator::unlock_achievement(const char* ach_api_name) const {
     // We assume the son process is already running
     static const unsigned unlock_state = 1;
 
-    // Send it a signal
-    kill(m_son_pid, SIGUSR2);
-
     // Write "a1" (for achievement unlock) then the achievement id
     write(m_pipe[1], "a", sizeof(char));
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
+    // Send it a signal after buffering an achievement unlock
+    kill(m_son_pid, SIGUSR2);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
@@ -296,13 +292,13 @@ GameEmulator::relock_achievement(const char* ach_api_name) const {
         // We assume the son process is already running
     static const unsigned unlock_state = 0;
 
-    // Send it a signal
-    kill(m_son_pid, SIGUSR2);
-
     // Write "a1" (for achievement unlock) then the achievement id
     write(m_pipe[1], "a", sizeof(char));
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
+    // Send it a signal after buffering an achievement unlock
+    kill(m_son_pid, SIGUSR2);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
