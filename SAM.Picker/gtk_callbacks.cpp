@@ -23,18 +23,6 @@ extern "C"
         const std::map<std::string, bool> pending_achs = g_steam->get_pending_ach_modifications();
         const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
         GameEmulator* emulator = GameEmulator::get_instance();
-        char tmp_id[MAX_ACHIEVEMENT_ID_LENGTH];
-
-        // TODO: JUST DO IT
-        /**
-         * foreach(pending_achs as &val) {
-         * if(val.second == true)
-         *  gameEmulator->unlock(val.first)
-         * } else {
-         *  gameEmulator->relock(val.first)
-         * }
-         * }
-         */
         
         /**
          * TODO: Check for failures. But unlocking is done async because
@@ -43,8 +31,7 @@ extern "C"
         for (auto const& [key, val] : pending_achs) {
             if(val) {
                 std::cout << "Unlocking " << key << std::endl;
-                strncpy(tmp_id, key.c_str(), MAX_ACHIEVEMENT_ID_LENGTH); // TODO REMOVE ME IT WAS FOR TESTING JUST USE C_STR INLINE
-                emulator->unlock_achievement( tmp_id );
+                emulator->unlock_achievement( key.c_str() );
                 g_steam->remove_modification_ach(key);
             } else {
                 std::cout << "Relocking " << key << std::endl;
@@ -53,6 +40,7 @@ extern "C"
             }
         }
 
+        emulator->commit_changes();
         emulator->update_data_and_view(); // This is async
     }
     // => on_store_button_clicked

@@ -90,13 +90,11 @@ public:
 
     /**
      * Adds a modification to be done on the launched app.
-     * Commit the change with commit_modifications.
      */
     void add_modification_ach(const std::string& ach_id, const bool& new_value);
 
     /**
      * Adds a modification to be done on the launched app.
-     * Commit the change with commit_modifications.
      */
     void remove_modification_ach(const std::string& ach_id);
 

@@ -70,6 +70,14 @@ public:
     bool relock_achievement(const char* ach_api_name) const;
 
     /**
+     * Will actually commit the stats and achievements previously
+     * changed locally to the server and cause achievement
+     * notifications to pop up
+     * https://partner.steamgames.com/doc/api/ISteamUserStats#StoreStats
+     */
+    bool commit_changes();
+
+    /**
      * Steam API callback to handle the received stats and achievements
      */
     STEAM_CALLBACK( GameEmulator, OnUserStatsReceived, UserStatsReceived_t, m_CallbackUserStatsReceived );
