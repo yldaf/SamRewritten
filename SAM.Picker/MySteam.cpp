@@ -8,6 +8,15 @@ MySteam::MySteam() {
 // => Constructor
 
 /**
+ * Compare the app_name of a Game_t for sorting
+ */
+bool 
+MySteam::comp_app_name(Game_t app1, Game_t app2) {
+    return strcasecmp(app1.app_name.c_str(), app2.app_name.c_str()) < 0;
+}
+// => comp_app_name
+
+/**
  * Gets the unique instance. See "Singleton design pattern" for help
  */
 MySteam* 
@@ -79,6 +88,7 @@ MySteam::refresh_owned_apps() {
         }
     }
 
+    std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
     closedir(dirp);
 }
 // => refresh_owned_apps

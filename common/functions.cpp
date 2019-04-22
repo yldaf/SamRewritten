@@ -11,6 +11,14 @@ pid_t create_process()
     return pid;
 }
 
+void read_count(int fd, void *buf, size_t count)
+{
+  size_t bytes_read;
+  for (size_t i = 0; i < count; i += bytes_read) {
+    bytes_read = read(fd, (void*)((char*)buf+i), count-i);
+  }
+}
+
 bool file_exists(const std::string& name) {
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 

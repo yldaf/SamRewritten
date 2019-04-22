@@ -46,9 +46,8 @@ handle_sigchld(int signum) {
  */
 void handle_sigusr1_parent(int signum) {
     GameEmulator *inst = GameEmulator::get_instance();
-    Achievement_t achievement;
 
-    read(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
+    read_count(inst->m_pipe[0], &inst->m_achievement_count, sizeof(unsigned));
 
     if (inst->m_achievement_list != nullptr) {
         free(inst->m_achievement_list);
@@ -62,11 +61,8 @@ void handle_sigusr1_parent(int signum) {
         exit(EXIT_FAILURE);
     }
 
-    //TODO see if I can read directly in the achievements list
-    //That would avoid the memcpy
     for (unsigned i = 0; i < inst->m_achievement_count; i++) {
-        read(inst->m_pipe[0], &achievement, sizeof(Achievement_t));
-        memcpy(&(inst->m_achievement_list[i]), &achievement, sizeof(Achievement_t));
+        read_count(inst->m_pipe[0], &(inst->m_achievement_list[i]), sizeof(Achievement_t));
     }
 
     inst->update_view();
@@ -86,7 +82,7 @@ void handle_sigusr1_child(int signum) {
 /**
  * We are the child and we will receive data/stats of achievements to unlock/relock
  * Data will have this shitty format:
- * - 1 char, a for "achievement", or s for "stat"
+ * - 1 char, a for "achievement", or s for "stat", or c for "commit"
  * - 1 unsigned int, 0 => locked, 1 => unlocked, or the stat progression
  * - The length of MAX_ID_LENGTH to get the achievement ID
  * 
@@ -100,15 +96,17 @@ void handle_sigusr2_child(int signum) {
     ISteamUserStats *stats_api = SteamUserStats();
     int* pipe = inst->m_pipe;
     char type;
-    unsigned value;
-    char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
 
-    read(pipe[0], &type, sizeof(char));
-    read(pipe[0], &value, sizeof(unsigned));
-    read(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+    read_count(pipe[0], &type, sizeof(char));
 
     if (type == 'a') {
         // We want to edit an achievement
+        unsigned value;
+        char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
+
+        read_count(pipe[0], &value, sizeof(unsigned));
+        read_count(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
         if (value == 0) {
             // We want to relock an achievement
             stats_api->ClearAchievement(achievement_id);
@@ -117,8 +115,12 @@ void handle_sigusr2_child(int signum) {
             stats_api->SetAchievement(achievement_id);
         }
 
-    } else {
+    } else if (type == 's') {
         // We want to edit a stat
+        // TODO
+    } else if (type == 'c') {
+        // We want to commit changes
+        stats_api->StoreStats();
     }
 }
 
@@ -279,13 +281,13 @@ GameEmulator::unlock_achievement(const char* ach_api_name) const {
     // We assume the son process is already running
     static const unsigned unlock_state = 1;
 
-    // Send it a signal
-    kill(m_son_pid, SIGUSR2);
-
     // Write "a1" (for achievement unlock) then the achievement id
     write(m_pipe[1], "a", sizeof(char));
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
+    // Send it a signal after buffering an achievement unlock
+    kill(m_son_pid, SIGUSR2);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
@@ -296,13 +298,23 @@ GameEmulator::relock_achievement(const char* ach_api_name) const {
         // We assume the son process is already running
     static const unsigned unlock_state = 0;
 
-    // Send it a signal
-    kill(m_son_pid, SIGUSR2);
-
     // Write "a1" (for achievement unlock) then the achievement id
     write(m_pipe[1], "a", sizeof(char));
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
+
+    // Send it a signal after buffering an achievement unlock
+    kill(m_son_pid, SIGUSR2);
+
+    return false; // Yeah error handling? Maybe later (TODO)
+}
+// => relock_achievement
+
+bool 
+GameEmulator::commit_changes() {
+    // We assume the son process is already running
+    write(m_pipe[1], "c", sizeof(char));
+    kill(m_son_pid, SIGUSR2);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
