@@ -69,20 +69,9 @@ void handle_sigusr1_parent(int signum) {
 }
 
 /**
- * When the son process receives SIGUSR1, it will retrieve all achievements,
- * and send a SIGUSR1 signal to the parent when done, and start writing 
- * to the pipe.
- */
-void handle_sigusr1_child(int signum) {
-    std::cerr << "I'm the child, and I received SIGUSR1, which means I must retrieve achievements and tell them to my parent through a pipe." << std::endl;
-    GameEmulator *inst = GameEmulator::get_instance();
-    inst->retrieve_achievements();
-}
-
-/**
  * We are the child and we will receive data/stats of achievements to unlock/relock
  * Data will have this shitty format:
- * - 1 char, a for "achievement", or s for "stat", or c for "commit"
+ * - 1 char, r for "retrieve", a for "achievement", s for "stat", or c for "commit"
  * - 1 unsigned int, 0 => locked, 1 => unlocked, or the stat progression
  * - The length of MAX_ID_LENGTH to get the achievement ID
  * 
@@ -91,7 +80,7 @@ void handle_sigusr1_child(int signum) {
  * TCP server is easier to use. Or at least one type of interfacing because this code
  * gets really ugly over time, bad practices become usual.
  */
-void handle_sigusr2_child(int signum) {
+void handle_sigusr1_child(int signum) {
     GameEmulator *inst = GameEmulator::get_instance();
     ISteamUserStats *stats_api = SteamUserStats();
     int* pipe = inst->m_pipe;
@@ -99,8 +88,17 @@ void handle_sigusr2_child(int signum) {
 
     read_count(pipe[0], &type, sizeof(char));
 
-    if (type == 'a') {
-        // We want to edit an achievement
+    if (type == 'r') {
+        // When the child receives this message, it will retrieve all achievements,
+        // and send a SIGUSR1 signal to the parent when done, and start writing 
+        // to the pipe.
+        std::cerr << "I'm the child, and I received SIGUSR1 'r', which means I must retrieve achievements and tell them to my parent through a pipe." << std::endl;
+        GameEmulator *inst = GameEmulator::get_instance();
+        inst->retrieve_achievements();
+
+    } else if (type == 'a') {
+        //TODO: read list of achievements to edit, so we don't queue multiple signals, which can be lost
+        // We want to edit a achievements
         unsigned value;
         char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
 
@@ -109,18 +107,23 @@ void handle_sigusr2_child(int signum) {
 
         if (value == 0) {
             // We want to relock an achievement
-            stats_api->ClearAchievement(achievement_id);
+            if (!stats_api->ClearAchievement(achievement_id)) {
+                std::cerr << "Relocking achievement failed" << std::endl;
+            }
         } else {
             // We want to unlock an achievement
-            stats_api->SetAchievement(achievement_id);
+            if (!stats_api->SetAchievement(achievement_id)) {
+                std::cerr << "Unlocking achievement failed" << std::endl;
+            }
         }
-
     } else if (type == 's') {
         // We want to edit a stat
         // TODO
     } else if (type == 'c') {
         // We want to commit changes
-        stats_api->StoreStats();
+        if (!stats_api->StoreStats()) {
+            std::cerr << "Committing changes failed" << std::endl;
+        }
     }
 }
 
@@ -155,7 +158,7 @@ GameEmulator::init_app(const std::string& app_id) {
     }
 
     // Create the pipe
-    // We never close it because they are bidirectionnal (I know it's ugly)
+    // We never close it because they are bidirectional (I know it's ugly)
     if( pipe(m_pipe) == -1 ) {
         std::cerr << "Could not create a pipe. Exitting." << std::endl;
         std::cerr << "errno: " << errno << std::endl;
@@ -172,8 +175,9 @@ GameEmulator::init_app(const std::string& app_id) {
         }
 
         signal(SIGTERM, handle_sigterm);
-        signal(SIGUSR1, handle_sigusr1_child); // Communicate game stats to parent
-        signal(SIGUSR2, handle_sigusr2_child); // Read from parents stats to modify
+        // Communicate game stats to parent, and 
+        // Read from parents stats to modify
+        signal(SIGUSR1, handle_sigusr1_child);
 
         retrieve_achievements();
         for(;;) {
@@ -229,7 +233,10 @@ GameEmulator::retrieve_achievements() {
     if (!m_have_stats_been_requested) {
         m_have_stats_been_requested = true;
         ISteamUserStats *stats_api = SteamUserStats();
-        stats_api->RequestCurrentStats();
+        if (!stats_api->RequestCurrentStats()) {
+            std::cerr << "ERROR: User not logged in, exiting" << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
 }
 // => retrieve_achievements
@@ -260,6 +267,7 @@ GameEmulator::update_data_and_view() {
         g_main_gui->reset_achievements_list();
         g_main_gui->confirm_stats_list();
 
+        write(m_pipe[1], "r", sizeof(char));
         kill(m_son_pid, SIGUSR1);
     } else {
         std::cerr << "Could not update data & view, no child found." << std::endl;
@@ -287,7 +295,7 @@ GameEmulator::unlock_achievement(const char* ach_api_name) const {
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
     // Send it a signal after buffering an achievement unlock
-    kill(m_son_pid, SIGUSR2);
+    kill(m_son_pid, SIGUSR1);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
@@ -304,7 +312,7 @@ GameEmulator::relock_achievement(const char* ach_api_name) const {
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
     // Send it a signal after buffering an achievement unlock
-    kill(m_son_pid, SIGUSR2);
+    kill(m_son_pid, SIGUSR1);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
@@ -314,7 +322,7 @@ bool
 GameEmulator::commit_changes() {
     // We assume the son process is already running
     write(m_pipe[1], "c", sizeof(char));
-    kill(m_son_pid, SIGUSR2);
+    kill(m_son_pid, SIGUSR1);
 
     return false; // Yeah error handling? Maybe later (TODO)
 }
@@ -325,7 +333,7 @@ GameEmulator::commit_changes() {
  ****************************************/
 
 /**
- * Retrieves all achievemnts data, then pipes the data to the 
+ * Retrieves all achievements data, then pipes the data to the 
  * parent process.
  */
 void
@@ -340,6 +348,10 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
             // RETRIEVE IDS
             // ==============================
             const unsigned num_ach = stats_api->GetNumAchievements();
+
+            if (num_ach == 0) {
+                std::cerr << "No achievements for current game" << std::endl;
+            }
 
             if (m_achievement_list != nullptr) {
                 free(m_achievement_list);
@@ -392,7 +404,7 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
 
             m_have_stats_been_requested = false;
         } else {
-            std::cerr << "Received stats for the game, but an erorr occurrred." << std::endl;
+            std::cerr << "Received stats for the game, but an error occurrred." << std::endl;
         }
     }
 }
