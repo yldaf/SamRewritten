@@ -42,6 +42,12 @@ handle_sigchld(int signum) {
  * achievements list, and the achievement count.
  * Once done, will update the view
  * 
+ * This one might need a little more documentation on the technical side.
+ * This method is only received on the parent process. The son, 
+ * will retrieve the stats and achievements from steam, and once it is done,
+ * it will send a SIGUSR1 to the parent back. The parent will then save the
+ * new data, and update the view accordingly.
+ * 
  * TODO: Check for errors
  */
 void handle_sigusr1_parent(int signum) {
@@ -70,8 +76,12 @@ void handle_sigusr1_parent(int signum) {
 
 /**
  * We are the child and we will receive data/stats of achievements to unlock/relock
+ * then auto-commit changes and update the parent. Coodinating based on the number
+ * of changes avoids potentially losing signals because of multiple being in flight.
+ * 
  * Data will have this shitty format:
- * - 1 char, r for "retrieve", a for "achievement", s for "stat", or c for "commit"
+ * - 1 unsigned for number of changes
+ * - 1 char, 'a' for achievement, 's' for "stat"
  * - 1 unsigned int, 0 => locked, 1 => unlocked, or the stat progression
  * - The length of MAX_ID_LENGTH to get the achievement ID
  * 
@@ -85,46 +95,58 @@ void handle_sigusr1_child(int signum) {
     ISteamUserStats *stats_api = SteamUserStats();
     int* pipe = inst->m_pipe;
     char type;
+    
+    // Read number of changes
+    unsigned num_changes;
+    read_count(pipe[0], &num_changes, sizeof(unsigned));
 
-    read_count(pipe[0], &type, sizeof(char));
+    for (unsigned i = 0; i < num_changes; i++)
+    {
+        read_count(pipe[0], &type, sizeof(char));
 
-    if (type == 'r') {
-        // When the child receives this message, it will retrieve all achievements,
-        // and send a SIGUSR1 signal to the parent when done, and start writing 
-        // to the pipe.
-        std::cerr << "I'm the child, and I received SIGUSR1 'r', which means I must retrieve achievements and tell them to my parent through a pipe." << std::endl;
-        GameEmulator *inst = GameEmulator::get_instance();
-        inst->retrieve_achievements();
+        if (type == 'a') {
+            // We want to edit an achievement
+            unsigned value;
+            char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
 
-    } else if (type == 'a') {
-        //TODO: read list of achievements to edit, so we don't queue multiple signals, which can be lost
-        // We want to edit a achievements
-        unsigned value;
-        char achievement_id[MAX_ACHIEVEMENT_ID_LENGTH];
+            read_count(pipe[0], &value, sizeof(unsigned));
+            read_count(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
-        read_count(pipe[0], &value, sizeof(unsigned));
-        read_count(pipe[0], &achievement_id, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
-
-        if (value == 0) {
-            // We want to relock an achievement
-            if (!stats_api->ClearAchievement(achievement_id)) {
-                std::cerr << "Relocking achievement failed" << std::endl;
+            if (value == 0) {
+                // We want to relock an achievement
+                if (!stats_api->ClearAchievement(achievement_id)) {
+                    std::cerr << "Relocking achievement " << achievement_id << " failed" << std::endl;
+                    //keep going so we don't corrupt the pipe
+                } else {
+                    std::cerr << "Relocked achievement " << achievement_id << std::endl;
+                }
+            } else {
+                // We want to unlock an achievement
+                if (!stats_api->SetAchievement(achievement_id)) {
+                    std::cerr << "Unlocking achievement " << achievement_id << " failed " << std::endl;
+                    //keep going so we don't corrupt the pipe
+                } else {
+                    std::cerr << "Unlocked achievement " << achievement_id << std::endl;
+                }
             }
-        } else {
-            // We want to unlock an achievement
-            if (!stats_api->SetAchievement(achievement_id)) {
-                std::cerr << "Unlocking achievement failed" << std::endl;
-            }
-        }
-    } else if (type == 's') {
-        // We want to edit a stat
-        // TODO
-    } else if (type == 'c') {
-        // We want to commit changes
-        if (!stats_api->StoreStats()) {
-            std::cerr << "Committing changes failed" << std::endl;
+        } else if (type == 's') {
+            // We want to edit a stat
+            // TODO
         }
     }
+
+    // Auto-commit and auto-update after we receive everything
+
+    if (!stats_api->StoreStats()) {
+        std::cerr << "Committing changes failed" << std::endl;
+    }
+    
+    // After the child changes achievements/stats, it will retrieve all achievements,
+    // and send a SIGUSR1 signal to the parent when done, and start writing 
+    // to the pipe.
+    std::cerr << "Child is updating parent" << std::endl;
+    inst->retrieve_achievements();
+
 }
 
 
@@ -176,7 +198,7 @@ GameEmulator::init_app(const std::string& app_id) {
 
         signal(SIGTERM, handle_sigterm);
         // Communicate game stats to parent, and 
-        // Read from parents stats to modify
+        // read from parents stats to modify
         signal(SIGUSR1, handle_sigusr1_child);
 
         retrieve_achievements();
@@ -226,10 +248,6 @@ GameEmulator::kill_running_app() {
 
 void
 GameEmulator::retrieve_achievements() {
-    if (m_achievement_list != nullptr) {
-        std::cerr << "WARNING: Achievement list given may already have been initialized" << std::endl;
-    }
-
     if (!m_have_stats_been_requested) {
         m_have_stats_been_requested = true;
         ISteamUserStats *stats_api = SteamUserStats();
@@ -237,10 +255,11 @@ GameEmulator::retrieve_achievements() {
             std::cerr << "ERROR: User not logged in, exiting" << std::endl;
             exit(EXIT_FAILURE);
         }
+    } else {
+        std::cerr << "WARNING: Stats have already been requested" << std::endl;
     }
 }
 // => retrieve_achievements
-
 
 void
 GameEmulator::update_view() {
@@ -253,12 +272,11 @@ GameEmulator::update_view() {
 // => update_view
 
 /**
- * This one might need a little more documentation on the technical side.
- * This method must only be called on the parent process. It will send 
- * SIGUSR1 to the son, if a son there is. The son, upon receiving the signal,
- * will retrieve the stats and achievements from steam, and once it is done,
- * it will send a SIGUSR1 to the parent back. The parent will then save the
- * new data, and update the view accordingly.
+ * This method must only be called on the parent process.
+ * It reset the GUI window in anticipation of the child
+ * process sending it new information on the achievements
+ * via handle_sigusr1_parent
+ * 
  */
 void
 GameEmulator::update_data_and_view() {
@@ -267,22 +285,31 @@ GameEmulator::update_data_and_view() {
         g_main_gui->reset_achievements_list();
         g_main_gui->confirm_stats_list();
 
-        write(m_pipe[1], "r", sizeof(char));
-        kill(m_son_pid, SIGUSR1);
+        // Child will autoupdate the parent after committing changes
     } else {
         std::cerr << "Could not update data & view, no child found." << std::endl;
     }
 }
 // => update_data_and_view
 
+bool 
+GameEmulator::send_num_changes(unsigned num_changes) const {
+    // We assume the son process is already running
+
+    // Write the number of changes
+    write(m_pipe[1], &num_changes, sizeof(unsigned));
+    
+    // Send it a signal after buffering the number of changes
+    kill(m_son_pid, SIGUSR1);
+
+    return false; // Yeah error handling? Maybe later (TODO)
+}
+// => unlock_achievement
+
 /**
- * Alright I didn't touch this whole mess in a while, so here is a recap of what I
- * think happens here. The parent process requested the son process to unlock an 
- * achievement. So this code will be executed in the parent process, so here is 
- * what we have to do:
- * - Send a message to the son, associated with an achievement ID
- * - Make a signal handler for the son to unlock the achievement
- * - Rewrite the project from scratch
+ * The parent process requests the son process to unlock an 
+ * achievement. So this code will be executed in the parent process,
+ * so send a message to the son, associated with an achievement ID
  */
 bool 
 GameEmulator::unlock_achievement(const char* ach_api_name) const {
@@ -294,16 +321,13 @@ GameEmulator::unlock_achievement(const char* ach_api_name) const {
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
-    // Send it a signal after buffering an achievement unlock
-    kill(m_son_pid, SIGUSR1);
-
     return false; // Yeah error handling? Maybe later (TODO)
 }
 // => unlock_achievement
 
 bool 
 GameEmulator::relock_achievement(const char* ach_api_name) const {
-        // We assume the son process is already running
+    // We assume the son process is already running
     static const unsigned unlock_state = 0;
 
     // Write "a1" (for achievement unlock) then the achievement id
@@ -311,22 +335,11 @@ GameEmulator::relock_achievement(const char* ach_api_name) const {
     write(m_pipe[1], &unlock_state, sizeof(unsigned));
     write(m_pipe[1], ach_api_name, MAX_ACHIEVEMENT_ID_LENGTH * sizeof(char));
 
-    // Send it a signal after buffering an achievement unlock
-    kill(m_son_pid, SIGUSR1);
-
     return false; // Yeah error handling? Maybe later (TODO)
 }
 // => relock_achievement
 
-bool 
-GameEmulator::commit_changes() {
-    // We assume the son process is already running
-    write(m_pipe[1], "c", sizeof(char));
-    kill(m_son_pid, SIGUSR1);
-
-    return false; // Yeah error handling? Maybe later (TODO)
-}
-// => relock_achievement
+//TODO: send stats
 
 /*****************************************
  * STEAM API CALLBACKS BELOW
@@ -339,7 +352,7 @@ GameEmulator::commit_changes() {
 void
 GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
     // Check if we received the values for the good app
-    if(std::string(getenv("SteamAppId")) == std::to_string(callback->m_nGameID)) {
+    if (std::string(getenv("SteamAppId")) == std::to_string(callback->m_nGameID)) {
         if ( k_EResultOK == callback->m_eResult ) {
 
             ISteamUserStats *stats_api = SteamUserStats();
@@ -406,6 +419,8 @@ GameEmulator::OnUserStatsReceived(UserStatsReceived_t *callback) {
         } else {
             std::cerr << "Received stats for the game, but an error occurrred." << std::endl;
         }
-    }
+    } else {
+        std::cerr << "Received stats for wrong game" << std::endl;
+    } 
 }
 // => OnUserStatsReceived

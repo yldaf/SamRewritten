@@ -24,6 +24,10 @@ extern "C"
         const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
         GameEmulator* emulator = GameEmulator::get_instance();
         
+        // Send the number of changes then send that many changes
+        const unsigned num_to_change = pending_achs.size(); //+ pending_stats.size();
+        emulator->send_num_changes(num_to_change);
+
         /**
          * TODO: Check for failures. But unlocking is done async because
          * the son process has to deal with it. 
@@ -40,7 +44,7 @@ extern "C"
             }
         }
 
-        emulator->commit_changes();
+        // Child will inherently udpate the parent after committing changes
         emulator->update_data_and_view(); // This is async
     }
     // => on_store_button_clicked

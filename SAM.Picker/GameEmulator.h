@@ -56,6 +56,12 @@ public:
     void update_data_and_view();
 
     /**
+     * Send the number of changes to store to the child.
+     * The child will then wait for that many changes.
+     */
+    bool send_num_changes(unsigned num_changes) const;
+
+    /**
      * Will unlock the achivement given it's API name.
      * Will return the value of SetAchievement.
      * https://partner.steamgames.com/doc/api/ISteamUserStats#SetAchievement
@@ -75,7 +81,8 @@ public:
      * notifications to pop up
      * https://partner.steamgames.com/doc/api/ISteamUserStats#StoreStats
      */
-    bool commit_changes();
+    // Child inherently does this now
+    //bool commit_changes();
 
     /**
      * Steam API callback to handle the received stats and achievements
@@ -101,7 +108,6 @@ private:
     friend void handle_sigchld(int);
     friend void handle_sigusr1_parent(int);
     friend void handle_sigusr1_child(int);
-    friend void handle_sigusr2_child(int);
 
     GameEmulator();
     ~GameEmulator() {};
