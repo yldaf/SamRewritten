@@ -20,7 +20,7 @@ While SamRewritten offers a nice GUI, you linux geeks love to use command line o
 It would be exciting to expand the command line options, but I do not have much more time to invest
 in this project, and a rewriting would not hurt. Anyway you can do:
 
-* -a <appid>
+* -a \<appid\>
 	* `./bin/launch.sh -a 10` will idle Counter Strike
 
 # Building
