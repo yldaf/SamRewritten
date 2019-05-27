@@ -14,11 +14,22 @@ Contributions are welcome!
 
 Thanks :)
 
+# Command line options
+
+While SamRewritten offers a nice GUI, you linux geeks love to use command line options.
+It would be exciting to expand the command line options, but I do not have much more time to invest
+in this project, and a rewriting would not hurt. Anyway you can do:
+
+* -a <appid>
+	* `./bin/launch.sh -a 10` will idle Counter Strike
+
 # Building
 
 Just run ./make.sh. Makefiles? Never heard of it. Packaging? What's that?
 
 Packages needed vary on distros, but make sure to install at least Steam, yajl, GTK 3, and GLib.
+
+On Lubuntu: "sudo apt install libgtk-3-dev libcurl4-gnutls-dev libyajl-dev"
 
 To run it, launch ./bin/launch.sh
 

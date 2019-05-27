@@ -20,8 +20,8 @@ void read_count(int fd, void *buf, size_t count)
 }
 
 bool file_exists(const std::string& name) {
-  struct stat buffer;   
-  return (stat (name.c_str(), &buffer) == 0); 
+  struct stat buffer;
+  return (stat (name.c_str(), &buffer) == 0);
 }
 
 char* concat(const char *s1, const char *s2)
