@@ -27,17 +27,15 @@ Downloader::download_file(const std::string& file_url, const std::string& local_
             fclose(fp);
         }
         else {
-            std::cerr << "An error occurred creating curl. Please report to the developers!" << std::endl;
+            std::cerr << "An error occurred creating curl. Please report it to the developers!" << std::endl;
             exit(EXIT_FAILURE);
         }
 
         if(res != 0) {
-            std::cerr << "Curl returned with status " << res << ", which is unexpected. Make sure you are connected to the internet, and you have access";
-            std::cerr << " to Steam, and try again." << std::endl;
-            std::cerr << "Unable to fetch file " << file_url << std::endl;
-            //TODO make a gui for this
+            std::cerr << "Curl errored with status " << res << ". (file: " <<  file_url << ")" << std::endl;
+            std::cout << "An error occurred while fetching an icon, are you connected to the internet?" << std::endl;
 
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
     }
 

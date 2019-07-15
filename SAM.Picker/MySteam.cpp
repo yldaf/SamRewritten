@@ -62,34 +62,39 @@ MySteam::quit_game() {
  */
 void 
 MySteam::refresh_owned_apps() {
-    const std::string path_to_cache_dir(MySteam::get_steam_install_path() + "/appcache/stats/");
-    DIR* dirp = opendir(path_to_cache_dir.c_str());
-    struct dirent * dp;
-    std::string filename;
-    const std::string prefix("UserGameStats_" + MySteam::get_user_steamId3() + "_");
-    const std::string input_scheme_c(prefix + "%lu.bin");
     Game_t game;
-    unsigned long app_id;
     SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
     // The whole update will really occur only once in a while, no worries
-    appDAO->update_name_database();
+    appDAO->update_name_database(); // Downloads and parses app list from Steam
     m_all_subscribed_apps.clear();
 
-    while ((dp = readdir(dirp)) != NULL) {
-        filename = dp->d_name;
-        if(filename.rfind(prefix, 0) == 0) {
-            if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
-                game.app_id = app_id;
-                game.app_name = appDAO->get_app_name(app_id);
+    auto all_apps = appDAO->get_all_apps();
+    for (auto pair : all_apps) {
+        auto app_id = pair.first;
+        if (appDAO->app_is_owned(app_id))
+        {
+            game.app_id = pair.first;
+            game.app_name = pair.second;
 
-                m_all_subscribed_apps.push_back(game);
-            }
+            m_all_subscribed_apps.push_back(game);
         }
     }
 
+    // while ((dp = readdir(dirp)) != NULL) {
+    //     filename = dp->d_name;
+    //     if(filename.rfind(prefix, 0) == 0) {
+    //         if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
+    //             game.app_id = app_id;
+    //             game.app_name = appDAO->get_app_name(app_id);
+
+    //             m_all_subscribed_apps.push_back(game);
+    //         }
+    //     }
+    // }
+
     std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
-    closedir(dirp);
+    //closedir(dirp);
 }
 // => refresh_owned_apps
 

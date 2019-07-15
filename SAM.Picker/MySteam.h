@@ -13,10 +13,8 @@
 #include "../common/functions.h"
 
 /**
- * MySteam is a class that aims to retrieve as much data as
- * possible regarding the latest logged in user on the machine.
- * This data includes owned games with app and achievements,
- * and identifiers.
+ * MySteam is the highest-level class of the program. Use it to 
+ * fake launch games, request unlocks, get icons, etc.
  */
 class MySteam {
 public:

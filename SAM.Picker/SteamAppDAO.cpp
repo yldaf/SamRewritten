@@ -1,4 +1,6 @@
 #include "SteamAppDAO.h"
+#include "../steam/steam_api.h"
+#include "MySteamClient.h"
 
 // Wtf am I doing? Anyway thanks StackOverflow
 //TODO: Find a more elegant way to fix this shit.
@@ -145,6 +147,13 @@ SteamAppDAO::parse_app_names_v2() {
     }
 
     yajl_tree_free(node);
+}
+
+bool 
+SteamAppDAO::app_is_owned(const unsigned long app_id) {
+    ISteamApps* sa = g_steamclient->getSteamApps();
+    
+    return sa->BIsSubscribedApp(app_id);
 }
 
 void

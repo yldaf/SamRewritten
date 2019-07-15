@@ -2,9 +2,17 @@
 
 class MySteam;
 class MainPickerWindow;
+class MySteamClient;
 
 // Reason for the globals is that it's easier to access them in GTK callbacks
 // All those variables are initialised in main.cpp
+
+/**
+ * A custom Steam Client interface, because the Steamworks lib won't let me get 
+ * the SteamClient() accessor before a SteamAPI_Init(). It replaces the accessor
+ * without having to initialize the whole SDK.
+ */
+extern MySteamClient *g_steamclient;
 
 /**
  * g_steam is the backend of all of this, the M of the MVC. It will analyse the

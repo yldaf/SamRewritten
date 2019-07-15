@@ -34,3 +34,8 @@ On Lubuntu: "sudo apt install libgtk-3-dev libcurl4-gnutls-dev libyajl-dev"
 To run it, launch ./bin/launch.sh
 
 Once again, all contributions are VERY welcome, even though this code is already aging and very badly written.
+
+### Footnotes
+
+This software comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsability over 
+your user experience

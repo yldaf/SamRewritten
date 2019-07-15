@@ -6,6 +6,7 @@
 #include <iostream>
 #include <gmodule.h>
 #include "MySteam.h"
+#include "MySteamClient.h"
 #include "MainPickerWindow.h"
 #include "globals.h"
 #include "cli_funcs.h"
@@ -16,7 +17,7 @@
 MySteam* g_steam = nullptr;
 MainPickerWindow* g_main_gui = nullptr;
 char* g_cache_folder = nullptr;
-
+MySteamClient* g_steamclient = nullptr;
 
 
 /**************************************
@@ -27,12 +28,13 @@ main(int argc, char *argv[])
 {
     // Test if glib2 is installed, gtk will not work without it.
     if( !g_module_supported() ) {
-        std::cerr << "Sorry, but gmodules are not supported on your platform :(. Try installing as many gnome libs as you can maybe.." << std::endl;
+        std::cout << "You are missing the Gnome libraries. Please read the README to know which libraries to install." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     gtk_init(&argc, &argv);
 
+    g_steamclient = new MySteamClient();
     g_cache_folder = concat( getenv("HOME"), "/.SamRewritten" );
     g_steam = MySteam::get_instance();
     g_main_gui = new MainPickerWindow();

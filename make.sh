@@ -13,6 +13,6 @@ common/*.cpp \
 -L$SCRIPTPATH/bin \
 -o $SCRIPTPATH/bin/samrewritten \
 `pkg-config --libs gtk+-3.0` \
--lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl
+-lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl -ldl
 
 echo "If there wasn't any compilation error, you can launch the manager with ./bin/launch.sh"

@@ -47,6 +47,16 @@ public:
      * the image for app id "i" on the view.
      */
     void update(unsigned long i);
+
+    /**
+     * After it parsed all apps from the latest updates, returns the parsed apps
+     */
+    auto get_all_apps() {return m_app_names;};
+
+    /**
+     * Returns true if the given appId is owned by the curent steam user
+     * */
+    bool app_is_owned(const unsigned long app_id);
     
     /**
      * Delete these to avoid any singleton bypass
@@ -56,7 +66,7 @@ public:
 private:
     SteamAppDAO() {Downloader::get_instance()->attach(this);};
     ~SteamAppDAO() {};
-    static void parse_app_names_v2();
 
+    static void parse_app_names_v2();
     static std::map<unsigned long, std::string> m_app_names;
 };
