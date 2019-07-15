@@ -1,4 +1,8 @@
 #include "Downloader.h"
+#include "functions.h"
+#include <curl/curl.h>
+#include <future>
+#include <iostream>
 
 Downloader*
 Downloader::get_instance() {

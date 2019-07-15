@@ -1,19 +1,7 @@
 #pragma once
-#include <iostream>
-#include <string>
 #include <map>
-#include <ctime>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <fstream>
-#include <sstream>
-#include <yajl/yajl_tree.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "../common/functions.h"
-#include "../common/Downloader.h"
-#include "globals.h"
-#include "MainPickerWindow.h"
+#include "../common/ObserverClasses.h"
+
 
 class SteamAppDAO : public Observer<unsigned long> {
 public:
@@ -64,7 +52,7 @@ public:
     SteamAppDAO(SteamAppDAO const&)                 = delete;
     void operator=(SteamAppDAO const&)              = delete;
 private:
-    SteamAppDAO() {Downloader::get_instance()->attach(this);};
+    SteamAppDAO();
     ~SteamAppDAO() {};
 
     static void parse_app_names_v2();

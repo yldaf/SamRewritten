@@ -1,6 +1,5 @@
-#include <iostream>
+#pragma once
 #include <vector>
-using namespace std;
 
 /**
  * This is a really limited observer pattern.
@@ -12,7 +11,7 @@ template<typename T> class Observer;
 
 template <typename T>
 class Subject {
-    vector < class Observer<T> * > views;
+    std::vector < class Observer<T> * > views;
 
   public:
     void attach(Observer<T> *obs) {

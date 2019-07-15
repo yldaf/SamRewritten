@@ -1,4 +1,10 @@
 #include "functions.h"
+#include <unistd.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <cstring>
+#include <algorithm>
+#include <cctype>
 
 pid_t create_process()
 {

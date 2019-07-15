@@ -2,6 +2,8 @@
 #include "MySteam.h"
 #include <string>
 #include <iostream>
+#include <csignal>
+#include <unistd.h>
 
 void handle_sigint_cli(int signum) {
 	std::cout << "Quitting cli idling" << std::endl;

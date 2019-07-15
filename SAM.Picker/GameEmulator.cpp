@@ -1,4 +1,12 @@
 #include "GameEmulator.h"
+#include <csignal>
+#include <iostream>
+#include <unistd.h>
+#include <sys/types.h> 
+#include <sys/wait.h>
+#include "../common/functions.h"
+#include "globals.h"
+#include "MainPickerWindow.h"
 
 /****************************
  * SIGNAL CALLBACKS

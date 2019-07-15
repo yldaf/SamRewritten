@@ -1,9 +1,5 @@
 #pragma once
 #include <gtk/gtk.h>
-#include <iostream>
-#include "MainPickerWindow.h"
-#include "MySteam.h"
-#include "globals.h"
 
 /**************************************
  * Gtk Callbacks

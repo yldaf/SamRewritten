@@ -1,15 +1,11 @@
 #pragma once
-
-#include <gtk/gtk.h>
-#include <iostream>
-#include <map>
-#include <vector>
-#include "../common/functions.h"
-#include "globals.h"
-#include "Game.h"
 #include "Achievement.h"
-#include "gtk_callbacks.h"
+#include "Game.h"
 #include "GtkAchievementBoxRow.h"
+#include <vector>
+#include <map>
+#include <gtk/gtk.h>
+
 
 /**
  * The main GUI class to display both the games ans the achievements to the user

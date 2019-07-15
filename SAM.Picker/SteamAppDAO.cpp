@@ -1,10 +1,31 @@
 #include "SteamAppDAO.h"
+#include <ctime>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <string>
+#include <yajl/yajl_tree.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "../common/functions.h"
+#include "../common/Downloader.h"
 #include "../steam/steam_api.h"
 #include "MySteamClient.h"
+#include "MainPickerWindow.h"
+#include "globals.h"
 
 // Wtf am I doing? Anyway thanks StackOverflow
 //TODO: Find a more elegant way to fix this shit.
 std::map<unsigned long, std::string> SteamAppDAO::m_app_names = std::map<unsigned long, std::string>();
+
+/**
+ * Observer pattern setup
+ */
+SteamAppDAO::SteamAppDAO() {
+    Downloader::get_instance()->attach(this);
+}
 
 /**
  * Lazy singleton pattern

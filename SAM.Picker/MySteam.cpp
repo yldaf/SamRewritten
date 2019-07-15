@@ -1,4 +1,13 @@
 #include "MySteam.h"
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <dirent.h>
+#include "Game.h"
+#include "SteamAppDAO.h"
+#include "GameEmulator.h"
+#include "../common/functions.h"
+
 #define MAX_PATH 1000
 
 
@@ -97,48 +106,6 @@ MySteam::refresh_owned_apps() {
     //closedir(dirp);
 }
 // => refresh_owned_apps
-
-
-/**
- * Could parse /home/user/.local/share/Steam/config/loginusers.vdf, but wrong id type
- * Parses STEAM/logs/parental_log.txt, hoping those logs can't be disabled
- * Return the most recently logged in user id
- * Returns empty string on error
- */
-std::string 
-MySteam::get_user_steamId3() {
-    static const std::string file_path(MySteam::get_steam_install_path() + "/logs/parental_log.txt");
-    std::ifstream input(file_path, std::ios::in);
-    std::string word;
-    
-    if(!input) {
-        std::cerr << "Could not open " << file_path << std::endl;
-        std::cerr << "Make sure you have a default steam installation, and that logging is not disabled." << std::endl;
-        input.close();
-        exit(EXIT_FAILURE);
-    }
-
-    //We're done setting up and checking, let's parse this file
-    bool next_is_id = false;
-    std::string latest_id = "";
-
-    while(input >> word) {
-        if(word == "ID:") {
-            next_is_id = true;
-            continue;
-        }
-
-        if(next_is_id) {
-            latest_id = word;
-            next_is_id = false;
-        }
-    }
-
-    input.close();
-
-    return latest_id;
-}
-// => get_user_steamId3
 
 
 /**

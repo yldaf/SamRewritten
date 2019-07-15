@@ -10,6 +10,7 @@
 #include "MainPickerWindow.h"
 #include "globals.h"
 #include "cli_funcs.h"
+#include "../common/functions.h"
 
 /**************************************
  *  Declare global variables imported from globals.h

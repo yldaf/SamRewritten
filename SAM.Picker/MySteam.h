@@ -1,16 +1,8 @@
 #pragma once
-
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <thread>
-#include <csignal>
-#include <dirent.h>
+#include <map>
 #include "Game.h"
-#include "SteamAppDAO.h"
-#include "GameEmulator.h"
-#include "../common/functions.h"
 
 /**
  * MySteam is the highest-level class of the program. Use it to 
@@ -23,13 +15,6 @@ public:
      * See "Singleto design pattern" for further help
      */
     static MySteam* get_instance();
-
-    /**
-     * Returns the steamId3 of the last user who logged in on the
-     * machine. Make sure all logs are enabled, or this may result
-     * in an error.
-     */
-    static std::string get_user_steamId3();
 
     /**
      * Returns the absolute path to the steam installation folder.

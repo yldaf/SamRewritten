@@ -1,9 +1,6 @@
 #pragma once
-#include "ObserverClasses.h"
-#include "functions.h"
-#include <curl/curl.h>
 #include <string>
-#include <future>
+#include "ObserverClasses.h"
 
 /**
  * This class is used to download files from the internet
