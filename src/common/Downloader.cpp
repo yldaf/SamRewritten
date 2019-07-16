@@ -48,6 +48,7 @@ Downloader::download_file(const std::string& file_url, const std::string& local_
 
 void 
 Downloader::download_file_async(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id) {
-    //std::async(std::launch::async, &Downloader::download_file, this, file_url, local_path, dl_id);
-    std::async([this, file_url, local_path, dl_id]{this->download_file(file_url, local_path, dl_id);});
+    // Observers are already notified via the notify call in download_file.
+    // So silence the return value.
+    (void)std::async([this, file_url, local_path, dl_id]{this->download_file(file_url, local_path, dl_id);});
 }
