@@ -3,10 +3,10 @@
 #include <fstream>
 #include <algorithm>
 #include <dirent.h>
-#include "Game.h"
+#include "types/Game.h"
 #include "SteamAppDAO.h"
 #include "GameEmulator.h"
-#include "../common/functions.h"
+#include "common/functions.h"
 
 #define MAX_PATH 1000
 

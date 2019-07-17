@@ -3,13 +3,12 @@
 SCRIPT=`realpath $0`
 SCRIPTPATH=`dirname $SCRIPT`
 
-#export LD_LIBRARY_PATH=$SCRIPTPATH/bin
+CPP_FILES=$(find src -type f -iname *.cpp -print)
 
 g++ -std=c++17 -g \
 `pkg-config --cflags gtk+-3.0` \
 -rdynamic -export-dynamic -pthread -Wall \
-SAM.Picker/*.cpp \
-common/*.cpp \
+$CPP_FILES \
 -L$SCRIPTPATH/bin \
 -o $SCRIPTPATH/bin/samrewritten \
 `pkg-config --libs gtk+-3.0` \

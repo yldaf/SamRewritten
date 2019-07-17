@@ -1,8 +1,8 @@
 #include "MainPickerWindow.h"
 #include <iostream>
 #include "../common/functions.h"
-#include "globals.h"
-#include "Achievement.h"
+#include "../globals.h"
+#include "../types/Achievement.h"
 #include "gtk_callbacks.h"
 
 

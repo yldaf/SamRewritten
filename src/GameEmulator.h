@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "Achievement.h"
+#include "types/Achievement.h"
 #include "../steam/steam_api.h"
 
 /**

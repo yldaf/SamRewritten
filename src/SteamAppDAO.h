@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-#include "../common/ObserverClasses.h"
+#include "common/ObserverClasses.h"
 
 
 class SteamAppDAO : public Observer<unsigned long> {

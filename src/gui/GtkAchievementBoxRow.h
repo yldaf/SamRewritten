@@ -1,7 +1,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include "Achievement.h"
+#include "../types/Achievement.h"
 
 class GtkAchievementBoxRow {
 public:

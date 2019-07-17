@@ -1,9 +1,9 @@
 #include "gtk_callbacks.h"
 #include <iostream>
 #include "MainPickerWindow.h"
-#include "GameEmulator.h"
-#include "MySteam.h"
-#include "globals.h"
+#include "../GameEmulator.h"
+#include "../MySteam.h"
+#include "../globals.h"
 
 // See comments in the header file
 

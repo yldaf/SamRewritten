@@ -1,15 +1,7 @@
-#pragma once
-#include "MySocket.h"
+#include "MyServerSocket.h"
 
-class MyServerSocket : public MySocket
-{
-private:
-    /* data */
-public:
-    void run_server();
-    MyServerSocket(AppId_t appid);
-    MyServerSocket::~MyServerSocket();
-};
+#include "../common/functions.h"
+#include <iostream>
 
 MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
 {
@@ -56,7 +48,6 @@ void
 MyServerSocket::run_server()
 {
     int data_socket;
-    bool down_flag = false;
     for (;;) {
 
         /* Wait for incoming connection. */
@@ -68,20 +59,17 @@ MyServerSocket::run_server()
 
         // Read all the client's request
         std::string request = receive_message(data_socket);
+
         if (request == END_OF_SERVICE)
         {
-            down_flag = true;
+            send_message("SAM_ACK");
+            close(data_socket);
+            break;
         }
 
-        send_message(data_socket, "got u");
-        
+        send_message(data_socket, process_request(request));
 
         /* Close socket. */
         close(data_socket);
-
-        /* Quit on DOWN command. */
-        if (down_flag) {
-            break;
-        }
     }
 }

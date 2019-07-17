@@ -1,21 +1,8 @@
-#pragma once
-#include "MySocket.h"
+#include "MyClientSocket.h"
+
 #include <thread>
 #include <chrono>
-#include <string>
-
-class MyClientSocket : public MySocket
-{
-private:
-    void connect_to_server();
-    void disconnect();
-    struct sockaddr_un m_address;
-public:
-    std::string request_response(std::string request);
-    void kill_server();
-    MyClientSocket(AppId_t appid);
-};
-
+#include <iostream>
 
 MyClientSocket::MyClientSocket(AppId_t appid) : MySocket(appid)
 {
@@ -73,5 +60,5 @@ MyClientSocket::disconnect()
 void
 MyClientSocket::kill_server()
 {
-    send_message(END_OF_SERVICE);
+    request_response(END_OF_SERVICE);
 }

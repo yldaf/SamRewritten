@@ -1,6 +1,6 @@
 #pragma once
-#include "Achievement.h"
-#include "Game.h"
+#include "../types/Achievement.h"
+#include "../types/Game.h"
 #include "GtkAchievementBoxRow.h"
 #include <vector>
 #include <map>

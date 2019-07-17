@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "Game.h"
+#include "types/Game.h"
 
 /**
  * MySteam is the highest-level class of the program. Use it to 

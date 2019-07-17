@@ -1,6 +1,6 @@
 #include "GtkAchievementBoxRow.h"
-#include "MySteam.h"
-#include "globals.h"
+#include "../MySteam.h"
+#include "../globals.h"
 
 extern "C"
 {

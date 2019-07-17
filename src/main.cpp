@@ -8,10 +8,10 @@
 #include "MySteam.h"
 #include "MySteamClient.h"
 #include "MyGameServer.h"
-#include "MainPickerWindow.h"
+#include "gui/MainPickerWindow.h"
 #include "globals.h"
 #include "cli_funcs.h"
-#include "../common/functions.h"
+#include "common/functions.h"
 
 /**************************************
  *  Declare global variables imported from globals.h
@@ -40,10 +40,6 @@ main(int argc, char *argv[])
     g_cache_folder = concat( getenv("HOME"), "/.SamRewritten" );
     g_steam = MySteam::get_instance();
     g_main_gui = new MainPickerWindow();
-
-    MyGameServer server(206690);
-    server.run();
-    exit(EXIT_SUCCESS);
 
     // Check for command-line options, which may prevent showing the GUI
     // Note that a rewriting should be done to further separate the GUI
