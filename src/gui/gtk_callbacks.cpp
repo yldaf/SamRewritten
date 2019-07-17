@@ -90,11 +90,12 @@ extern "C"
 
     void 
     on_game_row_activated(GtkListBox *box, GtkListBoxRow *row) {
-        const std::string app_id( std::to_string( g_main_gui->get_corresponding_appid_for_row(row) ) );
 
-        if( app_id != "0" ) {
+        const AppId_t appId = g_main_gui->get_corresponding_appid_for_row(row);
+
+        if( appId != 0 ) {
             g_main_gui->switch_to_stats_page();
-            g_steam->launch_game(app_id);
+            g_steam->launch_game(appId);
             
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;

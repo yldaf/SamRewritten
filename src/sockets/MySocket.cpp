@@ -60,10 +60,10 @@ MySocket::send_message(const int fd, const std::string message)
     for (;;) {
         strncpy(buffer, message.substr(iterator, BUFFER_SIZE - 1).c_str(), BUFFER_SIZE - 1);
 
-        std::cerr << "sending packet: " << buffer << std::endl;
+        std::cerr << getpid() << " sending packet: " << buffer << std::endl;
 
         if (write(fd, buffer, strlen(buffer) + 1) == -1) {
-            std::cerr << "There was an error writing the message." << std::endl;
+            std::cerr << getpid() << ": there was an error writing the message." << std::endl;
             exit(EXIT_FAILURE);
         }
 

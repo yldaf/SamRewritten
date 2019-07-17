@@ -3,5 +3,7 @@
 std::string
 MyGameSocket::process_request(std::string request) {
     // Logic goes here TODO
+
+    SteamAPI_RunCallbacks();
     return "{my json encoded response}";
 }

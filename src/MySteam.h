@@ -1,8 +1,10 @@
 #pragma once
+#include "types/Game.h"
+#include "GameServerManager.h"
+#include "sockets/MyClientSocket.h"
 #include <string>
 #include <vector>
 #include <map>
-#include "types/Game.h"
 
 /**
  * MySteam is the highest-level class of the program. Use it to 
@@ -38,7 +40,7 @@ public:
      * given appId. Returns false if this process failed to launch.
      * The process may start successfully but fail during execution.
      */
-    bool launch_game(std::string appId);
+    bool launch_game(AppId_t appId);
 
     /**
      * Stops the process started with the above method launch_game.
@@ -96,6 +98,9 @@ private:
      * Compare the app_name of a Game_t for sorting
      */
     static bool comp_app_name(Game_t app1, Game_t app2);
+
+    GameServerManager m_server_manager;
+    MyClientSocket* m_ipc_socket;
 
     std::vector<Game_t> m_all_subscribed_apps;
     std::map<std::string, bool> m_pending_ach_modifications;

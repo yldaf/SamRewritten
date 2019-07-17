@@ -1,5 +1,6 @@
 #include "cli_funcs.h"
 #include "MySteam.h"
+#include "globals.h"
 #include <string>
 #include <iostream>
 #include <csignal>
@@ -13,7 +14,8 @@ void handle_sigint_cli(int signum) {
 
 void idle_app(std::string appid) {
 	std::cout << "Idling from command line " << appid << std::endl;
-	g_steam->launch_game(appid);
+	AppId_t realid = strtoul(appid.c_str(), NULL, 10);
+	g_steam->launch_game(realid);
 	signal(SIGINT, handle_sigint_cli);
 }
 

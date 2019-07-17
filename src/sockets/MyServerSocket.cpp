@@ -15,9 +15,10 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
         }
     }
 
-    if ((m_socket_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == 0) 
+    errno = 0;
+    if ((m_socket_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1) 
     { 
-        perror("socket failed"); 
+        std::cerr << "Could not create the server socket. Exitting. Code: " << errno << std::endl;
         exit(EXIT_FAILURE); 
     }
 
@@ -41,6 +42,13 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
 
 MyServerSocket::~MyServerSocket() 
 {
+    close(m_socket_fd);
+    unlink_file();
+}
+
+void
+MyServerSocket::unlink_file()
+{
     unlink(m_socket_path.c_str());
 }
 
@@ -49,7 +57,6 @@ MyServerSocket::run_server()
 {
     int data_socket;
     for (;;) {
-
         /* Wait for incoming connection. */
         data_socket = accept(m_socket_fd, NULL, NULL);
         if (data_socket == -1) {
@@ -62,8 +69,10 @@ MyServerSocket::run_server()
 
         if (request == END_OF_SERVICE)
         {
-            send_message("SAM_ACK");
+            send_message(data_socket, "SAM_ACK");
             close(data_socket);
+            close(m_socket_fd);
+            unlink_file();
             break;
         }
 

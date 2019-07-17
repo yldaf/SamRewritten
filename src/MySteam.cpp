@@ -40,14 +40,22 @@ MySteam::get_instance() {
  * Fakes a new game being launched. Keeps running in the background until quit_game is called.
  */
 bool 
-MySteam::launch_game(std::string appID) {
+MySteam::launch_game(AppId_t appID) {
     // Print an error if a game is already launched, maybe allow multiple games at the same time in the future?
-    GameEmulator* emulator = GameEmulator::get_instance();
+    // GameEmulator* emulator = GameEmulator::get_instance();
     
-    //TODO if
-    emulator->init_app(appID);
+    // //TODO if
+    // emulator->init_app(appID);
 
-    return false;
+    if (m_ipc_socket != nullptr)
+    {
+        std::cerr << "I will not launch the game as one is already running" << std::endl;
+        return false;
+    }
+    
+    m_ipc_socket = m_server_manager.quick_server_create(appID);
+
+    return true;
 }
 // => launch_game
 
@@ -57,8 +65,12 @@ MySteam::launch_game(std::string appID) {
  */
 bool 
 MySteam::quit_game() {
-    GameEmulator* emulator = GameEmulator::get_instance();
-    return emulator->kill_running_app();
+    // GameEmulator* emulator = GameEmulator::get_instance();
+    // return emulator->kill_running_app();
+    m_ipc_socket->kill_server();
+    delete m_ipc_socket;
+    m_ipc_socket = nullptr;
+    return true;
 }
 // => quit_game
 
@@ -90,20 +102,7 @@ MySteam::refresh_owned_apps() {
         }
     }
 
-    // while ((dp = readdir(dirp)) != NULL) {
-    //     filename = dp->d_name;
-    //     if(filename.rfind(prefix, 0) == 0) {
-    //         if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
-    //             game.app_id = app_id;
-    //             game.app_name = appDAO->get_app_name(app_id);
-
-    //             m_all_subscribed_apps.push_back(game);
-    //         }
-    //     }
-    // }
-
     std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
-    //closedir(dirp);
 }
 // => refresh_owned_apps
 
@@ -137,7 +136,7 @@ MySteam::get_steam_install_path() {
  */
 void 
 MySteam::print_all_owned_games() const {
-    std::cerr << "Summary of owned apps with stats or achievements" << std::endl << "========================" << std::endl;
+    std::cerr << "Summary of owned apps" << std::endl << "========================" << std::endl;
 
     for(Game_t i : m_all_subscribed_apps) {
         std::cerr << i.app_id << " -> " << i.app_name << std::endl;
