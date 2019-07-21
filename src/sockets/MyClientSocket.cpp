@@ -1,4 +1,5 @@
 #include "MyClientSocket.h"
+#include "../types/Actions.h"
 
 #include <thread>
 #include <chrono>
@@ -47,6 +48,8 @@ MyClientSocket::request_response(std::string request)
     connect_to_server();
     send_message(request);
     std::string ret = receive_message();
+    std::cerr << "client receieved" << ret << std::endl;
+    // need to parse this in the case of GET_ACHIEVEMENTS    
     disconnect();
     return ret;
 }
@@ -60,5 +63,5 @@ MyClientSocket::disconnect()
 void
 MyClientSocket::kill_server()
 {
-    request_response(END_OF_SERVICE);
+    request_response(QUIT_GAME_STR);
 }

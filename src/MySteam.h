@@ -1,5 +1,6 @@
 #pragma once
 #include "types/Game.h"
+#include "types/Achievement.h"
 #include "GameServerManager.h"
 #include "sockets/MyClientSocket.h"
 #include <string>
@@ -17,6 +18,14 @@ public:
      * See "Singleto design pattern" for further help
      */
     static MySteam* get_instance();
+
+    /**
+     * Returns the steamId3 of the last user who logged in on the
+     * machine. Make sure all logs are enabled, or this may result
+     * in an error.
+     */
+    static std::string get_user_steamId3();
+
 
     /**
      * Returns the absolute path to the steam installation folder.
@@ -72,6 +81,16 @@ public:
      * correct results
      */
     std::vector<Game_t> get_all_games_with_stats() { return m_all_subscribed_apps; };
+
+    /**
+     * Get achievements of the launched app
+     * 
+     * For now use an Achievement_t for ease of extension
+     * to count-based achievements
+     * 
+     * TODO: maybe don't name this the same as GameServer::get_achievements?
+     */ 
+    std::vector<Achievement_t> get_achievements();
 
     /**
      * Adds a modification to be done on the launched app.

@@ -1,9 +1,17 @@
 #include "GameServerManager.h"
-
 #include "MyGameServer.h"
+
+// TODO: shouldn't really need MySteam inside here
+#include "MySteam.h"
+#include "globals.h"
 #include <signal.h>
 #include <iostream>
 #include <unistd.h>
+
+void handle_sigint_gameserv(int signum) {
+	g_steam->quit_game();
+	exit(0);
+}
 
 MyClientSocket*
 GameServerManager::quick_server_create(AppId_t appid)
@@ -16,7 +24,6 @@ GameServerManager::quick_server_create(AppId_t appid)
         server.run();
 
         // The server will stop running when the client sends a quit request.
-
         exit(EXIT_SUCCESS);
     }
     else if (pid == -1) {
@@ -26,7 +33,9 @@ GameServerManager::quick_server_create(AppId_t appid)
     else {
         // Parent process
         // TODO watch out for zombie processes
+        // TODO: don't use signal; use sigaction
         signal(SIGCHLD, SIG_IGN);
+        signal(SIGINT, handle_sigint_gameserv);
         return new MyClientSocket(appid);
     }
 }

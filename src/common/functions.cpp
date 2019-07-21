@@ -5,6 +5,7 @@
 #include <cstring>
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 
 pid_t create_process()
 {
@@ -19,9 +20,29 @@ pid_t create_process()
 
 void read_count(int fd, void *buf, size_t count)
 {
-  size_t bytes_read;
-  for (size_t i = 0; i < count; i += bytes_read) {
-    bytes_read = read(fd, (void*)((char*)buf+i), count-i);
+  //bytes read per call
+  ssize_t bytes;
+  for (size_t i = 0; i < count; i += bytes) {
+    errno = 0;
+    bytes = read(fd, (void*)((char*)buf+i), count-i);
+    if ((bytes == -1) || (bytes == 0 && errno > 0)) {
+      std::cerr << "Read pipe encountered fatal error." << std::endl;
+      exit(EXIT_FAILURE);
+    }
+  }
+}
+
+void write_count(int fd, void *buf, size_t count)
+{
+  //bytes written per call
+  ssize_t bytes;
+  for (size_t i = 0; i < count; i += bytes) {
+    errno = 0;
+    bytes = write(fd, (void*)((char*)buf+i), count-i);
+    if ((bytes == -1) || (bytes == 0 && errno > 0)) {
+      std::cerr << "Write pipe encountered fatal error." << std::endl;
+      exit(EXIT_FAILURE);
+    }
   }
 }
 

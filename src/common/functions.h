@@ -8,10 +8,13 @@
 pid_t create_process();
 
 /**
- * Wrapper for read() to actually read count bytes
- * instead of reading up to count bytes
+ * Wrapper for read/write to actually read/write count 
+ * bytes instead of reading/writing up to count bytes,
+ * or fail hard on error
  */
 void read_count(int fd, void *buf, size_t count);
+
+void write_count(int fd, void *buf, size_t count);
 
 /**
  * Feed it a path to a file name, will return whether the file

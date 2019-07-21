@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <dirent.h>
 #include "types/Game.h"
+#include "types/Actions.h"
 #include "SteamAppDAO.h"
 #include "GameEmulator.h"
 #include "common/functions.h"
@@ -47,13 +48,17 @@ MySteam::launch_game(AppId_t appID) {
     // //TODO if
     // emulator->init_app(appID);
 
-    if (m_ipc_socket != nullptr)
-    {
+    if (m_ipc_socket != nullptr) {
         std::cerr << "I will not launch the game as one is already running" << std::endl;
         return false;
     }
     
     m_ipc_socket = m_server_manager.quick_server_create(appID);
+
+    if (m_ipc_socket == nullptr) {
+        std::cerr << "Failed to get connection to game" << std::endl;
+        return false;
+    }
 
     return true;
 }
@@ -67,10 +72,15 @@ bool
 MySteam::quit_game() {
     // GameEmulator* emulator = GameEmulator::get_instance();
     // return emulator->kill_running_app();
-    m_ipc_socket->kill_server();
-    delete m_ipc_socket;
-    m_ipc_socket = nullptr;
-    return true;
+
+    if (m_ipc_socket != nullptr) {
+        m_ipc_socket->kill_server();
+        delete m_ipc_socket;
+        m_ipc_socket = nullptr;
+        return true;
+    } else {
+        return false;
+    }
 }
 // => quit_game
 
@@ -83,6 +93,41 @@ MySteam::quit_game() {
  */
 void 
 MySteam::refresh_owned_apps() {
+    //TODO at bottom of function
+
+    const std::string path_to_cache_dir(MySteam::get_steam_install_path() + "/appcache/stats/");
+    DIR* dirp = opendir(path_to_cache_dir.c_str());
+    struct dirent * dp;
+    std::string filename;
+    const std::string prefix("UserGameStats_" + MySteam::get_user_steamId3() + "_");
+    const std::string input_scheme_c(prefix + "%lu.bin");
+    Game_t game;
+    unsigned long app_id;
+    SteamAppDAO* appDAO = SteamAppDAO::get_instance();
+
+    // The whole update will really occur only once in a while, no worries
+    appDAO->update_name_database();
+    m_all_subscribed_apps.clear();
+
+    while ((dp = readdir(dirp)) != NULL) {
+        filename = dp->d_name;
+        if(filename.rfind(prefix, 0) == 0) {
+            if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
+                game.app_id = app_id;
+                game.app_name = appDAO->get_app_name(app_id);
+
+                m_all_subscribed_apps.push_back(game);
+            }
+        }
+    }
+
+    std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
+    closedir(dirp);
+
+    /*
+    // TODO: Scanning through all apps using app_is_owned is far too slow
+    //       It takes minutes for SAM to start up if this code is enabled
+    //       Implement something to speed this code up before re-enabling it
     Game_t game;
     SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
@@ -103,8 +148,51 @@ MySteam::refresh_owned_apps() {
     }
 
     std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
+
+    */
 }
 // => refresh_owned_apps
+
+/**
+ * Could parse /home/user/.local/share/Steam/config/loginusers.vdf, but wrong id type
+ * Parses STEAM/logs/parental_log.txt, hoping those logs can't be disabled
+ * Return the most recently logged in user id
+ * Returns empty string on error
+ */
+std::string 
+MySteam::get_user_steamId3() {
+    static const std::string file_path(MySteam::get_steam_install_path() + "/logs/parental_log.txt");
+    std::ifstream input(file_path, std::ios::in);
+    std::string word;
+    
+    if(!input) {
+        std::cerr << "Could not open " << file_path << std::endl;
+        std::cerr << "Make sure you have a default steam installation, and that logging is not disabled." << std::endl;
+        input.close();
+        exit(EXIT_FAILURE);
+    }
+
+    //We're done setting up and checking, let's parse this file
+    bool next_is_id = false;
+    std::string latest_id = "";
+
+    while(input >> word) {
+        if(word == "ID:") {
+            next_is_id = true;
+            continue;
+        }
+
+        if(next_is_id) {
+            latest_id = word;
+            next_is_id = false;
+        }
+    }
+
+    input.close();
+
+    return latest_id;
+}
+// => get_user_steamId3
 
 
 /**
@@ -159,6 +247,26 @@ MySteam::refresh_icons() {
     }
 }
 // => refresh_icons
+
+
+std::vector<Achievement_t>
+MySteam::get_achievements() {
+
+    if (m_ipc_socket == nullptr) {
+        std::cerr << "Connection to game is broken" << std::endl;
+        exit(0);
+    }
+
+    m_ipc_socket->request_response(GET_ACHIEVEMENTS_STR);
+
+    //TODO: process reponse achievements
+    //This type might not end up being a std::vector<Achievement_t> type,
+    //it may just conform to the JSON types
+    std::vector<Achievement_t> yes;
+    yes.clear();
+    return yes;
+    
+}
 
 /**
  * Adds an achievement to the list of achievements to unlock/lock

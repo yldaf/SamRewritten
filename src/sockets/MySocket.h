@@ -6,8 +6,9 @@
 #include <sys/un.h>
 
 #define BUFFER_SIZE 12
-#define END_OF_MESSAGE "SAM_STOP"
-#define END_OF_SERVICE "SAM_QUIT"
+
+// Strings are the fundamental unit of transmission,
+// so just use NULL terminator as end of message
 
 class MySocket
 {

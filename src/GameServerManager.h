@@ -1,6 +1,12 @@
 #pragma once
 #include "sockets/MyClientSocket.h"
 
+// This class is more the old GameEmulator class
+// It handles
+// - Creation of GameServer which acts like a Steam game
+// - Creation of a client socket which the main window uses to
+//   communicate with that server
+
 class GameServerManager
 {
 private:

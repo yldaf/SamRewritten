@@ -1,6 +1,8 @@
 #include "MyServerSocket.h"
 
 #include "../common/functions.h"
+#include "../types/Actions.h"
+
 #include <iostream>
 
 MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
@@ -10,7 +12,7 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
     {
         std::cerr << "It looks like the server before me did not shutdown properly." << std::endl;
         if(unlink(m_socket_path.c_str()) < 0) {
-            std::cout << "Something is wrong. Are you the right user? Exitting." << std::endl;
+            std::cout << "Something is wrong. Are you the right user? Exiting." << std::endl;
             exit(EXIT_FAILURE);
         }
     }
@@ -18,7 +20,7 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
     errno = 0;
     if ((m_socket_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1) 
     { 
-        std::cerr << "Could not create the server socket. Exitting. Code: " << errno << std::endl;
+        std::cerr << "Could not create the server socket. Exiting. Code: " << errno << std::endl;
         exit(EXIT_FAILURE); 
     }
 
@@ -34,7 +36,7 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
 
     if (listen(m_socket_fd, 20) < 0)
     {
-        std::cerr << "Unable to listen to the socket. Exitting." << std::endl;
+        std::cerr << "Unable to listen to the socket. Exiting." << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -59,24 +61,30 @@ MyServerSocket::run_server()
     for (;;) {
         /* Wait for incoming connection. */
         data_socket = accept(m_socket_fd, NULL, NULL);
+
+        std::cerr << "Received connection" << std:: endl;
+
         if (data_socket == -1) {
-            std::cerr << "Server failed to accept. Exitting." << std::endl;
+            std::cerr << "Server failed to accept. Exiting." << std::endl;
             exit(EXIT_FAILURE);
         }
 
         // Read all the client's request
         std::string request = receive_message(data_socket);
 
-        if (request == END_OF_SERVICE)
+        std::cerr << "Server received request: " << request << std:: endl;
+
+        send_message(data_socket, process_request(request));
+
+        if (request == QUIT_GAME_STR)
         {
+            std::cout << "shutting down" << request << std:: endl;
             send_message(data_socket, "SAM_ACK");
             close(data_socket);
             close(m_socket_fd);
             unlink_file();
             break;
         }
-
-        send_message(data_socket, process_request(request));
 
         /* Close socket. */
         close(data_socket);

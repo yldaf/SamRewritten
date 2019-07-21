@@ -1,6 +1,8 @@
 #include "MySocket.h"
 
 #include "../globals.h"
+#include "../common/functions.h"
+
 #include <iostream>
 
 MySocket::MySocket(AppId_t appid) : m_appid(appid), m_socket_fd(-1)
@@ -23,25 +25,24 @@ std::string
 MySocket::receive_message(const int fd)
 {
     std::string ret("");
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE+1];
+    /* Ensure buffer is 0-terminated. */
+    buffer[BUFFER_SIZE] = '\0';
+
     for (;;) {
-
         /* Wait for next data packet. */
-        if (read(fd, buffer, BUFFER_SIZE) == -1) {
-            std::cerr << "Socket could not read." << std::endl;
-            exit(EXIT_FAILURE);
-        }
+        read_count(fd, buffer, BUFFER_SIZE);
+        //std::cerr << " received packet: " << buffer << std::endl;
+        ret += std::string(buffer);
 
-        /* Ensure buffer is 0-terminated. */
-        buffer[BUFFER_SIZE - 1] = 0;
-        
-        if (!strncmp(buffer, END_OF_MESSAGE, BUFFER_SIZE)) {
+        if (strlen(buffer) < BUFFER_SIZE) {
+            // Got a NULL in the actual buffer, so must be the end
+            // of the string
             break;
         }
-
-        ret += std::string(buffer);
     }
 
+    //std::cerr << "PID: " << getpid() << " received message: " << ret << std::endl;
     return ret;
 }
 
@@ -54,29 +55,19 @@ MySocket::send_message(const std::string message)
 void
 MySocket::send_message(const int fd, const std::string message)
 {
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE+1]; //+1 for printing chunks
+    buffer[BUFFER_SIZE] = '\0';
+
     unsigned iterator = 0;
+    //std::cerr << "PID: " << getpid() << " sending message: " << message << std::endl;
 
     for (;;) {
-        strncpy(buffer, message.substr(iterator, BUFFER_SIZE - 1).c_str(), BUFFER_SIZE - 1);
+        strncpy(buffer, message.substr(iterator, BUFFER_SIZE).c_str(), BUFFER_SIZE);
+        //std::cerr << " sending packet: " << buffer << std::endl;
+        write_count(fd, buffer, BUFFER_SIZE);
 
-        std::cerr << getpid() << " sending packet: " << buffer << std::endl;
-
-        if (write(fd, buffer, strlen(buffer) + 1) == -1) {
-            std::cerr << getpid() << ": there was an error writing the message." << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        iterator += BUFFER_SIZE - 1;
-
-        if (iterator > message.size())
-        {
-            // Close the request
-            strcpy(buffer, END_OF_MESSAGE);
-            if (write(fd, buffer, strlen(buffer) + 1) == -1) {
-                std::cerr << "There was an error closing the message." << std::endl;
-                exit(EXIT_FAILURE);
-            } 
+        iterator += BUFFER_SIZE;
+        if (iterator > message.size()) {
             break;
         }
     }
