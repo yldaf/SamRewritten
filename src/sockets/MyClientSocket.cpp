@@ -1,5 +1,6 @@
 #include "MyClientSocket.h"
 #include "../types/Actions.h"
+#include <yajl/yajl_gen.h>
 
 #include <thread>
 #include <chrono>
@@ -48,7 +49,7 @@ MyClientSocket::request_response(std::string request)
     connect_to_server();
     send_message(request);
     std::string ret = receive_message();
-    std::cerr << "client receieved" << ret << std::endl;
+    std::cerr << "client receieved " << ret << std::endl;
     // need to parse this in the case of GET_ACHIEVEMENTS    
     disconnect();
     return ret;
@@ -63,5 +64,24 @@ MyClientSocket::disconnect()
 void
 MyClientSocket::kill_server()
 {
-    request_response(QUIT_GAME_STR);
+    const unsigned char * buf; 
+    size_t len;
+    //TODO encapsulate these into a json generator
+    yajl_gen handle = yajl_gen_alloc(NULL); 
+    yajl_gen_map_open(handle);
+
+    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACTION_STR, strlen(SAM_ACTION_STR)) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+    if (yajl_gen_string(handle, (const unsigned char *)QUIT_GAME_STR, strlen(QUIT_GAME_STR)) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+    yajl_gen_get_buf(handle, &buf, &len);
+    request_response(std::string((const char*)buf));
+    yajl_gen_free(handle);
+
+    //TODO parse ack
 }

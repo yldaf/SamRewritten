@@ -96,16 +96,27 @@ extern "C"
         if( appId != 0 ) {
             g_main_gui->switch_to_stats_page();
             g_steam->launch_game(appId);
-            // get_achievements from launched child
-            std::vector<Achievement_t> ach_list = g_steam->get_achievements();
-            //TODO: populate achievements in GUI (rip out update view from GameEmulator)
-            /*
-            for(unsigned i = 0; i < m_achievement_count; i++) {
-                g_main_gui->add_to_achievement_list(m_achievement_list[i]);
+            // get_achievements from game server
+            std::vector<std::pair<std::string, bool>> ach_list = g_steam->get_achievements();
+
+            g_main_gui->reset_achievements_list();
+
+            //TODO: just pass in the array directly?
+            for(unsigned i = 0; i < ach_list.size(); i++) {
+
+                // For now, for compatibility reasons, just convert to an Achievement_t
+                // These two types will need to be unified
+                Achievement_t ach = { 0 };
+                strncpy(ach.id, ach_list[i].first.c_str(), MAX_ACHIEVEMENT_ID_LENGTH);
+                // incorrect
+                strncpy(ach.name, ach_list[i].first.c_str(), MAX_ACHIEVEMENT_NAME_LENGTH);
+                ach.achieved = ach_list[i].second;
+
+                g_main_gui->add_to_achievement_list(ach);
             }
 
             g_main_gui->confirm_stats_list();
-            */
+
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
         }

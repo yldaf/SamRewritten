@@ -5,6 +5,12 @@
 #define STORE_ACHIEVEMENTS_STR "STORE_ACHIEVEMENTS"
 #define QUIT_GAME_STR "QUIT_GAME"
 
+#define SAM_ACTION_STR "SAM_ACTION"
+#define ACHIEVEMENT_LIST_STR "ACHIEVEMENT_LIST"
+#define ACHIEVEMENT_NAME_STR "ACHIEVEMENT_NAME"
+#define ACHIEVED_STR "ACHIEVED"
+#define SAM_ACK_STR "SAM_ACK"
+
 // TODO: Add SAM_START as an action to this too?
 // Would require more reorg of code structure
 enum SAM_ACTION {

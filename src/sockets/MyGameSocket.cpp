@@ -1,3 +1,5 @@
+#include <yajl/yajl_gen.h>
+#include <yajl/yajl_tree.h>
 #include "MyGameSocket.h"
 #include "../types/Actions.h"
 
@@ -10,21 +12,83 @@ m_CallbackUserStatsReceived( this, &MyGameSocket::OnUserStatsReceived )
 
 std::string
 MyGameSocket::process_request(std::string request) {
-    // Logic goes here TODO
 
-    //TODO: yajl parse the JSON-encoded request string (then get request type?) or are strings good enough?
-    //SAM_ACTION request_type = get_request_type(request)
+    //
+    //TODO encapsulate these into a json parser?
+    yajl_val node = yajl_tree_parse(request.c_str(), NULL, 0);
+
+    if (node == NULL) {
+        std::cerr << "Parsing error";
+        exit(EXIT_FAILURE);
+    }
+
+    const char * path[] = { SAM_ACTION_STR, (const char*)0 };
+    yajl_val v = yajl_tree_get(node, path, yajl_t_string);
+    if (v == NULL || !YAJL_IS_STRING(v)) {
+        std::cerr << "failed to get" << SAM_ACTION_STR << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string action(YAJL_GET_STRING(v));
     std::string ret;
+    const unsigned char * buf; 
+    size_t len;
+
+    // Generate the ack
+    //TODO encapsulate these into a json generator
+    yajl_gen handle = yajl_gen_alloc(NULL); 
+    yajl_gen_map_open(handle);
+
+    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACK_STR, strlen(SAM_ACK_STR)) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACK_STR, strlen(SAM_ACK_STR)) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
 
 //    switch (request_type) {
-    if (request == GET_ACHIEVEMENTS_STR) {
+    if (action == GET_ACHIEVEMENTS_STR) {
     //case GET_ACHIEVEMENTS:
-        //this requires an async callback
         std::vector<Achievement_t> achievements = get_achievements();
         // Steam api is launched in this context, other possible imlementation: game_utils->get_achievements()
-        //ret = JSON::achievement_vector(achievements);
+
+        if (yajl_gen_string(handle, (const unsigned char *)ACHIEVEMENT_LIST_STR, strlen(ACHIEVEMENT_LIST_STR)) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+
+        if (yajl_gen_array_open(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+
+        // append the achievements to the ack
+        for (Achievement_t achievement : achievements) {
+            std::cout << "achievement.id " << achievement.id << std::endl;
+
+            yajl_gen_map_open(handle);
+
+            if (yajl_gen_string(handle, (const unsigned char *)ACHIEVEMENT_NAME_STR, strlen(ACHIEVEMENT_NAME_STR)) != yajl_gen_status_ok) {
+                std::cerr << "failed to make json" << std::endl;
+            }
+            if (yajl_gen_string(handle, (const unsigned char *)achievement.id, strlen(achievement.id)) != yajl_gen_status_ok) {
+                std::cerr << "failed to make json" << std::endl;
+            }
+
+            if (yajl_gen_string(handle, (const unsigned char *)ACHIEVED_STR, strlen(ACHIEVED_STR)) != yajl_gen_status_ok) {
+                std::cerr << "failed to make json" << std::endl;
+            }
+            if (yajl_gen_bool(handle, achievement.achieved) != yajl_gen_status_ok) {
+                std::cerr << "failed to make json" << std::endl;
+            }
+
+            yajl_gen_map_close(handle);
+        }
+
+        if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+
         //break;
-    } else if (request == STORE_ACHIEVEMENTS_STR) {
+    } else if (action == STORE_ACHIEVEMENTS_STR) {
     //case STORE_ACHIEVEMENTS:
         // TODO: achievement ID string, lock or relock boolean
         //std::vector<std::pair<string, bool>> operations = JSON::parse_achievement_array(request);
@@ -33,14 +97,24 @@ MyGameSocket::process_request(std::string request) {
         //process_achievements(operations); // or game_utils->process_achievements(..)
         //ret = SAM_ACK_BUT_IN_JSON;
         //break;
-    } else if (request == QUIT_GAME_STR) {
+    } else if (action == QUIT_GAME_STR) {
     //case QUIT_GAME:
         SteamAPI_Shutdown();
+            
     } else {
     //default:
         std::cerr << "Invalid command" << std::endl;
         ret.clear();
     }
+
+    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+    yajl_gen_get_buf(handle, &buf, &len);
+    ret = std::string((const char*)buf);
+    yajl_gen_free(handle);
+
+    yajl_tree_free(node);
 
     return ret;
 }
@@ -58,7 +132,6 @@ MyGameSocket::get_achievements() {
 
     while (!m_stats_callback_received) {
         // for debugging how long steam callbacks take
-        //std::cerr << "waiting for callback" << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
         SteamAPI_RunCallbacks();
     }
@@ -84,7 +157,7 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
             }
 
             m_achievement_list.clear();
-            m_achievement_list.reserve(num_ach);
+            m_achievement_list.resize(num_ach);
 
             for (unsigned i = 0; i < num_ach ; i++) {
                 // TODO: strncpy is slow, because it fills the remaining space with NULLs

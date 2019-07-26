@@ -90,7 +90,7 @@ public:
      * 
      * TODO: maybe don't name this the same as GameServer::get_achievements?
      */ 
-    std::vector<Achievement_t> get_achievements();
+    std::vector<std::pair<std::string, bool>> get_achievements();
 
     /**
      * Adds a modification to be done on the launched app.
@@ -107,6 +107,11 @@ public:
      * Commit the change with commit_modifications.
      */
     //void add_modification_stat(const std::string& stat_id, const double& new_value); // TODO: IMPLEMENT
+
+    /**
+     * Commit pending changes
+     */
+    void commit_changes(void);
 
     MySteam(MySteam const&)                 = delete;
     void operator=(MySteam const&)          = delete;
