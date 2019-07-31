@@ -29,7 +29,9 @@ Just run ./make.sh. Makefiles? Never heard of it. Packaging? What's that?
 
 Packages needed vary on distros, but make sure to install at least Steam, yajl, GTK 3, and GLib.
 
-On Lubuntu: "sudo apt install libgtk-3-dev libcurl4-gnutls-dev libyajl-dev"
+On Ubuntu (and variants): `sudo apt install libgtk-3-dev libcurl4-gnutls-dev libyajl-dev`
+
+On Arch: `sudo pacman -S gtk3 glibc gnutls yajl`
 
 To run it, launch ./bin/launch.sh
 
