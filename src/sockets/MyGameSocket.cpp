@@ -2,6 +2,7 @@
 #include <yajl/yajl_tree.h>
 #include "MyGameSocket.h"
 #include "../types/Actions.h"
+#include "../common/yajlHelpers.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -13,23 +14,12 @@ m_CallbackUserStatsReceived( this, &MyGameSocket::OnUserStatsReceived )
 std::string
 MyGameSocket::process_request(std::string request) {
 
-    //
     //TODO encapsulate these into a json parser?
-    yajl_val node = yajl_tree_parse(request.c_str(), NULL, 0);
+    //encoding this response is still tightly coupled to the
+    // logic in this function, so it's hard to push it to a helper
 
-    if (node == NULL) {
-        std::cerr << "Parsing error";
-        exit(EXIT_FAILURE);
-    }
+    std::string action = decode_request(request);
 
-    const char * path[] = { SAM_ACTION_STR, (const char*)0 };
-    yajl_val v = yajl_tree_get(node, path, yajl_t_string);
-    if (v == NULL || !YAJL_IS_STRING(v)) {
-        std::cerr << "failed to get" << SAM_ACTION_STR << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    std::string action(YAJL_GET_STRING(v));
     std::string ret;
     const unsigned char * buf; 
     size_t len;
@@ -39,53 +29,19 @@ MyGameSocket::process_request(std::string request) {
     yajl_gen handle = yajl_gen_alloc(NULL); 
     yajl_gen_map_open(handle);
 
-    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACK_STR, strlen(SAM_ACK_STR)) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACK_STR, strlen(SAM_ACK_STR)) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
+    // generate ACK with same variable name and content
+    yajl_gen_string_wrap(handle, SAM_ACK_STR);
+    yajl_gen_string_wrap(handle, SAM_ACK_STR);
 
+    // TODO: change to enums? since it's JSON, using strings is necessary sometime
 //    switch (request_type) {
     if (action == GET_ACHIEVEMENTS_STR) {
     //case GET_ACHIEVEMENTS:
         std::vector<Achievement_t> achievements = get_achievements();
-        // Steam api is launched in this context, other possible imlementation: game_utils->get_achievements()
-
-        if (yajl_gen_string(handle, (const unsigned char *)ACHIEVEMENT_LIST_STR, strlen(ACHIEVEMENT_LIST_STR)) != yajl_gen_status_ok) {
-            std::cerr << "failed to make json" << std::endl;
-        }
-
-        if (yajl_gen_array_open(handle) != yajl_gen_status_ok) {
-            std::cerr << "failed to make json" << std::endl;
-        }
-
-        // append the achievements to the ack
-        for (Achievement_t achievement : achievements) {
-            std::cout << "achievement.id " << achievement.id << std::endl;
-
-            yajl_gen_map_open(handle);
-
-            if (yajl_gen_string(handle, (const unsigned char *)ACHIEVEMENT_NAME_STR, strlen(ACHIEVEMENT_NAME_STR)) != yajl_gen_status_ok) {
-                std::cerr << "failed to make json" << std::endl;
-            }
-            if (yajl_gen_string(handle, (const unsigned char *)achievement.id, strlen(achievement.id)) != yajl_gen_status_ok) {
-                std::cerr << "failed to make json" << std::endl;
-            }
-
-            if (yajl_gen_string(handle, (const unsigned char *)ACHIEVED_STR, strlen(ACHIEVED_STR)) != yajl_gen_status_ok) {
-                std::cerr << "failed to make json" << std::endl;
-            }
-            if (yajl_gen_bool(handle, achievement.achieved) != yajl_gen_status_ok) {
-                std::cerr << "failed to make json" << std::endl;
-            }
-
-            yajl_gen_map_close(handle);
-        }
-
-        if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
-            std::cerr << "failed to make json" << std::endl;
-        }
+        // Steam api is launched in this context, other possible implementation: game_utils->get_achievements()
+        
+        // Append the achievements to the ack
+        encode_achievements(handle, achievements);
 
         //break;
     } else if (action == STORE_ACHIEVEMENTS_STR) {
@@ -113,8 +69,6 @@ MyGameSocket::process_request(std::string request) {
     yajl_gen_get_buf(handle, &buf, &len);
     ret = std::string((const char*)buf);
     yajl_gen_free(handle);
-
-    yajl_tree_free(node);
 
     return ret;
 }
@@ -160,32 +114,23 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
             m_achievement_list.resize(num_ach);
 
             for (unsigned i = 0; i < num_ach ; i++) {
-                // TODO: strncpy is slow, because it fills the remaining space with NULLs
-                // This is last stage optimisation but, could have used strcpy, or sprintf,
-                // making sure strings are NULL terminated
-                // see "man strncpy" for a possible implementation
-                strncpy(
-                    m_achievement_list[i].id,
-                    stats_api->GetAchievementName(i),
-                    MAX_ACHIEVEMENT_ID_LENGTH);
 
-                strncpy(
-                    m_achievement_list[i].name,
-                    stats_api->GetAchievementDisplayAttribute(m_achievement_list[i].id, "name"),
-                    MAX_ACHIEVEMENT_NAME_LENGTH);
+                m_achievement_list[i].id   = stats_api->GetAchievementName(i);
 
-                strncpy(
-                    m_achievement_list[i].desc,
-                    stats_api->GetAchievementDisplayAttribute(m_achievement_list[i].id, "desc"),
-                    MAX_ACHIEVEMENT_DESC_LENGTH);
+                const char * pchName = m_achievement_list[i].id.c_str();
+
+                m_achievement_list[i].name = stats_api->GetAchievementDisplayAttribute(pchName, "name");
+                m_achievement_list[i].desc = stats_api->GetAchievementDisplayAttribute(pchName, "desc");
 
                 // TODO
                 // https://partner.steamgames.com/doc/api/ISteamUserStats#RequestGlobalAchievementPercentages
                 //stats_api->GetAchievementAchievedPercent(m_achievement_list[i].id, &(m_achievement_list[i].global_achieved_rate));
                 m_achievement_list[i].global_achieved_rate = 0;
-                stats_api->GetAchievement(m_achievement_list[i].id, &(m_achievement_list[i].achieved));
-                m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute( m_achievement_list[i].id, "hidden" ), "0");
-                m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon( m_achievement_list[i].id );
+                stats_api->GetAchievement(pchName, &(m_achievement_list[i].achieved));
+                m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute(pchName, "hidden" ), "0");
+                // TODO: incorrect as is
+                //m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon(pchName);
+                m_achievement_list[i].icon_handle = 0;
             }
 
             m_stats_callback_received = true;

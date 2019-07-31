@@ -8,8 +8,8 @@
 #include "types/Game.h"
 #include "types/Actions.h"
 #include "SteamAppDAO.h"
-#include "GameEmulator.h"
 #include "common/functions.h"
+#include "common/yajlHelpers.h"
 
 #define MAX_PATH 1000
 
@@ -44,11 +44,8 @@ MySteam::get_instance() {
  */
 bool 
 MySteam::launch_game(AppId_t appID) {
-    // Print an error if a game is already launched, maybe allow multiple games at the same time in the future?
-    // GameEmulator* emulator = GameEmulator::get_instance();
-    
-    // //TODO if
-    // emulator->init_app(appID);
+    // Print an error if a game is already launched
+    // allow multiple games at the same time in the future via new window launching
 
     if (m_ipc_socket != nullptr) {
         std::cerr << "I will not launch the game as one is already running" << std::endl;
@@ -72,9 +69,6 @@ MySteam::launch_game(AppId_t appID) {
  */
 bool 
 MySteam::quit_game() {
-    // GameEmulator* emulator = GameEmulator::get_instance();
-    // return emulator->kill_running_app();
-
     if (m_ipc_socket != nullptr) {
         m_ipc_socket->kill_server();
         delete m_ipc_socket;
@@ -250,9 +244,9 @@ MySteam::refresh_icons() {
 // => refresh_icons
 
 
-std::vector<std::pair<std::string, bool>>
+std::vector<Achievement_t>
 MySteam::get_achievements() {
-    std::vector<std::pair<std::string, bool>> achs;
+    std::vector<Achievement_t> achievements;
     std::string response;
     const unsigned char * buf; 
     size_t len;
@@ -262,88 +256,23 @@ MySteam::get_achievements() {
         exit(0);
     }
     
-    achs.clear();
+    achievements.clear();
 
     // Maybe these MySteam functions should be moved to a MyGameClient.cpp?
 
-    //TODO encapsulate these into a json generator
+    // TODO: could push this handle generation handling down into a YAJL
+    // interfacing object
     yajl_gen handle = yajl_gen_alloc(NULL); 
-    yajl_gen_map_open(handle);
 
-    if (yajl_gen_string(handle, (const unsigned char *)SAM_ACTION_STR, strlen(SAM_ACTION_STR)) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-        return achs;
-    }
-    if (yajl_gen_string(handle, (const unsigned char *)GET_ACHIEVEMENTS_STR, strlen(GET_ACHIEVEMENTS_STR)) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-        return achs;
-    }
-    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-        return achs;
-    }
+    encode_request(handle, GET_ACHIEVEMENTS_STR);
+
     yajl_gen_get_buf(handle, &buf, &len);
     response = m_ipc_socket->request_response(std::string((const char*)buf));
     yajl_gen_free(handle);
 
-    //parse response
-    yajl_val node = yajl_tree_parse(response.c_str(), NULL, 0);
+    achievements = decode_achievements(response);
 
-    if (node == NULL) {
-        std::cerr << "parsing error";
-        exit(EXIT_FAILURE);
-    }
-
-    const char * path1[] = { SAM_ACK_STR, (const char*)0 };
-    yajl_val v = yajl_tree_get(node, path1, yajl_t_string);
-    if (v == NULL || !YAJL_IS_STRING(v)) {
-        std::cerr << "failed to parse " << SAM_ACK_STR << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    if (std::string(YAJL_GET_STRING(v)) != std::string(SAM_ACK_STR)) {
-        std::cerr << "failed to receive ack" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    const char * path2[] = { ACHIEVEMENT_LIST_STR, (const char*)0 };
-
-    v = yajl_tree_get(node, path2, yajl_t_array);
-    if (v == NULL) {
-        std::cerr << "parsing error" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    yajl_val *w = YAJL_GET_ARRAY(v)->values;
-    size_t array_len = YAJL_GET_ARRAY(v)->len;
-
-    for(unsigned i = 0; i < array_len; i++) {
-        const char * path3[] = { ACHIEVEMENT_NAME_STR, (const char*)0 };
-        const char * path4[] = { ACHIEVED_STR, (const char*)0 };
-
-        yajl_val cur_node = w[i];
-
-        yajl_val x = yajl_tree_get(cur_node, path3, yajl_t_string);
-        if (x == NULL) {
-            std::cerr << "parsing error" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        // why is bool parsing weird
-        yajl_val y = yajl_tree_get(cur_node, path4, yajl_t_any);
-        if (y == NULL) {
-            std::cerr << "parsing error" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        if (!YAJL_IS_TRUE(y) && !YAJL_IS_FALSE(y)) {
-            std::cerr << "bool parsing error" << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-        achs.push_back(std::pair<std::string, bool>(YAJL_GET_STRING(x), YAJL_IS_TRUE(y)));
-    }
-
-    return achs;
+    return achievements;
 }
 
 /**

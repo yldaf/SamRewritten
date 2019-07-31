@@ -90,7 +90,7 @@ public:
      * 
      * TODO: maybe don't name this the same as GameServer::get_achievements?
      */ 
-    std::vector<std::pair<std::string, bool>> get_achievements();
+    std::vector<Achievement_t> get_achievements();
 
     /**
      * Adds a modification to be done on the launched app.

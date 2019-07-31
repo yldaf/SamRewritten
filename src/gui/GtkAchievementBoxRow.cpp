@@ -1,6 +1,9 @@
 #include "GtkAchievementBoxRow.h"
 #include "../MySteam.h"
 #include "../globals.h"
+#include <string>
+#include <iostream>
+
 
 extern "C"
 {
@@ -29,6 +32,9 @@ extern "C"
     }
 }
 
+//keep this around until this function is refactored
+#define MAX_ACHIEVEMENT_NAME_LENGTH 256
+
 GtkAchievementBoxRow::GtkAchievementBoxRow(const Achievement_t& data) 
 :
 m_data(data)
@@ -46,7 +52,12 @@ m_data(data)
         sprintf(ach_locked_text, "%s", "Locked");
         pressed = FALSE;
     }
-    sprintf(ach_title_text, "<b>%s</b>", data.name);
+    // remove when this function is refactored
+    if (data.name.length() > MAX_ACHIEVEMENT_NAME_LENGTH) {
+        std::cerr << "Overflow going to occur, aborting" << std::endl;
+        return;
+    }
+    sprintf(ach_title_text, "<b>%s</b>", data.name.c_str());
     sprintf(ach_player_percent_text, "Achieved by %.1f%% of the players", data.global_achieved_rate);
     
 
@@ -57,7 +68,7 @@ m_data(data)
     GtkWidget *ach_pic = gtk_image_new_from_icon_name("gtk-missing-image", GTK_ICON_SIZE_DIALOG);
     GtkWidget *title_desc_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *title_label = gtk_label_new("");
-    GtkWidget *desc_label = gtk_label_new(data.desc);
+    GtkWidget *desc_label = gtk_label_new(data.desc.c_str());
     GtkWidget *more_info_button = gtk_menu_button_new();
     GtkWidget *more_info_image = gtk_image_new_from_icon_name("gtk-about", GTK_ICON_SIZE_BUTTON);
     GtkWidget *lock_unlock_button = gtk_toggle_button_new_with_label(ach_locked_text);
