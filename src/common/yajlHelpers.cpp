@@ -1,22 +1,38 @@
 
 #include "yajlHelpers.h"
 
-#include <string>
-#include <vector>
 #include <iostream>
 #include <cstring>
-#include <yajl/yajl_gen.h>
-#include <yajl/yajl_tree.h>
-#include "../types/Achievement.h"
 #include "../types/Actions.h"
 
-void yajl_gen_string_wrap(yajl_gen handle, const char * a) {
+SAM_ACTION
+str2action(const std::string& str) {
+    if (str == GET_ACHIEVEMENTS_STR)
+    {
+        return GET_ACHIEVEMENTS;
+    }
+    else if (str == STORE_ACHIEVEMENTS_STR)
+    {
+        return STORE_ACHIEVEMENTS;
+    }
+    else if (str == QUIT_GAME_STR)
+    {
+        return QUIT_GAME;
+    }
+    else {
+        return INVALID;
+    }
+}
+
+void 
+yajl_gen_string_wrap(yajl_gen handle, const char * a) {
     if (yajl_gen_string(handle, (const unsigned char *)a, strlen(a)) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;
     }
 }
 
-void encode_request(yajl_gen handle, const char * request) {
+void 
+encode_request(yajl_gen handle, const char * request) {
     if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;
     }
@@ -29,7 +45,8 @@ void encode_request(yajl_gen handle, const char * request) {
     }
 }
 
-std::string decode_request(std::string request) {
+ProcessedRequest
+decode_request(std::string request) {
 
     yajl_val node = yajl_tree_parse(request.c_str(), NULL, 0);
 
@@ -45,13 +62,18 @@ std::string decode_request(std::string request) {
         exit(EXIT_FAILURE);
     }
 
-    return std::string (YAJL_GET_STRING(v));
+    // Some Requests include a payload (eg STORE_ACHIEVEMENTS, we'll have to deal with it at some point)
+    ProcessedRequest ret;
+    ret.action = str2action(YAJL_GET_STRING(v));
+    ret.payload = "TODODOD";
+    return ret;
 }
 
 /**
  * Encode an individual achievement into a given YAJL handle
  */
-void encode_achievement(yajl_gen handle, Achievement_t achievement) {
+void 
+encode_achievement(yajl_gen handle, Achievement_t achievement) {
 
     yajl_gen_string_wrap(handle, NAME_STR);
     yajl_gen_string_wrap(handle, achievement.name.c_str());
@@ -86,7 +108,8 @@ void encode_achievement(yajl_gen handle, Achievement_t achievement) {
 /**
  * Encode an achievement vector into a given YAJL handle
  */
-void encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements) {
+void 
+encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements) {
 
     yajl_gen_string_wrap(handle, ACHIEVEMENT_LIST_STR);
 
@@ -95,8 +118,6 @@ void encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievement
     }
 
     for (Achievement_t achievement : achievements) {
-        std::cout << "encoding achievement.id " << achievement.id << std::endl;
-
         if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
         }
@@ -116,7 +137,8 @@ void encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievement
 
 //parsing the array inline would not be nice, so just extract them all here
 
-std::vector<Achievement_t> decode_achievements(std::string response) {
+std::vector<Achievement_t> 
+decode_achievements(std::string response) {
     std::vector<Achievement_t> achievements;
 
     //parse response

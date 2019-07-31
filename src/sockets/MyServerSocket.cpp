@@ -58,11 +58,10 @@ void
 MyServerSocket::run_server()
 {
     int data_socket;
+    bool quit = false;
     for (;;) {
         /* Wait for incoming connection. */
         data_socket = accept(m_socket_fd, NULL, NULL);
-
-        std::cerr << "Received connection" << std:: endl;
 
         if (data_socket == -1) {
             std::cerr << "Server failed to accept. Exiting." << std::endl;
@@ -74,9 +73,9 @@ MyServerSocket::run_server()
 
         std::cerr << "Server received request: " << request << std:: endl;
 
-        send_message(data_socket, process_request(request));
+        send_message(data_socket, process_request(request, quit));
 
-        if (request == QUIT_GAME_STR)
+        if (quit)
         {
             std::cout << "shutting down" << request << std:: endl;
             send_message(data_socket, "SAM_ACK");

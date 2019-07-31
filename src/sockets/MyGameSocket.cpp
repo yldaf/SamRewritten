@@ -12,14 +12,9 @@ m_CallbackUserStatsReceived( this, &MyGameSocket::OnUserStatsReceived )
 }
 
 std::string
-MyGameSocket::process_request(std::string request) {
-
-    //TODO encapsulate these into a json parser?
-    //encoding this response is still tightly coupled to the
-    // logic in this function, so it's hard to push it to a helper
-
-    std::string action = decode_request(request);
-
+MyGameSocket::process_request(std::string request, bool& quit) {
+    
+    ProcessedRequest r = decode_request(request);
     std::string ret;
     const unsigned char * buf; 
     size_t len;
@@ -33,39 +28,37 @@ MyGameSocket::process_request(std::string request) {
     yajl_gen_string_wrap(handle, SAM_ACK_STR);
     yajl_gen_string_wrap(handle, SAM_ACK_STR);
 
-    // TODO: change to enums? since it's JSON, using strings is necessary sometime
-//    switch (request_type) {
-    if (action == GET_ACHIEVEMENTS_STR) {
-    //case GET_ACHIEVEMENTS:
-        std::vector<Achievement_t> achievements = get_achievements();
-        // Steam api is launched in this context, other possible implementation: game_utils->get_achievements()
-        
-        // Append the achievements to the ack
-        encode_achievements(handle, achievements);
 
-        //break;
-    } else if (action == STORE_ACHIEVEMENTS_STR) {
-    //case STORE_ACHIEVEMENTS:
-        // TODO: achievement ID string, lock or relock boolean
-        //std::vector<std::pair<string, bool>> operations = JSON::parse_achievement_array(request);
-        //long term TODO: extend to stats
-        
-        //process_achievements(operations); // or game_utils->process_achievements(..)
-        //ret = SAM_ACK_BUT_IN_JSON;
-        //break;
-    } else if (action == QUIT_GAME_STR) {
-    //case QUIT_GAME:
-        SteamAPI_Shutdown();
+    switch (r.action) {
+        case GET_ACHIEVEMENTS:
+            // Write achievements to handle
+            encode_achievements(handle, get_achievements());
+            break;
+
+        case STORE_ACHIEVEMENTS:
+            // TODO: achievement ID string, lock or relock boolean
+            //std::vector<std::pair<string, bool>> operations = JSON::parse_achievement_array(r.payload);
+            //long term TODO: extend to stats
             
-    } else {
-    //default:
-        std::cerr << "Invalid command" << std::endl;
-        ret.clear();
+            //process_achievements(operations); // or game_utils->process_achievements(..)
+            //ret = SAM_ACK_BUT_IN_JSON;
+            break;
+
+        case QUIT_GAME:
+            SteamAPI_Shutdown();
+            quit = true;
+            break;
+
+        default:
+            std::cerr << "Invalid command" << std::endl;
+            break;
     }
 
     if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
+        std::cerr << "Failed to make json." << std::endl;
+        exit(EXIT_FAILURE);
     }
+
     yajl_gen_get_buf(handle, &buf, &len);
     ret = std::string((const char*)buf);
     yajl_gen_free(handle);
@@ -86,8 +79,8 @@ MyGameSocket::get_achievements() {
 
     while (!m_stats_callback_received) {
         // for debugging how long steam callbacks take
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
         SteamAPI_RunCallbacks();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     return m_achievement_list;
@@ -128,9 +121,8 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 m_achievement_list[i].global_achieved_rate = 0;
                 stats_api->GetAchievement(pchName, &(m_achievement_list[i].achieved));
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute(pchName, "hidden" ), "0");
-                // TODO: incorrect as is
-                //m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon(pchName);
-                m_achievement_list[i].icon_handle = 0;
+                m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon(pchName);
+                //m_achievement_list[i].icon_handle = 0;
             }
 
             m_stats_callback_received = true;

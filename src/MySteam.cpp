@@ -117,12 +117,12 @@ MySteam::refresh_owned_apps() {
         }
     }
 
-    std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
     closedir(dirp);
 
     /*
     // TODO: Scanning through all apps with this method results in not receiving
     //       any apps
+    // Works for me please comment what errors you are getting or open an issue
     Game_t game;
     SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
@@ -141,10 +141,9 @@ MySteam::refresh_owned_apps() {
             m_all_subscribed_apps.push_back(game);
         }
     }
+    */
 
     std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
-
-    */
 }
 // => refresh_owned_apps
 

@@ -13,7 +13,7 @@
 class MyGameSocket : public MyServerSocket
 {
 public:
-    std::string process_request(std::string request);
+    std::string process_request(std::string request, bool& quit);
     std::vector<Achievement_t> get_achievements(void);
     void process_achievements(std::vector<std::pair<std::string, bool>> changes);
 

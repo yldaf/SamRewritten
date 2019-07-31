@@ -32,34 +32,24 @@ extern "C"
     }
 }
 
-//keep this around until this function is refactored
-#define MAX_ACHIEVEMENT_NAME_LENGTH 256
-
 GtkAchievementBoxRow::GtkAchievementBoxRow(const Achievement_t& data) 
 :
 m_data(data)
 {
     // TODO achievement icons
     // TODO Rewrite. Ugly AF for unknown reasons
-    char ach_title_text[MAX_ACHIEVEMENT_NAME_LENGTH + 7];
-    char ach_player_percent_text[50];
-    char ach_locked_text[9];
+    std::string ach_title_text, ach_player_percent_text, ach_locked_text;
     gboolean pressed;
     if ( data.achieved ) {
-        sprintf(ach_locked_text, "%s", "Unlocked");
+        ach_locked_text = "🔓 Unloked";
         pressed = TRUE;
     } else {
-        sprintf(ach_locked_text, "%s", "Locked");
+        ach_locked_text = "🔒 Locked";
         pressed = FALSE;
     }
-    // remove when this function is refactored
-    if (data.name.length() > MAX_ACHIEVEMENT_NAME_LENGTH) {
-        std::cerr << "Overflow going to occur, aborting" << std::endl;
-        return;
-    }
-    sprintf(ach_title_text, "<b>%s</b>", data.name.c_str());
-    sprintf(ach_player_percent_text, "Achieved by %.1f%% of the players", data.global_achieved_rate);
-    
+
+    ach_title_text = "<b>" + data.name + "</b>";
+    ach_player_percent_text = "Achieved by " + std::to_string(data.global_achieved_rate) + " of the players";
 
     //TODO create and set new level bar only if ach has progress bar
     m_main_box = gtk_list_box_row_new();
@@ -71,18 +61,18 @@ m_data(data)
     GtkWidget *desc_label = gtk_label_new(data.desc.c_str());
     GtkWidget *more_info_button = gtk_menu_button_new();
     GtkWidget *more_info_image = gtk_image_new_from_icon_name("gtk-about", GTK_ICON_SIZE_BUTTON);
-    GtkWidget *lock_unlock_button = gtk_toggle_button_new_with_label(ach_locked_text);
+    GtkWidget *lock_unlock_button = gtk_toggle_button_new_with_label(ach_locked_text.c_str());
     GtkWidget *popover_menu = gtk_popover_new( more_info_button );
     GtkWidget *popover_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3);
     GtkWidget *more_info_label = gtk_label_new("");
-    GtkWidget *percentage_players_label = gtk_label_new(ach_player_percent_text);
+    GtkWidget *percentage_players_label = gtk_label_new(ach_player_percent_text.c_str());
     GtkWidget *sep_one = gtk_separator_menu_item_new();
     GtkWidget *sep_two = gtk_separator_menu_item_new();
     GtkWidget *progression_label = gtk_label_new("Achievement progress");
     GtkWidget *ach_level_bar = gtk_level_bar_new(); //gtk_level_bar_new_for_interval (gdouble min_value, gdouble max_value);
     GtkWidget *ach_progress_label_value = gtk_label_new("TODO / TODO");
 
-    gtk_label_set_markup(GTK_LABEL(title_label), ach_title_text);
+    gtk_label_set_markup(GTK_LABEL(title_label), ach_title_text.c_str());
     gtk_label_set_markup(GTK_LABEL(more_info_label), "<b>Additional information</b>");
     gtk_widget_set_size_request(m_main_box, -1, 80);
     gtk_menu_button_set_popover(GTK_MENU_BUTTON(more_info_button), GTK_WIDGET(popover_menu));

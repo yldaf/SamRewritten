@@ -7,7 +7,7 @@ protected:
     void unlink_file();
 public:
     void run_server();
-    virtual std::string process_request(std::string request) = 0;
+    virtual std::string process_request(std::string request, bool& quit) = 0;
     MyServerSocket(AppId_t appid);
     ~MyServerSocket();
 };

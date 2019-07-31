@@ -42,13 +42,13 @@ response
     ACHIEVEMENT_LIST_STR:
         [
             {
-            NAME_STR: "name"
-            DESC_STR: "desc"
-            ID_STR: "ID"
-            RATE_STR: global_achieved_rate
-            ICON_STR: icon
-            ACHIEVED_STR: true/fase
-            HIDDEN_STR: true/false
+                NAME_STR: "name"
+                DESC_STR: "desc"
+                ID_STR: "ID"
+                RATE_STR: global_achieved_rate
+                ICON_STR: icon
+                ACHIEVED_STR: true/fase
+                HIDDEN_STR: true/false
             },
             .
             .
@@ -64,13 +64,13 @@ only id and achieved status / stats changes
     ACHIEVEMENT_LIST_STR:
         [
             {
-            NAME_STR: ""
-            DESC_STR: ""
-            ID_STR: "ID"
-            RATE_STR: 0
-            ICON_STR: 0
-            ACHIEVED_STR: true/fase
-            HIDDEN_STR: false
+                NAME_STR: ""
+                DESC_STR: ""
+                ID_STR: "ID"
+                RATE_STR: 0
+                ICON_STR: 0
+                ACHIEVED_STR: true/fase
+                HIDDEN_STR: false
             },
             .
             .

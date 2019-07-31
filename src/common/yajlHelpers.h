@@ -5,7 +5,7 @@
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_tree.h>
 #include "../types/Achievement.h"
-#include "../types/Actions.h"
+#include "../types/ProcessedRequest.h"
 
 /**
  *  Encode a string into a YAJL handle and
@@ -21,7 +21,7 @@ void encode_request(yajl_gen handle, const char * request);
 /**
  *  Decode a request
  */
-std::string decode_request(std::string request);
+ProcessedRequest decode_request(std::string request);
 
 /**
  * Encode an achievement vector into a given YAJL handle
