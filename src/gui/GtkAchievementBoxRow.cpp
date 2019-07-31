@@ -9,12 +9,13 @@ extern "C"
 {
     void 
     on_achievement_button_toggle(GtkToggleButton* but, gpointer achievement) {
+        const Achievement_t* ach = (Achievement_t *)achievement;
         const bool active = gtk_toggle_button_get_active(but);
-        const bool achieved = (*(Achievement_t *)achievement).achieved;
-        const std::string ach_id = std::string((*(Achievement_t *)achievement).id);
+        const bool achieved = ach->achieved;
+        const std::string ach_id = ach->id;
 
         if(active && achieved) {
-            gtk_button_set_label(GTK_BUTTON(but), "Unlocked");
+            gtk_button_set_label(GTK_BUTTON(but), "🔓 Unlocked");
             g_steam->remove_modification_ach(ach_id);
         }
         else if (active && !achieved) {
@@ -26,7 +27,7 @@ extern "C"
             g_steam->add_modification_ach(ach_id, false);
         }
         else if (!active && !achieved) {
-            gtk_button_set_label(GTK_BUTTON(but), "Locked");
+            gtk_button_set_label(GTK_BUTTON(but), "🔒 Locked");
             g_steam->remove_modification_ach(ach_id);
         }
     }
@@ -41,7 +42,7 @@ m_data(data)
     std::string ach_title_text, ach_player_percent_text, ach_locked_text;
     gboolean pressed;
     if ( data.achieved ) {
-        ach_locked_text = "🔓 Unloked";
+        ach_locked_text = "🔓 Unlocked";
         pressed = TRUE;
     } else {
         ach_locked_text = "🔒 Locked";
@@ -105,7 +106,7 @@ m_data(data)
     gtk_widget_show_all(popover_box);
     gtk_container_add(GTK_CONTAINER(m_main_box), GTK_WIDGET(layout));
 
-    g_signal_connect(lock_unlock_button, "toggled", (GCallback)on_achievement_button_toggle,  (gpointer)&data);
+    g_signal_connect(lock_unlock_button, "toggled", (GCallback)on_achievement_button_toggle,  (gpointer)&m_data);
 }
 
 GtkAchievementBoxRow::~GtkAchievementBoxRow() {
