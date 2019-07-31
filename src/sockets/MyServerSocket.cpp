@@ -77,7 +77,7 @@ MyServerSocket::run_server()
 
         if (quit)
         {
-            std::cout << "shutting down" << request << std:: endl;
+            std::cout << "Shutting down server safely." << std:: endl;
             send_message(data_socket, "SAM_ACK");
             close(data_socket);
             close(m_socket_fd);

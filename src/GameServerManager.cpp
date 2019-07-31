@@ -32,7 +32,6 @@ GameServerManager::quick_server_create(AppId_t appid)
     }
     else {
         // Parent process
-        // TODO watch out for zombie processes
         // TODO: don't use signal; use sigaction
         signal(SIGCHLD, SIG_IGN);
         signal(SIGINT, handle_sigint_gameserv);
