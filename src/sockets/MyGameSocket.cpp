@@ -3,6 +3,7 @@
 #include "MyGameSocket.h"
 #include "../types/Actions.h"
 #include "../common/yajlHelpers.h"
+#include "../types/ProcessedRequest.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -13,21 +14,16 @@ m_CallbackUserStatsReceived( this, &MyGameSocket::OnUserStatsReceived )
 
 std::string
 MyGameSocket::process_request(std::string request, bool& quit) {
-    
     ProcessedRequest r = decode_request(request);
     std::string ret;
-    const unsigned char * buf; 
+    const unsigned char * buf;
     size_t len;
 
     // Generate the ack
-    //TODO encapsulate these into a json generator
     yajl_gen handle = yajl_gen_alloc(NULL); 
     yajl_gen_map_open(handle);
 
-    // generate ACK with same variable name and content
-    yajl_gen_string_wrap(handle, SAM_ACK_STR);
-    yajl_gen_string_wrap(handle, SAM_ACK_STR);
-
+    encode_ack(handle);
 
     switch (r.action) {
         case GET_ACHIEVEMENTS:
@@ -36,12 +32,7 @@ MyGameSocket::process_request(std::string request, bool& quit) {
             break;
 
         case STORE_ACHIEVEMENTS:
-            // TODO: achievement ID string, lock or relock boolean
-            //std::vector<std::pair<string, bool>> operations = JSON::parse_achievement_array(r.payload);
-            //long term TODO: extend to stats
-            
-            //process_achievements(operations); // or game_utils->process_achievements(..)
-            //ret = SAM_ACK_BUT_IN_JSON;
+            process_changes( decode_changes(request));
             break;
 
         case QUIT_GAME:
@@ -78,7 +69,6 @@ MyGameSocket::get_achievements() {
     }
 
     while (!m_stats_callback_received) {
-        // for debugging how long steam callbacks take
         SteamAPI_RunCallbacks();
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -137,16 +127,16 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
 
 
 void
-MyGameSocket::process_achievements(std::vector<std::pair<std::string, bool>> changes) {
+MyGameSocket::process_changes(std::vector<AchievementChange_t> changes) {
     //Untested
 
     ISteamUserStats *stats_api = SteamUserStats();
 
-    for (unsigned i = 0; i < changes.size(); i++)
-    {
-        const char* achievement_id = changes[i].first.c_str();
+    for (AchievementChange_t change : changes) {
 
-        if (changes[i].second) {
+        const char* achievement_id = change.id.c_str();
+
+        if (change.achieved) {
             // We want to unlock an achievement
             if (!stats_api->SetAchievement(achievement_id)) {
                 std::cerr << "Unlocking achievement " << achievement_id << " failed " << std::endl;

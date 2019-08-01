@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstring>
+#include "../types/ProcessedRequest.h"
 #include "../types/Actions.h"
 
 SAM_ACTION
@@ -31,23 +32,38 @@ yajl_gen_string_wrap(yajl_gen handle, const char * a) {
     }
 }
 
+void
+encode_ack(yajl_gen handle) {
+    yajl_gen_string_wrap(handle, SAM_ACK_STR);
+    yajl_gen_string_wrap(handle, SAM_ACK_STR);
+}
+
+bool
+decode_ack(std::string response) {
+    yajl_val node = yajl_tree_parse(response.c_str(), NULL, 0);
+
+    if (node == NULL) {
+        std::cerr << "Parsing error";
+        exit(EXIT_FAILURE);
+    }
+    const char * path[] = { SAM_ACK_STR, (const char*)0 };
+
+    yajl_val cur_val = yajl_tree_get(node, path, yajl_t_string);
+    if (cur_val == NULL) {
+        std::cerr << "parsing error" << std::endl;
+    }
+    
+    return std::string(SAM_ACK_STR) == YAJL_GET_STRING(cur_val);
+}
+
 void 
 encode_request(yajl_gen handle, const char * request) {
-    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-
     yajl_gen_string_wrap(handle, SAM_ACTION_STR);
     yajl_gen_string_wrap(handle, request);
-
-    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
 }
 
 ProcessedRequest
 decode_request(std::string request) {
-
     yajl_val node = yajl_tree_parse(request.c_str(), NULL, 0);
 
     if (node == NULL) {
@@ -149,17 +165,6 @@ decode_achievements(std::string response) {
         exit(EXIT_FAILURE);
     }
 
-    // TODO: separate out into decode_ack()
-    const char * ack_path[] = { SAM_ACK_STR, (const char*)0 };
-    yajl_val v = yajl_tree_get(node, ack_path, yajl_t_string);
-    if (v == NULL || !YAJL_IS_STRING(v)) {
-        std::cerr << "failed to parse " << SAM_ACK_STR << std::endl;
-    }
-
-    if (std::string(YAJL_GET_STRING(v)) != std::string(SAM_ACK_STR)) {
-        std::cerr << "failed to receive ack" << std::endl;
-    }
-
     // dumb defines for required interface for yajl_tree
     const char * list_path[] = { ACHIEVEMENT_LIST_STR, (const char*)0 };
     const char * name_path[] = { NAME_STR, (const char*)0 };
@@ -170,7 +175,7 @@ decode_achievements(std::string response) {
     const char * achieved_path[] = { ACHIEVED_STR, (const char*)0 };
     const char * hidden_path[] = { HIDDEN_STR, (const char*)0 };
     
-    v = yajl_tree_get(node, list_path, yajl_t_array);
+    yajl_val v = yajl_tree_get(node, list_path, yajl_t_array);
     if (v == NULL) {
         std::cerr << "parsing error" << std::endl;
     }
@@ -185,6 +190,7 @@ decode_achievements(std::string response) {
         yajl_val cur_node = w[i];
         yajl_val cur_val;
 
+        // TODO: pull these out into a decode_achievement()?
         // verification is done via the type argument to yajl_tree_get
         // and via YAJL_IS_* checks if type alone isn't sufficient
         cur_val = yajl_tree_get(cur_node, name_path, yajl_t_string);
@@ -240,9 +246,105 @@ decode_achievements(std::string response) {
         if (!YAJL_IS_TRUE(cur_val) && !YAJL_IS_FALSE(cur_val)) {
             std::cerr << "bool parsing error" << std::endl;
         }
-        achievements[i].achieved = YAJL_IS_TRUE(cur_val);
+        achievements[i].hidden = YAJL_IS_TRUE(cur_val);
     }
 
     yajl_tree_free(node);
     return achievements;
+}
+
+/**
+ * Encode an individual achievement change into a given YAJL handle
+ */
+void 
+encode_change(yajl_gen handle, AchievementChange_t change) {
+    yajl_gen_string_wrap(handle, ID_STR);
+    yajl_gen_string_wrap(handle, change.id.c_str());
+
+    yajl_gen_string_wrap(handle, ACHIEVED_STR);
+    if (yajl_gen_bool(handle, change.achieved) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+}
+
+void
+encode_changes(yajl_gen handle, std::vector<AchievementChange_t> changes) {
+
+    yajl_gen_string_wrap(handle, ACHIEVEMENT_LIST_STR);
+
+    if (yajl_gen_array_open(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    for (AchievementChange_t change : changes) {
+        if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+
+        encode_change(handle, change);
+
+        if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }            
+    }
+
+    if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+}
+
+std::vector<AchievementChange_t>
+decode_changes(std::string request) {
+    std::vector<AchievementChange_t> changes;
+
+    //parse request
+    yajl_val node = yajl_tree_parse(request.c_str(), NULL, 0);
+
+    if (node == NULL) {
+        std::cerr << "parsing error";
+        exit(EXIT_FAILURE);
+    }
+
+    // dumb defines for required interface for yajl_tree
+    const char * list_path[] = { ACHIEVEMENT_LIST_STR, (const char*)0 };
+    const char * id_path[] = { ID_STR, (const char*)0 };
+    const char * achieved_path[] = { ACHIEVED_STR, (const char*)0 };
+    
+    yajl_val v = yajl_tree_get(node, list_path, yajl_t_array);
+    if (v == NULL) {
+        std::cerr << "parsing error" << std::endl;
+    }
+
+    yajl_val *w = YAJL_GET_ARRAY(v)->values;
+    size_t array_len = YAJL_GET_ARRAY(v)->len;
+
+    changes.clear();
+    changes.resize(array_len);
+
+    for(unsigned i = 0; i < array_len; i++) {
+        yajl_val cur_node = w[i];
+        yajl_val cur_val;
+
+        // TODO: pull these out into a decode_change()?
+        // verification is done via the type argument to yajl_tree_get
+        // and via YAJL_IS_* checks if type alone isn't sufficient
+        cur_val = yajl_tree_get(cur_node, id_path, yajl_t_string);
+        if (cur_val == NULL) {
+            std::cerr << "parsing error" << std::endl;
+        }
+        changes[i].id = YAJL_GET_STRING(cur_val);
+        
+        // why is bool parsing weird
+        cur_val = yajl_tree_get(cur_node, achieved_path, yajl_t_any);
+        if (cur_val == NULL) {
+            std::cerr << "parsing error" << std::endl;
+        }
+        if (!YAJL_IS_TRUE(cur_val) && !YAJL_IS_FALSE(cur_val)) {
+            std::cerr << "bool parsing error" << std::endl;
+        }
+        changes[i].achieved = YAJL_IS_TRUE(cur_val);
+    }
+
+    yajl_tree_free(node);
+    return changes;
 }

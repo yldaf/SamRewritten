@@ -257,17 +257,31 @@ MySteam::get_achievements() {
     
     achievements.clear();
 
-    // Maybe these MySteam functions should be moved to a MyGameClient.cpp?
+    // TODO: these MySteam functions should probably be moved to a MyGameClient.cpp
 
     // TODO: could push this handle generation handling down into a YAJL
     // interfacing object
-    yajl_gen handle = yajl_gen_alloc(NULL); 
+    yajl_gen handle = yajl_gen_alloc(NULL);
+
+    //TODO: collect this encode_request routine better
+    // but cannot because commit_changes needs to keep map open
+    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
 
     encode_request(handle, GET_ACHIEVEMENTS_STR);
+
+    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
 
     yajl_gen_get_buf(handle, &buf, &len);
     response = m_ipc_socket->request_response(std::string((const char*)buf));
     yajl_gen_free(handle);
+
+    if (!decode_ack(response)) {
+        std::cerr << "Failed to receive ack!" << std::endl;
+    }
 
     achievements = decode_achievements(response);
 
@@ -302,11 +316,46 @@ MySteam::remove_modification_ach(const std::string& ach_id) {
  */
 void
 MySteam::commit_changes(void) {
+    std::vector<AchievementChange_t> changes;
+    std::string response;
+    const unsigned char * buf; 
+    size_t len;
 
+    // Transform to AchievementChange_t
+    for ( const auto& [key, val] : m_pending_ach_modifications) {
+        std::cerr << "key " << key << "val " << val << std::endl;
+        changes.push_back( (AchievementChange_t){ key, val } );
+    }
 
+    //return;
 
+    yajl_gen handle = yajl_gen_alloc(NULL); 
+    if (handle == NULL) {
+        std::cerr << "Failed to make handle" << std::endl;
+        return;
+    }
 
+    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
 
+    encode_request(handle, STORE_ACHIEVEMENTS_STR);
+    encode_changes(handle, changes);
+
+    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    yajl_gen_get_buf(handle, &buf, &len);
+    response = m_ipc_socket->request_response(std::string((const char*)buf));
+    yajl_gen_free(handle);
+
+    if (!decode_ack(response)) {
+        std::cerr << "Failed to store achievement changes!" << std::endl;
+    }
+
+    //reset current changes
+    m_pending_ach_modifications.clear();
 }
 
 

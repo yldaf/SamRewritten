@@ -9,6 +9,24 @@
 extern "C" 
 {
 
+    void
+    populate_achievements() {
+        // Get_achievements from game server
+        std::vector<Achievement_t> achievements = g_steam->get_achievements();
+
+        g_main_gui->reset_achievements_list();
+
+        //TODO: just pass in the array directly?
+        for(Achievement_t achievement : achievements) {
+            g_main_gui->add_to_achievement_list(achievement);
+        }
+
+        // TODO: these are not stats they are general achievements
+        g_main_gui->confirm_stats_list();
+    }
+    // => populate_achievements
+
+
     void 
     on_close_button_clicked() {
         gtk_main_quit();
@@ -24,18 +42,10 @@ extern "C"
     void
     on_store_button_clicked() {
         std::cerr << "Saving stats and achievements." << std::endl;
-        const std::map<std::string, bool> pending_achs = g_steam->get_pending_ach_modifications();
-        const std::map<std::string, double> pending_stats = g_steam->get_pending_stat_modifications();
-        
-        //TODO:
-        //
-        //commit changes
-        //MySteam::commit_changes() //reset pending changes too?
-        //
-        // pull out the same game achievement population code from on_game_row_activated
-        // g_main_gui->reset_achievements_list();
-        // g_main_gui->confirm_stats_list();
 
+        g_steam->commit_changes();
+
+        populate_achievements();
     }
     // => on_store_button_clicked
 
@@ -81,18 +91,7 @@ extern "C"
         if( appId != 0 ) {
             g_main_gui->switch_to_stats_page();
             g_steam->launch_game(appId);
-            // Get_achievements from game server
-            std::vector<Achievement_t> achievements = g_steam->get_achievements();
-
-            g_main_gui->reset_achievements_list();
-
-            //TODO: just pass in the array directly?
-            for(Achievement_t achievement : achievements) {
-                g_main_gui->add_to_achievement_list(achievement);
-            }
-
-            g_main_gui->confirm_stats_list();
-
+            populate_achievements();
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
         }
