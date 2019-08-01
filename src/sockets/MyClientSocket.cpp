@@ -1,7 +1,6 @@
 #include "MyClientSocket.h"
 #include "../types/Actions.h"
-#include <yajl/yajl_gen.h>
-#include "../common/yajlHelpers.h"
+#include "../json/yajlHelpers.h"
 
 #include <thread>
 #include <chrono>
@@ -64,21 +63,7 @@ MyClientSocket::disconnect()
 void
 MyClientSocket::kill_server()
 {
-    std::string response;
-    const unsigned char * buf; 
-    size_t len;
-
-    yajl_gen handle = yajl_gen_alloc(NULL);
-    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-    encode_request(handle, QUIT_GAME_STR);
-    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-    yajl_gen_get_buf(handle, &buf, &len);
-    response = request_response(std::string((const char*)buf));
-    yajl_gen_free(handle);
+    std::string response = request_response( make_kill_server_request_string() );
 
     if (!decode_ack(response)) {
         std::cerr << "Failed to close game!" << std::endl;

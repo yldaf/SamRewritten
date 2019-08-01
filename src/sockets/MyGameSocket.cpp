@@ -2,8 +2,8 @@
 #include <yajl/yajl_tree.h>
 #include "MyGameSocket.h"
 #include "../types/Actions.h"
-#include "../common/yajlHelpers.h"
-#include "../types/ProcessedRequest.h"
+#include "../json/ProcessedGameServerRequest.h"
+#include "../json/yajlHelpers.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -14,7 +14,7 @@ m_CallbackUserStatsReceived( this, &MyGameSocket::OnUserStatsReceived )
 
 std::string
 MyGameSocket::process_request(std::string request, bool& quit) {
-    ProcessedRequest r = decode_request(request);
+    ProcessedGameServerRequest r(request);
     std::string ret;
     const unsigned char * buf;
     size_t len;
@@ -25,14 +25,14 @@ MyGameSocket::process_request(std::string request, bool& quit) {
 
     encode_ack(handle);
 
-    switch (r.action) {
+    switch (r.getAction()) {
         case GET_ACHIEVEMENTS:
             // Write achievements to handle
             encode_achievements(handle, get_achievements());
             break;
 
         case STORE_ACHIEVEMENTS:
-            process_changes( decode_changes(request));
+            process_changes( r.payload_to_ach_changes() );
             break;
 
         case QUIT_GAME:
