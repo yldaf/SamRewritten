@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "ObserverClasses.h"
+#include "../../steam/steamtypes.h"
 
 /**
  * This class is used to download files from the internet
@@ -8,7 +9,7 @@
  * It inherits Subject, and will notify observers only on a successful
  * download.
  */
-class Downloader : public Subject<unsigned long> {
+class Downloader : public Subject<AppId_t> {
 public:
     /**
      * Singleton method to get the unique instance

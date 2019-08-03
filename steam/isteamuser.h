@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-#include "isteamclient.h"
+#include "steam_api_common.h"
 
 // structure that contains client callback data
 // see callbacks documentation for more details
@@ -19,7 +19,7 @@
 #elif defined( VALVE_CALLBACK_PACK_LARGE )
 #pragma pack( push, 8 )
 #else
-#error isteamclient.h must be included
+#error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
 #endif 
 struct CallbackMsg_t
 {
@@ -165,7 +165,7 @@ public:
 	// Requests a ticket encrypted with an app specific shared key
 	// pDataToInclude, cbDataToInclude will be encrypted into the ticket
 	// ( This is asynchronous, you must wait for the ticket to be completed by the server )
-	CALL_RESULT( EncryptedAppTicketResponse_t )
+	STEAM_CALL_RESULT( EncryptedAppTicketResponse_t )
 	virtual SteamAPICall_t RequestEncryptedAppTicket( void *pDataToInclude, int cbDataToInclude ) = 0;
 
 	// retrieve a finished ticket
@@ -189,7 +189,7 @@ public:
 	// or else immediately navigate to the result URL using a hidden browser window.
 	// NOTE 2: The resulting authorization cookie has an expiration time of one day,
 	// so it would be a good idea to request and visit a new auth URL every 12 hours.
-	CALL_RESULT( StoreAuthURLResponse_t )
+	STEAM_CALL_RESULT( StoreAuthURLResponse_t )
 	virtual SteamAPICall_t RequestStoreAuthURL( const char *pchRedirectURL ) = 0;
 
 	// gets whether the users phone number is verified 
@@ -204,10 +204,20 @@ public:
 	// gets whether the users phone number is awaiting (re)verification
 	virtual bool BIsPhoneRequiringVerification() = 0;
 
+	STEAM_CALL_RESULT( MarketEligibilityResponse_t )
+	virtual SteamAPICall_t GetMarketEligibility() = 0;
+
+	// Retrieves anti indulgence / duration control for current user
+	STEAM_CALL_RESULT( DurationControl_t )
+	virtual SteamAPICall_t GetDurationControl() = 0;
+
 };
 
-#define STEAMUSER_INTERFACE_VERSION "SteamUser019"
+#define STEAMUSER_INTERFACE_VERSION "SteamUser020"
 
+// Global interface accessor
+inline ISteamUser *SteamUser();
+STEAM_DEFINE_USER_INTERFACE_ACCESSOR( ISteamUser *, SteamUser, STEAMUSER_INTERFACE_VERSION );
 
 // callbacks
 #if defined( VALVE_CALLBACK_PACK_SMALL )
@@ -215,7 +225,7 @@ public:
 #elif defined( VALVE_CALLBACK_PACK_LARGE )
 #pragma pack( push, 8 )
 #else
-#error isteamclient.h must be included
+#error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
 #endif 
 
 //-----------------------------------------------------------------------------
@@ -362,6 +372,42 @@ struct StoreAuthURLResponse_t
 	char m_szURL[512];
 };
 
+
+//-----------------------------------------------------------------------------
+// Purpose: sent in response to ISteamUser::GetMarketEligibility
+//-----------------------------------------------------------------------------
+struct MarketEligibilityResponse_t
+{
+	enum { k_iCallback = k_iSteamUserCallbacks + 66 };
+	bool m_bAllowed;
+	EMarketNotAllowedReasonFlags m_eNotAllowedReason;
+	RTime32 m_rtAllowedAtTime;
+
+	int m_cdaySteamGuardRequiredDays; // The number of days any user is required to have had Steam Guard before they can use the market
+	int m_cdayNewDeviceCooldown; // The number of days after initial device authorization a user must wait before using the market on that device
+};
+
+
+//-----------------------------------------------------------------------------
+// Purpose: sent for games with enabled anti indulgence / duration control, for
+// enabled users. Lets the game know whether persistent rewards or XP should be
+// granted at normal rate, half rate, or zero rate.
+//
+// This callback is fired asynchronously in response to timers triggering.
+// It is also fired in response to calls to GetDurationControl().
+//-----------------------------------------------------------------------------
+struct DurationControl_t
+{
+	enum { k_iCallback = k_iSteamUserCallbacks + 67 };
+
+	EResult	m_eResult;								// result of call (always k_EResultOK for asynchronous timer-based notifications)
+	AppId_t m_appid;								// appid generating playtime
+
+	bool	m_bApplicable;							// is duration control applicable to user + game combination
+	int32 m_csecsLast5h;							// playtime in trailing 5 hour window plus current session, in seconds
+	EDurationControlProgress m_progress;			// recommended progress
+	EDurationControlNotification m_notification;	// notification to show, if any (always k_EDurationControlNotification_None for API calls)
+};
 
 
 #pragma pack( pop )

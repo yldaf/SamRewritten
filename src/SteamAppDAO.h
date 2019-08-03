@@ -1,9 +1,10 @@
 #pragma once
 #include <map>
 #include "common/ObserverClasses.h"
+#include "../steam/steamtypes.h"
 
 
-class SteamAppDAO : public Observer<unsigned long> {
+class SteamAppDAO : public Observer<AppId_t> {
 public:
     /**
      * Singleton method to get the unique instance
@@ -22,19 +23,19 @@ public:
      * Make sure to call update_name_database at least once 
      * before using.
      */
-    std::string get_app_name(const unsigned long& app_id);
+    std::string get_app_name(const AppId_t& app_id);
 
     /**
      * Download the app's banner ASYNCHRONOUSLY.
      * If it fails, nothing is written on the disk.
      */
-    void download_app_icon(const unsigned long& app_id);
+    void download_app_icon(const AppId_t& app_id);
 
     /**
      * Observer inherited method. The update will refresh 
      * the image for app id "i" on the view.
      */
-    void update(unsigned long i);
+    void update(AppId_t i);
 
     /**
      * After it parsed all apps from the latest updates, returns the parsed apps
@@ -44,7 +45,7 @@ public:
     /**
      * Returns true if the given appId is owned by the curent steam user
      * */
-    bool app_is_owned(const unsigned long app_id);
+    bool app_is_owned(const AppId_t& app_id);
     
     /**
      * Delete these to avoid any singleton bypass
@@ -55,6 +56,6 @@ private:
     SteamAppDAO();
     ~SteamAppDAO() {};
 
-    static void parse_app_names_v2();
-    static std::map<unsigned long, std::string> m_app_names;
+    static void parse_app_names();
+    static std::map<AppId_t, std::string> m_app_names;
 };

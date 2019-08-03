@@ -20,14 +20,6 @@ public:
     static MySteam* get_instance();
 
     /**
-     * Returns the steamId3 of the last user who logged in on the
-     * machine. Make sure all logs are enabled, or this may result
-     * in an error.
-     */
-    static std::string get_user_steamId3();
-
-
-    /**
      * Returns the absolute path to the steam installation folder.
      * This is not failsafe and may require some tweaking to add 
      * support for your distribution
@@ -56,12 +48,6 @@ public:
      * Returns true if a process was successfully stopped.
      */
     bool quit_game();
-
-    /**
-     * Mostly used for debug purposes, prints all apps owned
-     * (with stats or achievements) in the console.
-     */
-    void print_all_owned_games() const;
 
     /**
      * Makes a list of all owned games with stats or achievements.

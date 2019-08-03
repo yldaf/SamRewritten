@@ -86,40 +86,14 @@ MySteam::quit_game() {
  */
 void 
 MySteam::refresh_owned_apps() {
-    //TODO at bottom of function
-
-    const std::string path_to_cache_dir(MySteam::get_steam_install_path() + "/appcache/stats/");
-    DIR* dirp = opendir(path_to_cache_dir.c_str());
-    struct dirent * dp;
-    std::string filename;
-    const std::string prefix("UserGameStats_" + MySteam::get_user_steamId3() + "_");
-    const std::string input_scheme_c(prefix + "%lu.bin");
-    Game_t game;
-    unsigned long app_id;
-    SteamAppDAO* appDAO = SteamAppDAO::get_instance();
-
-    // The whole update will really occur only once in a while, no worries
-    appDAO->update_name_database();
-    m_all_subscribed_apps.clear();
-
-    while ((dp = readdir(dirp)) != NULL) {
-        filename = dp->d_name;
-        if(filename.rfind(prefix, 0) == 0) {
-            if(sscanf(dp->d_name, input_scheme_c.c_str(), &app_id) == 1) {
-                game.app_id = app_id;
-                game.app_name = appDAO->get_app_name(app_id);
-
-                m_all_subscribed_apps.push_back(game);
-            }
-        }
-    }
-
-    closedir(dirp);
-
     /*
-    // TODO: Scanning through all apps with this method results in not receiving
-    //       any apps
-    // Works for me please comment what errors you are getting or open an issue
+    TODO: Scanning through all apps with this method results in not receiving
+          any apps
+    Works for me please comment what errors you are getting or open an issue
+
+    Hypothesis: the steamclient.so file must be from the same version than the currently installed
+    Steam version.
+    */
     Game_t game;
     SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
@@ -138,57 +112,16 @@ MySteam::refresh_owned_apps() {
             m_all_subscribed_apps.push_back(game);
         }
     }
-    */
 
     std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
 }
 // => refresh_owned_apps
 
 /**
- * Could parse /home/user/.local/share/Steam/config/loginusers.vdf, but wrong id type
- * Parses STEAM/logs/parental_log.txt, hoping those logs can't be disabled
- * Return the most recently logged in user id
- * Returns empty string on error
- */
-std::string 
-MySteam::get_user_steamId3() {
-    static const std::string file_path(MySteam::get_steam_install_path() + "/logs/parental_log.txt");
-    std::ifstream input(file_path, std::ios::in);
-    std::string word;
-    
-    if(!input) {
-        std::cerr << "Could not open " << file_path << std::endl;
-        std::cerr << "Make sure you have a default steam installation, and that logging is not disabled." << std::endl;
-        input.close();
-        exit(EXIT_FAILURE);
-    }
-
-    //We're done setting up and checking, let's parse this file
-    bool next_is_id = false;
-    std::string latest_id = "";
-
-    while(input >> word) {
-        if(word == "ID:") {
-            next_is_id = true;
-            continue;
-        }
-
-        if(next_is_id) {
-            latest_id = word;
-            next_is_id = false;
-        }
-    }
-
-    input.close();
-
-    return latest_id;
-}
-// => get_user_steamId3
-
-
-/**
  * Tries to locate the steam folder in multiple locations,
  * which is not a failsafe implementation.
+ * 
+ * The original steamclient library path is tthe returned path + "/linux64/steamclient.so"
  */
 std::string 
 MySteam::get_steam_install_path() {
@@ -208,21 +141,6 @@ MySteam::get_steam_install_path() {
     }
 }
 // => get_steam_install_path
-
-
-/**
- * Mostly used for debug purposes
- */
-void 
-MySteam::print_all_owned_games() const {
-    std::cerr << "Summary of owned apps" << std::endl << "========================" << std::endl;
-
-    for(Game_t i : m_all_subscribed_apps) {
-        std::cerr << i.app_id << " -> " << i.app_name << std::endl;
-    }
-}
-// => print_all_owned_games
-
 
 /**
  * Reminder that download_app_icon does check if the file is 

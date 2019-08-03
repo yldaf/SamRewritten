@@ -1,6 +1,6 @@
 #pragma once
 #include "sockets/MyGameSocket.h"
-#include "../steam/steam_api.h"
+#include "../steam/steamtypes.h"
 
 class MyGameServer
 {

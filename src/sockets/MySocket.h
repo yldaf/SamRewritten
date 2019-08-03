@@ -1,5 +1,5 @@
 #pragma once
-#include "../../steam/steam_api.h"
+#include "../../steam/steamtypes.h"
 #include <string>
 #include <unistd.h>
 #include <sys/socket.h>
