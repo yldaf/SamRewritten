@@ -87,33 +87,36 @@ MySteam::quit_game() {
 void 
 MySteam::refresh_owned_apps() {
     /*
-    TODO: Scanning through all apps with this method results in not receiving
-          any apps
-    Works for me please comment what errors you are getting or open an issue
-
     Hypothesis: the steamclient.so file must be from the same version than the currently installed
     Steam version.
     */
-    Game_t game;
-    SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
-    // The whole update will really occur only once in a while, no worries
-    appDAO->update_name_database(); // Downloads and parses app list from Steam
-    m_all_subscribed_apps.clear();
+    if(m_owned_games_lock.try_lock()) {
+        Game_t game;
+        SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
-    auto all_apps = appDAO->get_all_apps();
-    for (auto pair : all_apps) {
-        auto app_id = pair.first;
-        if (appDAO->app_is_owned(app_id))
-        {
-            game.app_id = pair.first;
-            game.app_name = pair.second;
+        // The whole update will really occur only once in a while, no worries
+        appDAO->update_name_database(); // Downloads and parses app list from Steam
+        m_all_subscribed_apps.clear();
 
-            m_all_subscribed_apps.push_back(game);
+        auto all_apps = appDAO->get_all_apps();
+        for (auto pair : all_apps) {
+            auto app_id = pair.first;
+            if (appDAO->app_is_owned(app_id))
+            {
+                game.app_id = pair.first;
+                game.app_name = pair.second;
+
+                m_all_subscribed_apps.push_back(game);
+            }
         }
-    }
 
-    std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
+        std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
+        m_owned_games_lock.unlock();
+    }
+    else {
+        std::cerr << "Will not refresh owned apps because the lock is already accquired" << std::endl;
+    }
 }
 // => refresh_owned_apps
 
@@ -202,7 +205,7 @@ MySteam::remove_modification_ach(const std::string& ach_id) {
  * Commit pending achievement changes
  */
 void
-MySteam::commit_changes(void) {
+MySteam::commit_changes() {
     std::vector<AchievementChange_t> changes;
 
     for ( const auto& [key, val] : m_pending_ach_modifications) {

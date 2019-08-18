@@ -22,6 +22,16 @@ public:
     MainPickerWindow();
 
     /**
+     * Starts a gtk_main
+     */
+    void show();
+
+    /**
+     * Quit all
+     */
+    void stop();
+
+    /**
      * Empty the game list, leaving only the placeholder widget,
      * which means the loading widget.
      */
@@ -101,6 +111,7 @@ private:
     GtkStack *m_main_stack;
     GtkScrolledWindow *m_game_list_view;
     GtkScrolledWindow *m_stats_list_view;
+
     std::map<unsigned long, GtkWidget*> m_game_list_rows;
     std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;
 };

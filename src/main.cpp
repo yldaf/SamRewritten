@@ -12,6 +12,7 @@
 #include "globals.h"
 #include "cli_funcs.h"
 #include "common/functions.h"
+#include "common/PerfMon.h"
 
 /**************************************
  *  Declare global variables imported from globals.h
@@ -20,6 +21,7 @@ MySteam* g_steam = nullptr;
 MainPickerWindow* g_main_gui = nullptr;
 char* g_cache_folder = nullptr;
 MySteamClient* g_steamclient = nullptr;
+PerfMon* g_perfmon = nullptr;
 
 
 /**************************************
@@ -34,20 +36,21 @@ main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    g_perfmon = new PerfMon();
     gtk_init(&argc, &argv);
 
     g_steamclient = new MySteamClient();
     g_cache_folder = concat( getenv("HOME"), "/.SamRewritten" );
     g_steam = MySteam::get_instance();
     g_main_gui = new MainPickerWindow();
+    g_perfmon->log("Globals initialized.");
 
     // Check for command-line options, which may prevent showing the GUI
     // Note that a rewriting should be done to further separate the GUI
     // from a command-line interface
 	if(!go_cli_mode(argc, argv)) {
-		gtk_widget_show( g_main_gui->get_main_window() );
-		gtk_main();
+        g_main_gui->show();
 	}
 
-    return 0;
+    return EXIT_SUCCESS;
 }

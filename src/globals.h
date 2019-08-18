@@ -3,6 +3,7 @@
 class MySteam;
 class MainPickerWindow;
 class MySteamClient;
+class PerfMon;
 
 // Reason for the globals is that it's easier to access them in GTK callbacks
 // All those variables are initialised in main.cpp
@@ -35,3 +36,8 @@ extern MainPickerWindow *g_main_gui;
  *      ~/.SamRewritten
  */
 extern char *g_cache_folder;
+
+/**
+ * A basic performance monitor
+ */
+extern PerfMon *g_perfmon;

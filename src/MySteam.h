@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <mutex>
 
 /**
  * MySteam is the highest-level class of the program. Use it to 
@@ -66,7 +67,7 @@ public:
      * in user. Make sure to call refresh_owned_apps at least once to get 
      * correct results
      */
-    std::vector<Game_t> get_all_games_with_stats() { return m_all_subscribed_apps; };
+    std::vector<Game_t> get_subscribed_apps() { return m_all_subscribed_apps; };
 
     /**
      * Get achievements of the launched app
@@ -97,7 +98,7 @@ public:
     /**
      * Commit pending changes
      */
-    void commit_changes(void);
+    void commit_changes();
 
     MySteam(MySteam const&)                 = delete;
     void operator=(MySteam const&)          = delete;
@@ -115,4 +116,5 @@ private:
     std::vector<Game_t> m_all_subscribed_apps;
     std::map<std::string, bool> m_pending_ach_modifications;
     std::map<std::string, double> m_pending_stat_modifications;
+    std::mutex m_owned_games_lock;
 };

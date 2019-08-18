@@ -1,6 +1,8 @@
 #include "gtk_callbacks.h"
 #include <iostream>
+#include <thread>
 #include "MainPickerWindow.h"
+#include "../common/PerfMon.h"
 #include "../MySteam.h"
 #include "../globals.h"
 
@@ -29,11 +31,10 @@ extern "C"
 
     void 
     on_close_button_clicked() {
-        gtk_main_quit();
-        gtk_widget_destroy(g_main_gui->get_main_window());
-
+        g_main_gui->stop();
+        
         delete g_main_gui;
-        g_main_gui = NULL;
+        g_main_gui = nullptr;
 
         g_steam->quit_game();
     }
@@ -51,22 +52,28 @@ extern "C"
 
     void 
     on_ask_game_refresh() {
+
+        g_perfmon->log("Starting library parsing.");
+
         g_main_gui->reset_game_list();
         g_steam->refresh_owned_apps();
 
-        for(Game_t app : g_steam->get_all_games_with_stats()) {
+        for(Game_t app : g_steam->get_subscribed_apps()) {
             g_main_gui->add_to_game_list(app);
         }
 
         g_steam->refresh_icons();
         g_main_gui->confirm_game_list();
+
+        g_perfmon->log("Library parsed.");
+
     }
     // => on_ask_game_refresh
 
 
     void 
     on_main_window_show() {
-        on_ask_game_refresh(); //Run this async?
+        on_ask_game_refresh();
     }
     // => on_main_window_show
 

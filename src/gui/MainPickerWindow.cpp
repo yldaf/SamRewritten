@@ -1,6 +1,7 @@
 #include "MainPickerWindow.h"
 #include <iostream>
 #include "../common/functions.h"
+#include "../common/PerfMon.h"
 #include "../globals.h"
 #include "../types/Achievement.h"
 #include "gtk_callbacks.h"
@@ -183,16 +184,14 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     g_list_free(children);
 
     pixbuf = gdk_pixbuf_new_from_file(path.c_str(), &error);
-    if (error != NULL) {
-        std::cerr << "Error while loading an app's logo: " << std::endl;
-        std::cerr << "AppId: " << app_id << std::endl;
-        std::cerr << "Message: "  << error->message << std::endl;
-    }
-    else {
-        //Quick and jerky, quality isn't key here
+    if (error == NULL) {
+        // Quick and jerky, quality isn't key here
         // Is the excess of memory freed though?
         pixbuf = gdk_pixbuf_scale_simple(pixbuf, 146, 68, GDK_INTERP_NEAREST);
         gtk_image_set_from_pixbuf(img, pixbuf);
+    }
+    else {
+        std::cerr << "Error loading banner: " << error->message << std::endl;        
     }
 
 }
@@ -269,3 +268,17 @@ MainPickerWindow::switch_to_games_page() {
     m_achievement_list_rows.clear();
 }
 // => switch_to_games_page
+
+void
+MainPickerWindow::show() {
+    gtk_widget_show( get_main_window() );
+    gtk_main();
+}
+// => show
+
+void
+MainPickerWindow::stop() {
+    gtk_main_quit();
+    gtk_widget_destroy( get_main_window() );
+}
+// => stop
