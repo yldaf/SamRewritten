@@ -31,3 +31,9 @@ char* concat(const char *s1, const char *s2);
  * Insensitive "string in string"
  */
 bool strstri(const std::string & strHaystack, const std::string & strNeedle);
+
+/**
+ * Make a directory with reasonable defaults
+ * or fail hard on error
+ */
+void mkdir_default(const char *pathname);

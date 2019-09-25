@@ -60,7 +60,6 @@ char* concat(const char *s1, const char *s2)
     return result;
 }
 
-
 bool strstri(const std::string & strHaystack, const std::string & strNeedle)
 {
   auto it = std::search(
@@ -69,4 +68,13 @@ bool strstri(const std::string & strHaystack, const std::string & strNeedle)
     [](char ch1, char ch2) { return std::toupper(ch1) == std::toupper(ch2); }
   );
   return (it != strHaystack.end() );
+}
+
+void mkdir_default(const char *pathname)
+{
+    int mkdir_error = mkdir(pathname, S_IRWXU | S_IRWXG | S_IROTH);
+    if (mkdir_error != 0 && errno != EEXIST) {
+		    std::cerr << "Unable to create the folder " << pathname << ", errno " << errno << ")." << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }

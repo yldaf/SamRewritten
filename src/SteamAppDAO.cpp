@@ -45,14 +45,6 @@ SteamAppDAO::update_name_database() {
     static const char* local_file_name = concat(g_cache_folder, "/app_names");
     const std::time_t current_time(std::time(0));
 
-	// Make sure the cache folder is there
-    const int mkdir_error = mkdir(g_cache_folder, S_IRWXU | S_IRWXG | S_IROTH);
-    if(mkdir_error != 0 && errno != EEXIST) {
-		std::cerr << "Unable to create the cache folder ( ~/.SamRewritten/, errno " << errno << ")." << std::endl;
-        std::cerr << "Don't tell me you're running this as root.." << std::endl;
-        exit(EXIT_FAILURE);
-	}
-
     // Check if the file is already there
     if (file_exists(local_file_name)) {
         //Check the last time it was updated
@@ -70,7 +62,7 @@ SteamAppDAO::update_name_database() {
             }
         }
         else {
-            std::cerr << "~/.SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
+            std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
             std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
             std::cerr << "your home folder folder." << std::endl;
 
@@ -99,11 +91,7 @@ SteamAppDAO::download_app_icon(const AppId_t& app_id) {
     const std::string local_path(local_folder + "/banner");
     const std::string url("http://cdn.akamai.steamstatic.com/steam/apps/" + std::to_string(app_id) + "/header_292x136.jpg");
 
-    const int mkdir_error = mkdir(local_folder.c_str(), S_IRWXU | S_IRWXG | S_IROTH);
-    if(mkdir_error != 0 && errno != EEXIST) {
-		std::cerr << "Unable to create the cache folder (" << local_folder << ", errno " << errno << ")." << std::endl;
-        exit(EXIT_FAILURE);
-	}
+    mkdir_default(local_folder.c_str());
 
     Downloader::get_instance()->download_file_async(url, local_path, app_id);
 }

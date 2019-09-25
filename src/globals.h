@@ -31,11 +31,25 @@ extern MainPickerWindow *g_main_gui;
 /**
  * The absolute path to the cache folder. It's global, because everyone will
  * need to write or read into this folder at some point. 
- * As of right now the default path is:
- * 
- *      ~/.SamRewritten
+ * XDG Base Directory Specification is followed:
+ * If present, this variable uses XDG_CACHE_HOME and takes the value
+ *      $XDG_CACHE_HOME/SamRewritten
+ * Otherwise, this variable properly defaults to
+ *      ~/.cache/SamRewritten
  */
 extern char *g_cache_folder;
+
+/**
+ * The absolute path to the runtime folder. It's global, because everyone will
+ * need to write or read into this folder at some point. It's used for storing
+ * sockets used by the program.
+ * XDG Base Directory Specification is followed:
+ * If present, this variable uses XDG_RUNTIME_DIR and takes the value
+ *      $XDG_RUNTIME_DIR/SamRewritten
+ * Warnings are properly issued if it is not set, but  still defaults to the
+ * cache folder for simplicity
+ */
+extern char *g_runtime_folder;
 
 /**
  * A basic performance monitor

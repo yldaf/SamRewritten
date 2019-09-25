@@ -6,8 +6,8 @@
 #include <iostream>
 
 MySocket::MySocket(AppId_t appid) : m_appid(appid), m_socket_fd(-1)
-{
-    m_socket_path = std::string(g_cache_folder) + "/" + std::to_string(m_appid) + "/ipc.sock";
+{ 
+    m_socket_path = std::string(g_runtime_folder) + "/" + std::to_string(m_appid) + "-ipc.sock";
 }
 
 MySocket::~MySocket()

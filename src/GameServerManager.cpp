@@ -1,5 +1,6 @@
 #include "GameServerManager.h"
 #include "MyGameServer.h"
+#include "MySteamClient.h"
 
 // TODO: shouldn't really need MySteam inside here
 #include "MySteam.h"
@@ -20,6 +21,12 @@ GameServerManager::quick_server_create(AppId_t appid)
     if((pid = fork()) == 0) {
         // Son's process: server role
         
+        // We need to delete this to unload steamclient.so from the
+        // child's process map, otherwise we pick up on a steam client
+        // state from the app detection stage that doesn't have an appid
+        // associated with it.
+        delete g_steamclient;
+
         MyGameServer server(appid);
         server.run();
 

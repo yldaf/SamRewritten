@@ -86,11 +86,6 @@ MySteam::quit_game() {
  */
 void 
 MySteam::refresh_owned_apps() {
-    /*
-    Hypothesis: the steamclient.so file must be from the same version than the currently installed
-    Steam version.
-    */
-
     if(m_owned_games_lock.try_lock()) {
         Game_t game;
         SteamAppDAO* appDAO = SteamAppDAO::get_instance();
@@ -124,18 +119,28 @@ MySteam::refresh_owned_apps() {
  * Tries to locate the steam folder in multiple locations,
  * which is not a failsafe implementation.
  * 
- * The original steamclient library path is tthe returned path + "/linux64/steamclient.so"
+ * The original steamclient library path is the returned path + "/linux64/steamclient.so"
  */
-std::string 
+std::string
 MySteam::get_steam_install_path() {
-    static const std::string home_path(getenv("HOME"));
-    if(file_exists(home_path + "/.local/share/Steam/appcache/appinfo.vdf")) {
-        return std::string(home_path + "/.local/share/Steam");
+    std::string data_home_path;
+    if (getenv("XDG_DATA_HOME") != NULL) {
+        data_home_path = getenv("XDG_DATA_HOME");
+    } else {
+        data_home_path = getenv("HOME") + std::string("/.local/share");
     }
-    else if(file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
+
+    if (file_exists(data_home_path + "/Steam/appcache/appinfo.vdf")) {
+        return std::string(data_home_path + "/Steam");
+    }
+
+    std::cerr << "Trying to find Steam install with legacy Steam paths" << std::endl;
+
+    const std::string home_path = getenv("HOME");
+    if (file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
         return std::string(home_path + "/.steam");
     }
-    else if(file_exists(home_path + "/.steam/steam/appcache/appinfo.vdf")) {
+    else if (file_exists(home_path + "/.steam/steam/appcache/appinfo.vdf")) {
         return std::string(home_path + "/.steam/steam");
     }
     else {

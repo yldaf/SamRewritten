@@ -2,8 +2,9 @@
 #include <iostream>
 #include <dlfcn.h>
 #include "../steam/steam_api.h"
+#include "MySteam.h"
 
-#define STEAM_CLIENT_LIB_PATH "steamclient.so"
+#define RELATIVE_STEAM_CLIENT_LIB_PATH "/linux64/steamclient.so"
 
 /**
  * Purpose: 
@@ -39,20 +40,21 @@ public:
         m_steamclient->BShutdownIfAllPipesClosed();
         dlclose(m_handle);
     }
-    MySteamClient() {
+    MySteamClient() {    
         char* error;
-        m_handle = dlopen(STEAM_CLIENT_LIB_PATH, RTLD_LAZY);
+        const std::string steam_client_lib_path = MySteam::get_steam_install_path() + RELATIVE_STEAM_CLIENT_LIB_PATH;
+        m_handle = dlopen(steam_client_lib_path.c_str(), RTLD_LAZY);
         if (!m_handle) {
-            std::cerr << "Error opening the Steam Client library. Exitting. Info:" << std::endl;
+            std::cerr << "Error opening the Steam Client library. Exiting. Info:" << std::endl;
             std::cerr << dlerror() << std::endl;
             exit(EXIT_FAILURE);
         }
-
+        
         ISteamClient* (*CreateInterface)(const char* version, void*);
 
         CreateInterface = (ISteamClient* (*)(const char*, void*))dlsym(m_handle, "CreateInterface");
         if ((error = dlerror()) != NULL)  {
-            std::cerr << "Error reading the CreateInterface symbol from the Steam Client library. Exitting. Info:" << std::endl;
+            std::cerr << "Error reading the CreateInterface symbol from the Steam Client library. Exiting. Info:" << std::endl;
             std::cerr << error << std::endl;
             exit(EXIT_FAILURE);
         }
