@@ -7,6 +7,33 @@
 extern "C" 
 {
     /**
+     * Information for implementing lazy loading of games.
+     * source: https://www.bassi.io/pages/lazy-loading/
+     */
+
+    /* states in the FSM */
+    enum {
+        STATE_STARTED,  /* start state */
+        STATE_LOADING,  /* feeding the items to the model */
+        STATE_FINISHED  /* finish state */
+    };
+
+    /* data to be passed to the idle handler */
+    typedef struct
+    {
+        /* the current state */
+        guint state;
+
+        /**
+         * other information is just pulled from the global
+         * or other singleton info for now
+         */
+
+        /* the currently loaded item */
+        guint current_item;
+    } IdleData;
+
+    /**
      * When you click on the close button if steam is not running
      * Quit the GTK process, and destroy as much as possible: the program
      * is about to be exitted completely.

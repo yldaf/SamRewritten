@@ -18,16 +18,9 @@ m_main_stack(nullptr),
 m_game_list_view(nullptr),
 m_stats_list_view(nullptr)
 {
-    GError *error = NULL;
-    m_builder = gtk_builder_new();
     const char ui_file[] = "glade/main_window.glade";
-    
-    // Load the builder
-    gtk_builder_add_from_file (m_builder, ui_file, &error);
-    if(error != NULL) {
-        std::cerr << "An error occurred opening the main window.. Make sure " << ui_file << " exists and is a valid file." << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    // This function does all error handling and aborts if there is an error.
+    m_builder = gtk_builder_new_from_file(ui_file);
 
     // Load the required widgets through the builder
     m_game_list = GTK_LIST_BOX(gtk_builder_get_object(m_builder, "game_list"));

@@ -28,7 +28,6 @@ extern "C"
     }
     // => populate_achievements
 
-
     void 
     on_close_button_clicked() {
         g_main_gui->stop();
@@ -50,26 +49,86 @@ extern "C"
     }
     // => on_store_button_clicked
 
-    void 
-    on_ask_game_refresh() {
-
-        g_perfmon->log("Starting library parsing.");
-
-        g_main_gui->reset_game_list();
-        g_steam->refresh_owned_apps();
-
-        for(Game_t app : g_steam->get_subscribed_apps()) {
-            g_main_gui->add_to_game_list(app);
+    /* the actual loading function */
+    static gboolean
+    load_items_idle (gpointer data_)
+    {
+        IdleData *data = (IdleData *)data_;
+            
+        // To improve launch-to-window-show time, relinquish some cycles
+        // to the main loop. Limit is experimentally determined.
+        // Only do it for the first load, subsequent refreshes will not
+        // be affected.
+        static int wait_cycles_counter = 0;
+        if (wait_cycles_counter < 500) {
+            wait_cycles_counter++;
+            return G_SOURCE_CONTINUE;
         }
 
+        if (data->state == STATE_STARTED)
+        {
+            // Trigger updates for data initialization here
+            // just to get it out of the critical path for
+            // showing the window.
+            // TODO: Further split out the app_is_owned loop
+            // in refresh_owned_apps to give better responsiveness
+            g_perfmon->log("Starting library parsing.");
+            g_main_gui->reset_game_list();
+            g_steam->refresh_owned_apps();
+            data->state = STATE_LOADING;
+        }
+
+        if (data->current_item == g_steam->get_subscribed_apps().size()) {
+            data->state = STATE_FINISHED;
+            return G_SOURCE_REMOVE;
+        }
+
+        Game_t app  = g_steam->get_subscribed_apps()[data->current_item];
+        g_main_gui->add_to_game_list(app);
+        data->current_item++;
+
+        return G_SOURCE_CONTINUE;
+    }
+    // => load_items_idle
+
+    /* the finish function */
+    static void
+    finish_load_items (gpointer data_)
+    {
+        IdleData *data = (IdleData *)data_;
+
+        // This must occur after the main gui game_list is
+        // complete, otherwise we might have concurrent
+        // access and modification of the game_list
         g_steam->refresh_icons();
         g_main_gui->confirm_game_list();
-
         g_perfmon->log("Library parsed.");
+
+        g_free (data);
+    }
+    // => finish_load_items
+
+    void 
+    on_ask_game_refresh() {
+        // TODO: we may want some mutexes around here to prevent
+        // double clicking refresh button from corrupting the main
+        // window
+
+        IdleData *data;
+
+        data = g_new(IdleData, 1);
+        data->current_item = 0;
+        data->state = STATE_STARTED;
+
+        // Use low priority so we don't block showing the main window
+        // This allows the main window to show up immediately
+        g_idle_add_full (G_PRIORITY_LOW,
+                        load_items_idle,
+                        data,
+                        finish_load_items);
 
     }
     // => on_ask_game_refresh
-
 
     void 
     on_main_window_show() {

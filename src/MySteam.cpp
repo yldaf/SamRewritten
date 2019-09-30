@@ -79,10 +79,9 @@ MySteam::quit_game() {
 
 
 /**
- * This does NOT retrieves all owned games.
- * It does retrieve all owned games WITH STATS or ACHIEVEMENTS
+ * This retrieves all owned apps, which currently include
+ * non-games like DLC and servers.
  * Stores the owned games in m_all_subscribed_apps
- * We assume the user didn't put any garbage in his steam folder as well.
  */
 void 
 MySteam::refresh_owned_apps() {

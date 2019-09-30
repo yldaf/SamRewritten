@@ -70,9 +70,6 @@ MyServerSocket::run_server()
 
         // Read all the client's request
         std::string request = receive_message(data_socket);
-
-        std::cerr << "Server received request: " << request << std:: endl;
-
         send_message(data_socket, process_request(request, quit));
 
         if (quit)

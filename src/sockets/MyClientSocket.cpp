@@ -49,7 +49,6 @@ MyClientSocket::request_response(std::string request)
     connect_to_server();
     send_message(request);
     std::string ret = receive_message();
-    std::cerr << "client receieved " << ret << std::endl;
     disconnect();
     return ret;
 }

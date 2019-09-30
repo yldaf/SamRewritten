@@ -115,14 +115,14 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 //m_achievement_list[i].icon_handle = 0;
             }
 
-            m_stats_callback_received = true;
-
         } else {
             std::cerr << "Received stats for the game, but an error occurrred." << std::endl;
         }
     } else {
         std::cerr << "Received stats for wrong game" << std::endl;
     }
+
+    m_stats_callback_received = true;
 }
 
 
