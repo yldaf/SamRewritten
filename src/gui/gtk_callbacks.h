@@ -14,7 +14,8 @@ extern "C"
     /* states in the FSM */
     enum {
         STATE_STARTED,  /* start state */
-        STATE_LOADING,  /* feeding the items to the model */
+        STATE_LOADING_GUI,  /* feeding game rows to the model */
+        STATE_DOWNLOADING_ICONS,  /* fire off icon downloads (to be added to the model) */
         STATE_FINISHED  /* finish state */
     };
 

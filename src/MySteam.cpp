@@ -82,6 +82,8 @@ MySteam::quit_game() {
  * This retrieves all owned apps, which currently include
  * non-games like DLC and servers.
  * Stores the owned games in m_all_subscribed_apps
+ * This could be split out into the load_items_idle loop in gtk_callbacks,
+ * but this isn't the performance bottleneck currently
  */
 void 
 MySteam::refresh_owned_apps() {
@@ -155,12 +157,9 @@ MySteam::get_steam_install_path() {
  * It also has a "callback" that will refresh the view.
  */
 void 
-MySteam::refresh_icons() {
+MySteam::refresh_icon(Game_t app) {
     SteamAppDAO *appDAO = SteamAppDAO::get_instance();
-    
-    for(Game_t i : m_all_subscribed_apps) {
-        appDAO->download_app_icon(i.app_id);
-    }
+    appDAO->download_app_icon(app.app_id);
 }
 // => refresh_icons
 

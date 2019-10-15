@@ -60,7 +60,7 @@ public:
      * Once fetched, the view is automatically updated with
      * the fetched image. (Observer pattern)
      */
-    void refresh_icons();
+    void refresh_icon(Game_t app);
 
     /**
      * Returns all the already loaded retrieved apps by the latest logged 

@@ -75,18 +75,43 @@ extern "C"
             g_perfmon->log("Starting library parsing.");
             g_main_gui->reset_game_list();
             g_steam->refresh_owned_apps();
-            data->state = STATE_LOADING;
+            g_perfmon->log("Done retrieving and filtering owned apps");
+            data->state = STATE_LOADING_GUI;
+            return G_SOURCE_CONTINUE;
         }
 
-        if (data->current_item == g_steam->get_subscribed_apps().size()) {
-            data->state = STATE_FINISHED;
-            return G_SOURCE_REMOVE;
+        if (data->state == STATE_LOADING_GUI) {
+            if (data->current_item == g_steam->get_subscribed_apps().size()) {
+                g_perfmon->log("Done adding apps to GUI");
+                g_main_gui->confirm_game_list();
+                data->state = STATE_DOWNLOADING_ICONS;
+                data->current_item = 0;
+                return G_SOURCE_CONTINUE;
+            }
+
+            Game_t app = g_steam->get_subscribed_apps()[data->current_item];
+            g_main_gui->add_to_game_list(app);
+            data->current_item++;
+            return G_SOURCE_CONTINUE;
         }
 
-        Game_t app  = g_steam->get_subscribed_apps()[data->current_item];
-        g_main_gui->add_to_game_list(app);
-        data->current_item++;
+        if (data->state == STATE_DOWNLOADING_ICONS) {
+            if (data->current_item == g_steam->get_subscribed_apps().size()) {
+                g_perfmon->log("Done starting icon downloads");
+                data->state = STATE_FINISHED;
+                return G_SOURCE_REMOVE;
+            }
 
+            // This must occur after the main gui game_list is
+            // complete, otherwise we might have concurrent
+            // access and modification of the game_list
+            Game_t app = g_steam->get_subscribed_apps()[data->current_item];
+            g_steam->refresh_icon(app);
+            data->current_item++;
+            return G_SOURCE_CONTINUE;
+        }
+
+        // Should never reach here
         return G_SOURCE_CONTINUE;
     }
     // => load_items_idle
@@ -96,14 +121,7 @@ extern "C"
     finish_load_items (gpointer data_)
     {
         IdleData *data = (IdleData *)data_;
-
-        // This must occur after the main gui game_list is
-        // complete, otherwise we might have concurrent
-        // access and modification of the game_list
-        g_steam->refresh_icons();
-        g_main_gui->confirm_game_list();
         g_perfmon->log("Library parsed.");
-
         g_free (data);
     }
     // => finish_load_items
