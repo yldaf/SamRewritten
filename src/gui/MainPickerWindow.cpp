@@ -151,6 +151,10 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     if(app_id == 0)
         return;
 
+    // Modifying the main GUI from many different threads causes problems
+    // so just protect it from concurrent access
+    refresh_app_icon_mutex.lock();
+
     //TODO make sure app_id is index of m_game_list_rows
     GList *children;
     GtkImage *img;
@@ -186,7 +190,7 @@ MainPickerWindow::refresh_app_icon(const unsigned long app_id) {
     else {
         std::cerr << "Error loading banner: " << error->message << std::endl;        
     }
-
+    refresh_app_icon_mutex.unlock();
 }
 // => refresh_app_icon
 

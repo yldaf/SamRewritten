@@ -2,6 +2,7 @@
 #include <string>
 #include "ObserverClasses.h"
 #include "../../steam/steamtypes.h"
+#include "Semaphore.h"
 
 /**
  * This class is used to download files from the internet
@@ -36,6 +37,10 @@ public:
     void operator=(Downloader const&)             = delete;
 
 private:
-    Downloader() {};
+    // Limit to 10 simultaneous downloads for now...
+    // otherwise network resolution starts
+    // failing when many download threads (~hundreds?) are launched
+    Downloader() : downloads_semaphore(10) {};
     ~Downloader() {};
+    semaphore downloads_semaphore;
 };

@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <gtk/gtk.h>
+#include <mutex>
 
 
 /**
@@ -111,6 +112,7 @@ private:
     GtkStack *m_main_stack;
     GtkScrolledWindow *m_game_list_view;
     GtkScrolledWindow *m_stats_list_view;
+    std::mutex refresh_app_icon_mutex;
 
     std::map<unsigned long, GtkWidget*> m_game_list_rows;
     std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;
