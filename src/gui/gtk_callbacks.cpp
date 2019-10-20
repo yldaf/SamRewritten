@@ -8,13 +8,6 @@
 
 // See comments in the header file
 
-// TODO: clean this up and pull it into a class or IdleData
-// when it is transformed to C++
-#define MAX_OUTSTANDING_ICON_DOWNLOADS 10
-int outstanding_icon_downloads;
-std::future<void> owned_apps_future;
-std::map< AppId_t, std::future<void>> icon_download_futures;
-
 extern "C"
 {
 
@@ -78,13 +71,13 @@ extern "C"
         if (data->state == STATE_STARTED) {
             g_main_gui->reset_game_list();
             g_perfmon->log("Starting library parsing.");
-            owned_apps_future = std::async(std::launch::async, []{g_steam->refresh_owned_apps();});
+            g_main_gui->owned_apps_future = std::async(std::launch::async, []{g_steam->refresh_owned_apps();});
             data->state = STATE_WAITING_FOR_OWNED_APPS;
             return G_SOURCE_CONTINUE;
         }
 
         if (data->state == STATE_WAITING_FOR_OWNED_APPS) {
-            if (owned_apps_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            if (g_main_gui->owned_apps_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 g_perfmon->log("Done retrieving and filtering owned apps");
                 data->state = STATE_LOADING_GUI;
             }
@@ -114,7 +107,7 @@ extern "C"
             bool done_starting_downloads = (data->current_item == g_steam->get_subscribed_apps().size());
 
             // Make sure we're done starting all downloads and finshed with outstanding downloads
-            if (done_starting_downloads && (icon_download_futures.size() == 0)) {
+            if (done_starting_downloads && (g_main_gui->icon_download_futures.size() == 0)) {
                 g_perfmon->log("Done downloading icons");
                 data->state = STATE_FINISHED;
                 return G_SOURCE_REMOVE;
@@ -131,13 +124,13 @@ extern "C"
             // but the GTK main loop is forcibly single-threaded
             // (the whole reason we need to do these shenanigans anyway),
             // so only 1 thread will ever be here at a time anyway.
-            if ( !done_starting_downloads && (outstanding_icon_downloads < MAX_OUTSTANDING_ICON_DOWNLOADS))  {
+            if ( !done_starting_downloads && (g_main_gui->outstanding_icon_downloads < MAX_OUTSTANDING_ICON_DOWNLOADS))  {
                 // Fire off a new download thread
                 Game_t app = g_steam->get_subscribed_apps()[data->current_item];
-                icon_download_futures.insert(std::make_pair(app.app_id, std::async(std::launch::async, g_steam->refresh_icon, app.app_id)));
-                outstanding_icon_downloads++;
+                g_main_gui->icon_download_futures.insert(std::make_pair(app.app_id, std::async(std::launch::async, g_steam->refresh_icon, app.app_id)));
+                g_main_gui->outstanding_icon_downloads++;
                 data->current_item++;
-                
+
                 // continue on to service a thread if it's finished
             }
 
@@ -146,12 +139,12 @@ extern "C"
             // icon_download_futures size, which is controlled by MAX_ICON_DOWNLOADS.
             // Increasing this could lead to GUI stutter if it needs to traverse a large map,
             // although the map has logarithmic traversal and update complexity.
-            for (auto const& [app_id, this_future] : icon_download_futures) {
+            for (auto const& [app_id, this_future] : g_main_gui->icon_download_futures) {
                 if (this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                     // TODO: remove the app if it has a bad icon? (because then it's mostly likely not a game)
                     g_main_gui->refresh_app_icon(app_id);
-                    icon_download_futures.erase(app_id);
-                    outstanding_icon_downloads--;
+                    g_main_gui->icon_download_futures.erase(app_id);
+                    g_main_gui->outstanding_icon_downloads--;
                     // let's only process one at a time
                     return G_SOURCE_CONTINUE;
                 }
@@ -171,30 +164,30 @@ extern "C"
     {
         IdleData *data = (IdleData *)data_;
         g_perfmon->log("Library parsed.");
-        g_free (data);
+        g_free(data);
+        g_main_gui->m_game_refresh_lock.unlock();
     }
     // => finish_load_items
 
     void 
     on_ask_game_refresh() {
-        // TODO: we may want some mutexes around here to prevent
-        // double clicking refresh button from corrupting the main
-        // window
+        if (g_main_gui->m_game_refresh_lock.try_lock()) {
+            IdleData *data;
 
-        IdleData *data;
+            data = g_new(IdleData, 1);
+            data->current_item = 0;
+            data->state = STATE_STARTED;
+            g_main_gui->outstanding_icon_downloads = 0;
 
-        data = g_new(IdleData, 1);
-        data->current_item = 0;
-        data->state = STATE_STARTED;
-        outstanding_icon_downloads = 0;
-
-        // Use low priority so we don't block showing the main window
-        // This allows the main window to show up immediately
-        g_idle_add_full (G_PRIORITY_LOW,
-                        load_items_idle,
-                        data,
-                        finish_load_items);
-
+            // Use low priority so we don't block showing the main window
+            // This allows the main window to show up immediately
+            g_idle_add_full (G_PRIORITY_LOW,
+                            load_items_idle,
+                            data,
+                            finish_load_items);
+        } else {
+            std::cerr << "Not refreshing games because a refresh is already in progress" << std::endl;
+        }
     }
     // => on_ask_game_refresh
 

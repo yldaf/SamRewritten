@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <mutex>
 
 /**
  * MySteam is the highest-level class of the program. Use it to 
@@ -114,5 +113,4 @@ private:
     std::vector<Game_t> m_all_subscribed_apps;
     std::map<std::string, bool> m_pending_ach_modifications;
     std::map<std::string, double> m_pending_stat_modifications;
-    std::mutex m_owned_games_lock;
 };

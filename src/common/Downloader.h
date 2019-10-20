@@ -5,6 +5,9 @@
 /**
  * This class is used to download files from the internet
  * It follows a single singleton pattern and is meant to be very basic.
+ * 
+ * Launching lots of simultaneous downloads causes DNS resolution to start
+ * failing, so users of this class should limit to ~10 simultaneous downloads for now...
  */
 class Downloader
 {
@@ -28,9 +31,6 @@ public:
     void operator=(Downloader const&)             = delete;
 
 private:
-    // Limit to 10 simultaneous downloads for now...
-    // otherwise network resolution starts
-    // failing when many download threads (~hundreds?) are launched
     Downloader() {};
     ~Downloader() {};
 };

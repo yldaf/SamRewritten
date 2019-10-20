@@ -81,38 +81,30 @@ MySteam::quit_game() {
 /**
  * This retrieves all owned apps, which currently include
  * non-games like DLC and servers.
- * Stores the owned games in m_all_subscribed_apps
- * This could be split out into the load_items_idle loop in gtk_callbacks,
- * but this isn't the performance bottleneck currently
+ * Stores the owned games in m_all_subscribed_apps.
  */
 void 
 MySteam::refresh_owned_apps() {
-    if(m_owned_games_lock.try_lock()) {
-        Game_t game;
-        SteamAppDAO* appDAO = SteamAppDAO::get_instance();
+    Game_t game;
+    SteamAppDAO* appDAO = SteamAppDAO::get_instance();
 
-        // The whole update will really occur only once in a while, no worries
-        appDAO->update_name_database(); // Downloads and parses app list from Steam
-        m_all_subscribed_apps.clear();
+    // The whole update will really occur only once in a while, no worries
+    appDAO->update_name_database(); // Downloads and parses app list from Steam
+    m_all_subscribed_apps.clear();
 
-        auto all_apps = appDAO->get_all_apps();
-        for (auto pair : all_apps) {
-            auto app_id = pair.first;
-            if (appDAO->app_is_owned(app_id))
-            {
-                game.app_id = pair.first;
-                game.app_name = pair.second;
+    auto all_apps = appDAO->get_all_apps();
+    for (auto pair : all_apps) {
+        auto app_id = pair.first;
+        if (appDAO->app_is_owned(app_id))
+        {
+            game.app_id = pair.first;
+            game.app_name = pair.second;
 
-                m_all_subscribed_apps.push_back(game);
-            }
+            m_all_subscribed_apps.push_back(game);
         }
+    }
 
-        std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
-        m_owned_games_lock.unlock();
-    }
-    else {
-        std::cerr << "Will not refresh owned apps because the lock is already accquired" << std::endl;
-    }
+    std::sort(m_all_subscribed_apps.begin(), m_all_subscribed_apps.end(), comp_app_name);
 }
 // => refresh_owned_apps
 

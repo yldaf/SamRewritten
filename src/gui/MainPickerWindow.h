@@ -6,7 +6,9 @@
 #include <map>
 #include <gtk/gtk.h>
 #include <mutex>
+#include <future>
 
+#define MAX_OUTSTANDING_ICON_DOWNLOADS 10
 
 /**
  * The main GUI class to display both the games ans the achievements to the user
@@ -101,6 +103,29 @@ public:
      * Getter for the main window
      */
     GtkWidget* get_main_window() { return m_main_window; };
+
+    /**
+     * TODO:
+     * All these public variables may better belong in
+     * gtk_callbacks.h if that becomes a class.
+     * Make them public for now so we can get to them from
+     * C functions in gtk_callbacks.cpp without yet having to
+     * deal with C++/C linkage differences
+     * 
+     * Putting std::futures in a C struct is a bad idea because C
+     * runtime libraries become confused and crash the program,
+     * so keep them in this C++ class for now.
+     */
+
+    /**
+     * Mutex to prevent on_ask_game_refresh from being reentrant
+     * and allowing multiple idle threads to corrupt the main window.
+     */
+    std::mutex m_game_refresh_lock;
+
+    int outstanding_icon_downloads;
+    std::future<void> owned_apps_future;
+    std::map< AppId_t, std::future<void>> icon_download_futures;
 
 private:
     GtkWidget *m_main_window;
