@@ -73,7 +73,7 @@ public:
      * Once the correct icon has been retrieved, this method will be called
      * to set the right image retrieved from Steam
      */
-    void refresh_app_icon(const unsigned long app_id);
+    void refresh_app_icon(AppId_t app_id);
 
     /**
      * Filters the game list. For a title to stay displayed,
@@ -112,7 +112,6 @@ private:
     GtkStack *m_main_stack;
     GtkScrolledWindow *m_game_list_view;
     GtkScrolledWindow *m_stats_list_view;
-    std::mutex refresh_app_icon_mutex;
 
     std::map<unsigned long, GtkWidget*> m_game_list_rows;
     std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;

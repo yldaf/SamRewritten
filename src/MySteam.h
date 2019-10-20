@@ -57,10 +57,8 @@ public:
 
     /**
      * Fetches all the app icons either online or on the disk.
-     * Once fetched, the view is automatically updated with
-     * the fetched image. (Observer pattern)
      */
-    void refresh_icon(Game_t app);
+    static void refresh_icon(AppId_t app_id);
 
     /**
      * Returns all the already loaded retrieved apps by the latest logged 

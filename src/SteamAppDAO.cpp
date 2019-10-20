@@ -21,13 +21,6 @@
 std::map<AppId_t, std::string> SteamAppDAO::m_app_names = std::map<AppId_t, std::string>();
 
 /**
- * Observer pattern setup
- */
-SteamAppDAO::SteamAppDAO() {
-    Downloader::get_instance()->attach(this);
-}
-
-/**
  * Lazy singleton pattern
  */
 SteamAppDAO*
@@ -74,26 +67,26 @@ SteamAppDAO::update_name_database() {
     }
 
     if(need_to_redownload) {
-        Downloader::get_instance()->download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name, 0);
+        Downloader::get_instance()->download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name);
         SteamAppDAO::parse_app_names();
     }
 }
 
 std::string 
-SteamAppDAO::get_app_name(const AppId_t& app_id) {
+SteamAppDAO::get_app_name(AppId_t app_id) {
     return m_app_names[app_id];
 }
 
 
 void 
-SteamAppDAO::download_app_icon(const AppId_t& app_id) {
+SteamAppDAO::download_app_icon(AppId_t app_id) {
     const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
     const std::string local_path(local_folder + "/banner");
     const std::string url("http://cdn.akamai.steamstatic.com/steam/apps/" + std::to_string(app_id) + "/header_292x136.jpg");
 
     mkdir_default(local_folder.c_str());
 
-    Downloader::get_instance()->download_file_async(url, local_path, app_id);
+    Downloader::get_instance()->download_file(url, local_path);
 }
 
 void
@@ -163,9 +156,4 @@ SteamAppDAO::app_is_owned(const AppId_t& app_id) {
     ISteamApps* sa = g_steamclient->getSteamApps();
     
     return sa->BIsSubscribedApp(app_id);
-}
-
-void
-SteamAppDAO::update(AppId_t i) {
-    g_main_gui->refresh_app_icon(i);
 }

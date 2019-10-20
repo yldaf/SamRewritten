@@ -11,11 +11,9 @@ Downloader::get_instance() {
 }
 
 void 
-Downloader::download_file(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id) {
+Downloader::download_file(const std::string& file_url, const std::string& local_path) {
     //If the file exists, there's no need to download it again.
     //We assume the banners don't change
-
-    downloads_semaphore.wait();
 
     if(!file_exists(local_path)) {
         CURL *curl;
@@ -44,13 +42,4 @@ Downloader::download_file(const std::string& file_url, const std::string& local_
             exit(EXIT_FAILURE);
         }
     }
-
-    downloads_semaphore.notify();
-    notify(dl_id);
-}
-
-void 
-Downloader::download_file_async(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id) {
-    std::thread dl_thread([this, file_url, local_path, dl_id]{this->download_file(file_url, local_path, dl_id);});
-    dl_thread.detach();
 }

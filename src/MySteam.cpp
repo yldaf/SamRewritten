@@ -157,9 +157,9 @@ MySteam::get_steam_install_path() {
  * It also has a "callback" that will refresh the view.
  */
 void 
-MySteam::refresh_icon(Game_t app) {
+MySteam::refresh_icon(AppId_t app_id) {
     SteamAppDAO *appDAO = SteamAppDAO::get_instance();
-    appDAO->download_app_icon(app.app_id);
+    appDAO->download_app_icon(app_id);
 }
 // => refresh_icons
 

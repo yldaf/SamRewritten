@@ -1,16 +1,13 @@
 #pragma once
 #include <string>
-#include "ObserverClasses.h"
 #include "../../steam/steamtypes.h"
-#include "Semaphore.h"
 
 /**
  * This class is used to download files from the internet
- * It follows a single singleton pattern and is meant to be very basic
- * It inherits Subject, and will notify observers only on a successful
- * download.
+ * It follows a single singleton pattern and is meant to be very basic.
  */
-class Downloader : public Subject<AppId_t> {
+class Downloader
+{
 public:
     /**
      * Singleton method to get the unique instance
@@ -20,15 +17,9 @@ public:
     /**
      * Downloads a file synchronously. If the download fails, the program will exit.
      * If the local_path already exists on the disk, the download will be skipped (as it if was successful)
-     * The download ID is something that will be passed to every observer once the download 
-     * completed successfully.
+     * Async downloads can be implemented by firing off a thread with this function.
      */
-    void download_file(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id);
-
-    /**
-     * Does the same thing than download_file, but asynchronously.
-     */
-    void download_file_async(const std::string& file_url, const std::string& local_path, const unsigned long& dl_id);
+    static void download_file(const std::string& file_url, const std::string& local_path);
 
     /**
      * Delete these, as no one will need them with the singleton pattern
@@ -40,7 +31,6 @@ private:
     // Limit to 10 simultaneous downloads for now...
     // otherwise network resolution starts
     // failing when many download threads (~hundreds?) are launched
-    Downloader() : downloads_semaphore(10) {};
+    Downloader() {};
     ~Downloader() {};
-    semaphore downloads_semaphore;
 };

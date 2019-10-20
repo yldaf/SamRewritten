@@ -1,6 +1,6 @@
 #include "gtk_callbacks.h"
 #include <iostream>
-#include <thread>
+#include <future>
 #include "MainPickerWindow.h"
 #include "../common/PerfMon.h"
 #include "../MySteam.h"
@@ -8,7 +8,14 @@
 
 // See comments in the header file
 
-extern "C" 
+// TODO: clean this up and pull it into a class or IdleData
+// when it is transformed to C++
+#define MAX_OUTSTANDING_ICON_DOWNLOADS 10
+int outstanding_icon_downloads;
+std::future<void> owned_apps_future;
+std::map< AppId_t, std::future<void>> icon_download_futures;
+
+extern "C"
 {
 
     void
@@ -49,34 +56,38 @@ extern "C"
     }
     // => on_store_button_clicked
 
-    /* the actual loading function */
+    /*
+     * The actual loading function
+     * 
+     * We CANNOT update the GUI from any thread but the main thread because
+     * it is explicitly deprecated in gtk...
+     * (e.g. https://developer.gnome.org/gdk3/stable/gdk3-Threads.html#gdk-threads-init)
+     * See the gtk_callbacks.h for the FSM rationale.
+     * 
+     * For anything that isn't the GUI, we can fire off worker threads, and doing
+     * so is simpler than splitting out the worker threads into the main GUI loop.
+     * Additionally, the worker threads depend on calling functions which may
+     * take a while to return. So, splitting them out into a thread won't expose the
+     * main loop to these latencies and potentially make it laggy.
+     */
     static gboolean
     load_items_idle (gpointer data_)
     {
         IdleData *data = (IdleData *)data_;
-            
-        // To improve launch-to-window-show time, relinquish some cycles
-        // to the main loop. Limit is experimentally determined.
-        // Only do it for the first load, subsequent refreshes will not
-        // be affected.
-        static int wait_cycles_counter = 0;
-        if (wait_cycles_counter < 500) {
-            wait_cycles_counter++;
+
+        if (data->state == STATE_STARTED) {
+            g_main_gui->reset_game_list();
+            g_perfmon->log("Starting library parsing.");
+            owned_apps_future = std::async(std::launch::async, []{g_steam->refresh_owned_apps();});
+            data->state = STATE_WAITING_FOR_OWNED_APPS;
             return G_SOURCE_CONTINUE;
         }
 
-        if (data->state == STATE_STARTED)
-        {
-            // Trigger updates for data initialization here
-            // just to get it out of the critical path for
-            // showing the window.
-            // TODO: Further split out the app_is_owned loop
-            // in refresh_owned_apps to give better responsiveness
-            g_perfmon->log("Starting library parsing.");
-            g_main_gui->reset_game_list();
-            g_steam->refresh_owned_apps();
-            g_perfmon->log("Done retrieving and filtering owned apps");
-            data->state = STATE_LOADING_GUI;
+        if (data->state == STATE_WAITING_FOR_OWNED_APPS) {
+            if (owned_apps_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                g_perfmon->log("Done retrieving and filtering owned apps");
+                data->state = STATE_LOADING_GUI;
+            }
             return G_SOURCE_CONTINUE;
         }
 
@@ -96,18 +107,56 @@ extern "C"
         }
 
         if (data->state == STATE_DOWNLOADING_ICONS) {
-            if (data->current_item == g_steam->get_subscribed_apps().size()) {
-                g_perfmon->log("Done starting icon downloads");
+            // This must occur after the main gui game_list is
+            // complete, otherwise we might have concurrent
+            // access and modification of the GUI's game_list
+
+            bool done_starting_downloads = (data->current_item == g_steam->get_subscribed_apps().size());
+
+            // Make sure we're done starting all downloads and finshed with outstanding downloads
+            if (done_starting_downloads && (icon_download_futures.size() == 0)) {
+                g_perfmon->log("Done downloading icons");
                 data->state = STATE_FINISHED;
                 return G_SOURCE_REMOVE;
             }
 
-            // This must occur after the main gui game_list is
-            // complete, otherwise we might have concurrent
-            // access and modification of the game_list
-            Game_t app = g_steam->get_subscribed_apps()[data->current_item];
-            g_steam->refresh_icon(app);
-            data->current_item++;
+            // We could have the threads IPC the data back to the main thread
+            // but that's a bit heavyweight for what we need here:
+            // the main thread just needs to know the app_id that completed, and
+            // it can figure out the rest.
+
+            // Implement a poor man's thread pool for now - only fire off
+            // a few threads at a time (though threads are not recycled).
+            // We would use a semaphore here for outstanding_icon_downloads,
+            // but the GTK main loop is forcibly single-threaded
+            // (the whole reason we need to do these shenanigans anyway),
+            // so only 1 thread will ever be here at a time anyway.
+            if ( !done_starting_downloads && (outstanding_icon_downloads < MAX_OUTSTANDING_ICON_DOWNLOADS))  {
+                // Fire off a new download thread
+                Game_t app = g_steam->get_subscribed_apps()[data->current_item];
+                icon_download_futures.insert(std::make_pair(app.app_id, std::async(std::launch::async, g_steam->refresh_icon, app.app_id)));
+                outstanding_icon_downloads++;
+                data->current_item++;
+                
+                // continue on to service a thread if it's finished
+            }
+
+            // Try to find a thread that is finished. Only process at most 1 per GTK main loop.
+            // The max time this takes to traverse is controlled by the size of the
+            // icon_download_futures size, which is controlled by MAX_ICON_DOWNLOADS.
+            // Increasing this could lead to GUI stutter if it needs to traverse a large map,
+            // although the map has logarithmic traversal and update complexity.
+            for (auto const& [app_id, this_future] : icon_download_futures) {
+                if (this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                    // TODO: remove the app if it has a bad icon? (because then it's mostly likely not a game)
+                    g_main_gui->refresh_app_icon(app_id);
+                    icon_download_futures.erase(app_id);
+                    outstanding_icon_downloads--;
+                    // let's only process one at a time
+                    return G_SOURCE_CONTINUE;
+                }
+            }
+
             return G_SOURCE_CONTINUE;
         }
 
@@ -137,6 +186,7 @@ extern "C"
         data = g_new(IdleData, 1);
         data->current_item = 0;
         data->state = STATE_STARTED;
+        outstanding_icon_downloads = 0;
 
         // Use low priority so we don't block showing the main window
         // This allows the main window to show up immediately

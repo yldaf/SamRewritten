@@ -1,10 +1,10 @@
 #pragma once
 #include <map>
-#include "common/ObserverClasses.h"
 #include "../steam/steamtypes.h"
 
 
-class SteamAppDAO : public Observer<AppId_t> {
+class SteamAppDAO
+{
 public:
     /**
      * Singleton method to get the unique instance
@@ -23,19 +23,13 @@ public:
      * Make sure to call update_name_database at least once 
      * before using.
      */
-    std::string get_app_name(const AppId_t& app_id);
+    std::string get_app_name(AppId_t app_id);
 
     /**
-     * Download the app's banner ASYNCHRONOUSLY.
+     * Download the app's banner.
      * If it fails, nothing is written on the disk.
      */
-    void download_app_icon(const AppId_t& app_id);
-
-    /**
-     * Observer inherited method. The update will refresh 
-     * the image for app id "i" on the view.
-     */
-    void update(AppId_t i);
+    static void download_app_icon(AppId_t app_id);
 
     /**
      * After it parsed all apps from the latest updates, returns the parsed apps
@@ -53,7 +47,7 @@ public:
     SteamAppDAO(SteamAppDAO const&)                 = delete;
     void operator=(SteamAppDAO const&)              = delete;
 private:
-    SteamAppDAO();
+    SteamAppDAO() {};
     ~SteamAppDAO() {};
 
     static void parse_app_names();

@@ -11,9 +11,10 @@ extern "C"
      * source: https://www.bassi.io/pages/lazy-loading/
      */
 
-    /* states in the FSM */
+    /* states in the GUI-loading FSM */
     enum {
         STATE_STARTED,  /* start state */
+        STATE_WAITING_FOR_OWNED_APPS, /* waiting for owned apps thread to finish */
         STATE_LOADING_GUI,  /* feeding game rows to the model */
         STATE_DOWNLOADING_ICONS,  /* fire off icon downloads (to be added to the model) */
         STATE_FINISHED  /* finish state */
