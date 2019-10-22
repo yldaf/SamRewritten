@@ -36,7 +36,6 @@ MyGameSocket::process_request(std::string request, bool& quit) {
             break;
 
         case QUIT_GAME:
-            SteamAPI_Shutdown();
             quit = true;
             break;
 

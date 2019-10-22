@@ -7,7 +7,6 @@
 
 MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
 {
-    
     if (file_exists(m_socket_path))
     {
         std::cerr << "It looks like the server before me did not shutdown properly." << std::endl;
@@ -42,18 +41,6 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
 
 }
 
-MyServerSocket::~MyServerSocket() 
-{
-    close(m_socket_fd);
-    unlink_file();
-}
-
-void
-MyServerSocket::unlink_file()
-{
-    unlink(m_socket_path.c_str());
-}
-
 void
 MyServerSocket::run_server()
 {
@@ -75,10 +62,7 @@ MyServerSocket::run_server()
         if (quit)
         {
             std::cout << "Shutting down server safely." << std:: endl;
-            send_message(data_socket, "SAM_ACK");
-            close(data_socket);
-            close(m_socket_fd);
-            unlink_file();
+            // destruction of this object will take care of shutdown
             break;
         }
 

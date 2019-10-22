@@ -12,7 +12,11 @@ MySocket::MySocket(AppId_t appid) : m_appid(appid), m_socket_fd(-1)
 
 MySocket::~MySocket()
 {
+    // Both server and client must unlink the socket file for it
+    // to be deleted on the filesystem.
     close(m_socket_fd);
+    unlink(m_socket_path.c_str());
+    std::cout << "destructor called" << std::endl;
 }
 
 std::string

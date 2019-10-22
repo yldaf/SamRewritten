@@ -18,5 +18,8 @@ MyGameServer::run()
     }
 
     m_socket.run_server();
+    // Make sure to destruct this to make sure we unlink files nicely during
+    // destruction rather than when the child process is being terminated
+    m_socket.~MyGameSocket();
     SteamAPI_Shutdown();
 }

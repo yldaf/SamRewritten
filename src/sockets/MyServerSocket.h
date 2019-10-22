@@ -3,11 +3,12 @@
 
 class MyServerSocket : public MySocket
 {
-protected:
-    void unlink_file();
+    /**
+     * The server socket constructor is responsible for creating
+     * the socket file both server and socket will communicate through.
+     */
 public:
     void run_server();
     virtual std::string process_request(std::string request, bool& quit) = 0;
     MyServerSocket(AppId_t appid);
-    ~MyServerSocket();
 };
