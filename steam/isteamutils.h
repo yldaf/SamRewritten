@@ -10,7 +10,7 @@
 #pragma once
 #endif
 
-#include "isteamclient.h"
+#include "steam_api_common.h"
 
 
 // Steam API call failure results
@@ -133,7 +133,7 @@ public:
 	//   k_ECheckFileSignatureFileNotFound - The file does not exist on disk.
 	//   k_ECheckFileSignatureInvalidSignature - The file exists, and the signing tab has been set for this file, but the file is either not signed or the signature does not match.
 	//   k_ECheckFileSignatureValidSignature - The file is signed and the signature is valid.
-	CALL_RESULT( CheckFileSignature_t )
+	STEAM_CALL_RESULT( CheckFileSignature_t )
 	virtual SteamAPICall_t CheckFileSignature( const char *szFileName ) = 0;
 
 	// Activates the Big Picture text input dialog which only supports gamepad input
@@ -169,10 +169,32 @@ public:
 	// The default is true unless "VRHeadsetStreaming" "0" is in the extended appinfo for a game.
 	// (this is useful for games that have asymmetric multiplayer gameplay)
 	virtual void SetVRHeadsetStreamingEnabled( bool bEnabled ) = 0;
+
+	// Returns whether this steam client is a Steam China specific client, vs the global client.
+	virtual bool IsSteamChinaLauncher() = 0;
+
+	// Initializes text filtering.
+	//   Returns false if filtering is unavailable for the language the user is currently running in.
+	virtual bool InitFilterText() = 0; 
+
+	// Filters the provided input message and places the filtered result into pchOutFilteredText.
+	//   pchOutFilteredText is where the output will be placed, even if no filtering or censoring is performed
+	//   nByteSizeOutFilteredText is the size (in bytes) of pchOutFilteredText
+	//   pchInputText is the input string that should be filtered, which can be ASCII or UTF-8
+	//   bLegalOnly should be false if you want profanity and legally required filtering (where required) and true if you want legally required filtering only
+	//   Returns the number of characters (not bytes) filtered.
+	virtual int FilterText( char* pchOutFilteredText, uint32 nByteSizeOutFilteredText, const char * pchInputMessage, bool bLegalOnly ) = 0;
 };
 
 #define STEAMUTILS_INTERFACE_VERSION "SteamUtils009"
 
+// Global interface accessor
+inline ISteamUtils *SteamUtils();
+STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamUtils *, SteamUtils, SteamInternal_FindOrCreateUserInterface( 0, STEAMUTILS_INTERFACE_VERSION ) );
+
+// Global accessor for the gameserver client
+inline ISteamUtils *SteamGameServerUtils();
+STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamUtils *, SteamGameServerUtils, SteamInternal_FindOrCreateGameServerInterface( 0, STEAMUTILS_INTERFACE_VERSION ) );
 
 // callbacks
 #if defined( VALVE_CALLBACK_PACK_SMALL )
@@ -180,7 +202,7 @@ public:
 #elif defined( VALVE_CALLBACK_PACK_LARGE )
 #pragma pack( push, 8 )
 #else
-#error isteamclient.h must be included
+#error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
 #endif 
 
 //-----------------------------------------------------------------------------
