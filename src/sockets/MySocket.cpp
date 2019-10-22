@@ -16,7 +16,6 @@ MySocket::~MySocket()
     // to be deleted on the filesystem.
     close(m_socket_fd);
     unlink(m_socket_path.c_str());
-    std::cout << "destructor called" << std::endl;
 }
 
 std::string

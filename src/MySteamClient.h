@@ -34,13 +34,17 @@ public:
     HSteamUser getUser() const { return m_user; };
     ISteamApps* getSteamApps() const { return m_steamapps; };
     ISteamUser* getSteamUser() const { return m_steamuser; };
+    // Needed for child usage..
+    void unloadLibrary() {
+        dlclose(m_handle);
+    }
     ~MySteamClient() { 
         m_steamclient->ReleaseUser(m_pipe, m_user);
         m_steamclient->BReleaseSteamPipe(m_pipe);
         m_steamclient->BShutdownIfAllPipesClosed();
         dlclose(m_handle);
     }
-    MySteamClient() {    
+    MySteamClient() {
         char* error;
         const std::string steam_client_lib_path = MySteam::get_steam_install_path() + RELATIVE_STEAM_CLIENT_LIB_PATH;
         m_handle = dlopen(steam_client_lib_path.c_str(), RTLD_LAZY);

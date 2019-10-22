@@ -18,14 +18,15 @@ MyClientSocket*
 GameServerManager::quick_server_create(AppId_t appid)
 {
     pid_t pid;
-    if((pid = fork()) == 0) {
+    if ((pid = fork()) == 0) {
         // Son's process: server role
         
         // We need to delete this to unload steamclient.so from the
         // child's process map, otherwise we pick up on a steam client
         // state from the app detection stage that doesn't have an appid
-        // associated with it.
-        delete g_steamclient;
+        // associated with it. But we cannot close the pipes because doing
+        // so closes the parent's pipe too...
+        g_steamclient->unloadLibrary();
 
         MyGameServer server(appid);
         server.run();

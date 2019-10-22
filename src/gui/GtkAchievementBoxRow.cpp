@@ -110,6 +110,5 @@ m_data(data)
 }
 
 GtkAchievementBoxRow::~GtkAchievementBoxRow() {
-    //std::cerr << "Deleting a row" << std::endl;
     gtk_widget_destroy( GTK_WIDGET(m_main_box) );
 }

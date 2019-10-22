@@ -253,10 +253,8 @@ MainPickerWindow::switch_to_games_page() {
     gtk_widget_set_visible(GTK_WIDGET(m_store_button), FALSE);
     gtk_stack_set_visible_child(GTK_STACK(m_main_stack), GTK_WIDGET(m_game_list_view));
 
-    //TODO Clear achievments list
-    //TODO MAKE THIS WORK
+    // Clear achievements list
     for(GtkAchievementBoxRow* i : m_achievement_list_rows) {
-        gtk_widget_destroy( GTK_WIDGET(i->get_main_widget()) );
         delete i;
     }
     m_achievement_list_rows.clear();
