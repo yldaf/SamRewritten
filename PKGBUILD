@@ -3,14 +3,14 @@
 
 pkgname="samrewritten-git"
 _pkgname="SamRewritten"
-pkgver=r67.63761a7
+pkgver=r68.0faf291
 pkgrel=1
 pkgdesc="A Steam Achievement Manager For Linux."
 arch=("any")
 url="https://github.com/PaulCombal/SamRewritten"
 license=("GPL3")
-depends=("steam" "yajl" "gtk3" "glibc")
-makedepends=("git" "make" "gcc")
+depends=("steam" "yajl" "gtk3" "glibc" "curl")
+makedepends=("git" "make" "gcc>=9.0")
 source=("git+https://github.com/PaulCombal/SamRewritten.git")
 sha256sums=("SKIP")
 
@@ -32,5 +32,5 @@ package() {
     install -dm755 "${pkgdir}/usr/bin"
     ln -s "/usr/lib/${_pkgname}/bin/launch.sh" "${pkgdir}/usr/bin/samrewritten"
     # Desktop Entry
-    install -Dm644 "samrewritten.desktop" "${pkgdir}/usr/share/applications/samrewritten.desktop"
+    install -Dm644 "${_pkgname}/samrewritten.desktop" "${pkgdir}/usr/share/applications/samrewritten.desktop"
 } 
