@@ -7,7 +7,7 @@ Steam Achievements Manager for Linux (SamRewritten)
 
 # Introduction
 
-SamRewritten is an open-source program that allows you to unlock and relock your Steam achievements. It is named after the famous Steam Achievements Manager written by Gibbed, and aims at mimicking it's features and more!
+SamRewritten is an open-source program that allows you to unlock and relock your Steam achievements. It is named after the famous Steam Achievements Manager written by Gibbed, and aims to implement its functionalities on Linux and more!
 
 It comes with third-party tools integration and a nice user interface.
 
@@ -26,7 +26,8 @@ We have big ambitions for SamRewritten, and I believe many of them are related t
 
 To build this project, clone this repository on your PC, use `cd` to move into the project folder, and type `make` to build the program.
 
-Alternatively, you can download one of our releases in the AppImage format. **TODO PUT A FUCKING LINK HERE WHEN THIS IS DONE**
+Alternatively, you can download one of our releases in the AppImage format. Check the 'Release' tab of this repository to find them.
+To build your own AppImage, build SamRewritten normally, then execute `build_appimage.sh` in the `package` folder, it will take care of everything for you.
 
 If you're encountering issues building SamRewritten, make sure you have installed the required packages on your machine. You'll most likely need Steam, yajl, GTK 3, and GLib.
 
@@ -41,10 +42,6 @@ To run SamRewritten, simply launch `$ ./bin/launch.sh`
 You can install SamRewritten by using an AUR and installing the `samrewritten-git` package.
 
 Run SamRewritten by opening the corresponding desktop entry, or by using the `samrewritten` command.
-
-# Third party tools integration
-
-**Explain how the JSON comms work for IPC**
 
 ### Footnotes
 
