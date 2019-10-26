@@ -4,8 +4,7 @@ if [ ! -f ../bin/samrewritten ]; then
     echo "Building SamRewritten first..."
     cd $(dirname $(realpath $0))/..
     make
-fi
-    exit 1
+    cd package
 fi
 
 rm -rf AppDir
