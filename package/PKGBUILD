@@ -3,7 +3,7 @@
 
 pkgname="samrewritten-git"
 _pkgname="SamRewritten"
-pkgver=r69.e0bd7a3
+pkgver=r70.9486d6d
 pkgrel=1
 pkgdesc="A Steam Achievement Manager For Linux."
 arch=("any")
@@ -21,9 +21,6 @@ pkgver() {
 
 build() {
     cd ${_pkgname}
-    ls
-    pwd
-    echo 
     make
 }
 

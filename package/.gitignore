@@ -1,3 +1,5 @@
 AppDir/*
-SamRewritten*
 pkg/*
+SamRewritten/*
+SamRewritten*.AppImage
+samrewritten*.tar.xz
