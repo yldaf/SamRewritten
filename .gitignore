@@ -3,3 +3,9 @@
 /glade/*.glade~
 /glade*.glade#
 obj/*
+package/AppDir/*
+package/pkg/*
+package/src/*
+package/SamRewritten/*
+package/SamRewritten*.AppImage
+package/samrewritten*.tar.*
