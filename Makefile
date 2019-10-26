@@ -2,7 +2,7 @@ CXX=g++ -std=c++17 -g
 RM=rm -f
 RMDIR=rm -rf
 CXXFILES:=$(shell find src/ -type f -iname *.cpp -print)
-CXXFLAGS=$$(pkg-config --cflags --libs gtk+-3.0) -rdynamic -export-dynamic -pthread -Wall -lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl -ldl
+CXXFLAGS=$(shell pkg-config --cflags --libs gtk+-3.0) -rdynamic -export-dynamic -pthread -Wall -lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl -ldl
 LDFLAGS=-L${CURDIR}/bin
 OBJDIR=obj
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
