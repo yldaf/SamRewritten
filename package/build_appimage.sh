@@ -2,9 +2,9 @@
 
 if [ ! -f ../bin/samrewritten ]; then
     echo "Building SamRewritten first..."
-    cd $(dirname $(realpath $0))/..
+    pushd $(dirname $(realpath $0))/..
     make
-    cd package
+    popd
 fi
 
 rm -rf AppDir
@@ -27,4 +27,3 @@ cp ../bin/samrewritten AppDir/usr/bin
 cp ../bin/libsteam_api.so AppDir/usr/lib
 
 LD_LIBRARY_PATH=AppDir/usr/lib ./linuxdeploy-x86_64.AppImage --appdir AppDir --output appimage
-# rm -rf AppDir
