@@ -1,7 +1,10 @@
 #!/bin/bash
 
 if [ ! -f ../bin/samrewritten ]; then
-    echo "Please build SamRewritten first."
+    echo "Building SamRewritten first..."
+    cd $(dirname $(realpath $0))/..
+    make
+fi
     exit 1
 fi
 
