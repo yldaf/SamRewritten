@@ -2,3 +2,4 @@
 /bin/samrewritten
 /glade/*.glade~
 /glade*.glade#
+obj/*
