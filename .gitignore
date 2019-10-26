@@ -1,7 +1,7 @@
 /bin/SamRewritten
 /bin/samrewritten
 /glade/*.glade~
-/glade*.glade#
+/glade/*.glade#
 obj/*
 package/AppDir/*
 package/pkg/*
