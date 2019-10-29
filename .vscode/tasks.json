@@ -6,7 +6,7 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cd ${workspaceFolder} && ./make.sh",
+            "command": "cd ${workspaceFolder} && make",
             "group": {
                 "kind": "build",
                 "isDefault": true
