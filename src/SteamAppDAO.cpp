@@ -35,22 +35,51 @@ void
 SteamAppDAO::update_name_database() {
     bool need_to_redownload = false;
     struct stat file_info;
-    static const char* local_file_name = concat(g_cache_folder, "/app_names");
+
+    // Appid retrieval strategy options:
+    // Option 1 - get the full games-only list
+    // Option 2 - if the games-only list is out of date, get the non-games list,
+    //            and filter those out from Steam's list. Then you only get junk
+    //            appids at the end
+    // Option 3 - if github is unavailable, just use the appids from Steam's list
+    //            and get all the junk
+    //
+    // The formats of the appid files are the same for both Steam's list and our
+    // generated SteamAppsListDumps, so we can use the same parse_app_names function :)
+
+    // TODO: turn this into a command line option
+    const int retrieval_strategy = 1;
+
+    static const char* file_url;
+    static const char* local_file_name;
+    
+    if (retrieval_strategy == 1) {
+        file_url = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_list.json";
+        local_file_name = concat(g_cache_folder, "/game_list.json");
+    } else if (retrieval_strategy == 2) {
+        // TODO
+        std::cerr << "Appid retrieval strategy 2 unimplemented, exiting" << std::endl;
+        exit(EXIT_FAILURE);
+    } else if (retrieval_strategy == 3) {
+        file_url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
+        local_file_name = concat(g_cache_folder, "/app_names");
+    }
+
     const std::time_t current_time(std::time(0));
 
     // Check if the file is already there
     if (file_exists(local_file_name)) {
         //Check the last time it was updated
-        if(stat(local_file_name, &file_info) == 0) {
+        if (stat(local_file_name, &file_info) == 0) {
             //If a week has passed
-            if(current_time - file_info.st_mtime > 60 * 60 * 24 * 7) {
+            if (current_time - file_info.st_mtime > 60 * 60 * 24 * 7) {
                 need_to_redownload = true;
             } else {
                 // An up-to-date file is present on the system.
                 // If our map is already filled, there's no need to refill it.
                 // If the program was just launched, we need to fill it.
-                if(SteamAppDAO::m_app_names.empty()) {
-                    SteamAppDAO::parse_app_names();
+                if (m_app_names.empty()) {
+                    parse_app_names(local_file_name);
                 }
             }
         }
@@ -66,9 +95,9 @@ SteamAppDAO::update_name_database() {
         need_to_redownload = true;
     }
 
-    if(need_to_redownload) {
-        Downloader::get_instance()->download_file("http://api.steampowered.com/ISteamApps/GetAppList/v0002/", local_file_name);
-        SteamAppDAO::parse_app_names();
+    if (need_to_redownload) {
+        Downloader::get_instance()->download_file(file_url, local_file_name);        
+        parse_app_names(local_file_name);
     }
 }
 
@@ -90,15 +119,14 @@ SteamAppDAO::download_app_icon(AppId_t app_id) {
 }
 
 void
-SteamAppDAO::parse_app_names() {
+SteamAppDAO::parse_app_names(const char * file_path) {
     m_app_names.clear();
 
     size_t rd;
     yajl_val node;
     char errbuf[1024];
     char fileData[5000000];
-    static const std::string file_path(std::string(g_cache_folder) + "/app_names");
-    FILE *f = fopen(file_path.c_str(), "rb");
+    FILE *f = fopen(file_path, "rb");
 
     /* null plug buffers */
     fileData[0] = errbuf[0] = 0;

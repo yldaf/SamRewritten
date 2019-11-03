@@ -50,6 +50,6 @@ private:
     SteamAppDAO() {};
     ~SteamAppDAO() {};
 
-    static void parse_app_names();
+    static void parse_app_names(const char * file_path);
     static std::map<AppId_t, std::string> m_app_names;
 };
