@@ -30,13 +30,39 @@ SteamAppDAO::get_instance() {
 }
 // => get_instance
 
+bool
+SteamAppDAO::need_to_redownload(const char * file_path) {
+    struct stat file_info;
+    const std::time_t current_time(std::time(0));
+    bool b_need_to_redownload = false;
+
+    if (file_exists(file_path)) {
+        //Check the last time it was updated
+        if (stat(file_path, &file_info) == 0) {
+            //If a week has passed
+            if (current_time - file_info.st_mtime > 60 * 60 * 24 * 7) {
+                b_need_to_redownload = true;
+            }
+        }
+        else {
+            std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
+            std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
+            std::cerr << "your home folder folder." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    else {
+        b_need_to_redownload = true;
+    }
+
+    return b_need_to_redownload;
+}
 
 void 
 SteamAppDAO::update_name_database() {
-    bool need_to_redownload = false;
-    struct stat file_info;
+    bool b_need_to_redownload_any = false;
 
-    // Appid retrieval strategy options:
+    // Appid list retrieval strategy options:
     // Option 1 - get the full games-only list
     // Option 2 - if the games-only list is out of date, get the non-games list,
     //            and filter those out from Steam's list. Then you only get junk
@@ -50,55 +76,53 @@ SteamAppDAO::update_name_database() {
     // TODO: turn this into a command line option
     const int retrieval_strategy = 1;
 
-    static const char* file_url;
-    static const char* local_file_name;
+    static const char* file_url[2];
+    static const char* local_file_name[2];
+    int file_count = 0;
     
     if (retrieval_strategy == 1) {
-        file_url = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_list.json";
-        local_file_name = concat(g_cache_folder, "/game_list.json");
+        file_url[0] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_list.json";
+        local_file_name[0] = concat(g_cache_folder, "/game_list.json");
+        file_count = 1;
     } else if (retrieval_strategy == 2) {
-        // TODO
-        std::cerr << "Appid retrieval strategy 2 unimplemented, exiting" << std::endl;
-        exit(EXIT_FAILURE);
+        // need to download 2 files for this one
+        file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
+        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        file_url[1] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/not_games.json";
+        local_file_name[1] = concat(g_cache_folder, "/not_games.json");
+        file_count = 2;
     } else if (retrieval_strategy == 3) {
-        file_url = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
-        local_file_name = concat(g_cache_folder, "/app_names");
+        file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
+        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        file_count = 1;
     }
 
-    const std::time_t current_time(std::time(0));
+    for (int i = 0; i < file_count; i++) {
+        bool b_need_to_redownload_one = need_to_redownload(local_file_name[i]);
 
-    // Check if the file is already there
-    if (file_exists(local_file_name)) {
-        //Check the last time it was updated
-        if (stat(local_file_name, &file_info) == 0) {
-            //If a week has passed
-            if (current_time - file_info.st_mtime > 60 * 60 * 24 * 7) {
-                need_to_redownload = true;
-            } else {
-                // An up-to-date file is present on the system.
-                // If our map is already filled, there's no need to refill it.
-                // If the program was just launched, we need to fill it.
-                if (m_app_names.empty()) {
-                    parse_app_names(local_file_name);
-                }
+        if (b_need_to_redownload_one) {
+            Downloader::get_instance()->download_file(file_url[i], local_file_name[i]);        
+        }
+
+        b_need_to_redownload_any |= b_need_to_redownload_one;
+    }
+
+    // If there's a new list downloaded, or if there's an up-to-date list
+    // and the program just started, we need to fill/refill it
+    if (b_need_to_redownload_any || m_app_names.empty()) {
+        parse_app_names(local_file_name[0], &m_app_names);
+
+        if (retrieval_strategy == 2) {
+            std::map<AppId_t, std::string> not_games;
+            parse_app_names(local_file_name[1], &not_games);
+
+            // Filter out not games
+            for(auto it = not_games.begin(); it != not_games.end(); ) {
+                m_app_names.erase( it->first );
             }
         }
-        else {
-            std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
-            std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
-            std::cerr << "your home folder folder." << std::endl;
-
-            exit(EXIT_FAILURE);
-        }
-    }
-    else {
-        need_to_redownload = true;
     }
 
-    if (need_to_redownload) {
-        Downloader::get_instance()->download_file(file_url, local_file_name);        
-        parse_app_names(local_file_name);
-    }
 }
 
 std::string 
@@ -119,8 +143,8 @@ SteamAppDAO::download_app_icon(AppId_t app_id) {
 }
 
 void
-SteamAppDAO::parse_app_names(const char * file_path) {
-    m_app_names.clear();
+SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::string>* app_names) {
+    app_names->clear();
 
     size_t rd;
     yajl_val node;
@@ -173,9 +197,10 @@ SteamAppDAO::parse_app_names(const char * file_path) {
         //std::cerr << "Appid: " << obj->u.object.values[0]->u.number.i << ", name: " << obj->u.object.values[1]->u.string << std::endl;
         tmp_appid = obj->u.object.values[0]->u.number.i;
         tmp_appname = (std::string)obj->u.object.values[1]->u.string;
-        m_app_names.insert(std::pair<AppId_t, std::string>(tmp_appid, tmp_appname));
+        app_names->insert(std::pair<AppId_t, std::string>(tmp_appid, tmp_appname));
     }
 
+    fclose(f);
     yajl_tree_free(node);
 }
 
