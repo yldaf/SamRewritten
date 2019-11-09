@@ -29,12 +29,7 @@ MyGameSocket::process_request(std::string request, bool& quit) {
 
     switch (r.getAction()) {
         case GET_ACHIEVEMENTS:
-            // Write achievements to handle
-            encode_achievements(handle, get_achievements());
-            break;
-
-        case GET_GLOBAL_ACHIEVEMENTS:
-            get_global_achievements();
+            encode_achievements(handle, get_achievements());  // Write achievements to handle
             break;
 
         case STORE_ACHIEVEMENTS:
@@ -76,6 +71,18 @@ MyGameSocket::get_achievements() {
     while (!m_stats_callback_received) {
         SteamAPI_RunCallbacks();
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    if (!get_global_stats())
+    {
+        std::cerr << "An error occurred getting global stats." << std::endl;
+        return m_achievement_list;
+    }
+
+    if (!get_global_achievements_stats())
+    {
+        std::cerr << "An error occurred getting global achievements stats." << std::endl;
+        return m_achievement_list;
     }
 
     return m_achievement_list;
@@ -120,27 +127,7 @@ MyGameSocket::get_global_achievements_stats() {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
-    g_perfmon->log("Global stats acquired");
-
     return true;
-}
-
-bool // TODO CUSTOM STRUCT
-MyGameSocket::get_global_achievements() {
-    g_perfmon->log("Entering get global achievements");
-    if (!get_global_stats())
-    {
-        std::cerr << "An error occurred getting global stats." << std::endl;
-        return false;
-    }
-
-    if (!get_global_achievements_stats())
-    {
-        std::cerr << "An error occurred getting global achievements stats." << std::endl;
-        return false;
-    }
-    
-    return true; // TODO return m_something
 }
 
 void
@@ -211,16 +198,16 @@ MyGameSocket::OnGlobalAchievementPercentagesReceived(GlobalAchievementPercentage
 		return;
 	}
 
-    for (Achievement_t ach : m_achievement_list) {
+    for (Achievement_t& ach : m_achievement_list) {
         float percent;
         bool success = SteamUserStats()->GetAchievementAchievedPercent(ach.id.c_str(), &percent);
         if (success)
         {
-            std::cout << ach.id << " - " << percent << std::endl;
             ach.global_achieved_rate = percent;
         }
         else {
-            std::cout << "NO SUCCCESS  " << ach.id << std::endl;
+            std::cerr << "Could not get global achievement rate for achievement " << ach.id << std::endl;
+            ach.global_achieved_rate = 0;
         }
         
     }

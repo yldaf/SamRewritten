@@ -27,15 +27,6 @@ extern "C"
     }
     // => populate_achievements
 
-    void
-    populate_achievements_stats() {
-        // Get_achievements from game server
-        g_steam->get_global_achievements();
-
-        //TODO: update gui
-    }
-    // => populate_achievements_stats
-
     void 
     on_close_button_clicked() {
         g_main_gui->stop();
@@ -271,8 +262,7 @@ extern "C"
             g_main_gui->show_fetch_achievements_placeholder();
             g_main_gui->switch_to_achievement_page();
             g_steam->launch_game(appId);
-            populate_achievements(); // TODO: put this and the next line in a separate thread or something
-            populate_achievements_stats();
+            populate_achievements();
             g_main_gui->show_no_achievements_found_placeholder();
         } else {
             std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;

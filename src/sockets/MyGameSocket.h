@@ -17,7 +17,6 @@ public:
     std::vector<Achievement_t> get_achievements(void);
     bool get_global_stats(void);
     bool get_global_achievements_stats(void);
-    bool get_global_achievements(void);
     void process_changes(std::vector<AchievementChange_t> changes);
 
     MyGameSocket(AppId_t appid);

@@ -67,12 +67,6 @@ public:
     std::vector<Achievement_t> get_achievements();
 
     /**
-     * call get_achievements first or it crashes / doesnt work
-     * TODO write a comment
-     */
-    void get_global_achievements();
-
-    /**
      * Adds a modification to be done on the launched app.
      */
     void add_modification_ach(const std::string& ach_id, const bool& new_value);

@@ -7,10 +7,6 @@ str2action(const std::string& str) {
     {
         return GET_ACHIEVEMENTS;
     }
-    if (str == GET_GLOBAL_ACHIEVEMENTS_STR)
-    {
-        return GET_GLOBAL_ACHIEVEMENTS;
-    }
     else if (str == STORE_ACHIEVEMENTS_STR)
     {
         return STORE_ACHIEVEMENTS;
@@ -29,7 +25,8 @@ ProcessedGameServerRequest::ProcessedGameServerRequest(const std::string& reques
     m_fulltree = yajl_tree_parse(request.c_str(), NULL, 0);
 
     if (m_fulltree == NULL) {
-        std::cerr << "Parsing error";
+        std::cerr << "Parsing error. Data: " << std::endl;
+        std::cerr << request << std::endl;
         exit(EXIT_FAILURE);
     }
 

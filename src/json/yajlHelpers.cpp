@@ -23,7 +23,8 @@ decode_ack(std::string response) {
     yajl_val node = yajl_tree_parse(response.c_str(), NULL, 0);
 
     if (node == NULL) {
-        std::cerr << "Parsing error";
+        std::cerr << "Parsing error. Data: " << std::endl;
+        std::cerr << response << std::endl;
         exit(EXIT_FAILURE);
     }
     const char * path[] = { SAM_ACK_STR, (const char*)0 };
@@ -60,6 +61,9 @@ encode_achievement(yajl_gen handle, Achievement_t achievement) {
     yajl_gen_string_wrap(handle, ID_STR);
     yajl_gen_string_wrap(handle, achievement.id.c_str());
 
+    // For some obscure reasons, my generated output looks like this "RATE":86,5
+    // So this is.. invalid JSON? Since a valid value would be "RATE":86.5
+    // yajl_gen_double, wtf is wrong with you..
     yajl_gen_string_wrap(handle, RATE_STR);
     if (yajl_gen_double(handle, (double)achievement.global_achieved_rate) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
@@ -265,30 +269,6 @@ make_get_achivements_request_string() {
     }
 
     encode_request(handle, GET_ACHIEVEMENTS_STR);
-
-    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-
-    yajl_gen_get_buf(handle, &buf, &len);
-    ret = std::string((const char*)buf);
-    yajl_gen_free(handle);
-
-    return ret;
-}
-
-std::string 
-make_get_global_achivements_request_string() {
-    const unsigned char * buf;
-    size_t len;
-    std::string ret;
-
-    yajl_gen handle = yajl_gen_alloc(NULL);
-    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
-        std::cerr << "failed to make json" << std::endl;
-    }
-
-    encode_request(handle, GET_GLOBAL_ACHIEVEMENTS_STR);
 
     if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;

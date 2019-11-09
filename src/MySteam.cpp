@@ -173,24 +173,6 @@ MySteam::get_achievements() {
 }
 // => get_achievements
 
-void
-MySteam::get_global_achievements() {
-
-    if (m_ipc_socket == nullptr) {
-        std::cerr << "Connection to game is broken" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    std::string response = m_ipc_socket->request_response(make_get_global_achivements_request_string());
-
-    if (!decode_ack(response)) {
-        std::cerr << "Failed to receive ack!" << std::endl;
-    }
-
-    //return decode_achievements(response);
-}
-// => get_global_achievements
-
 /**
  * Adds an achievement to the list of achievements to unlock/lock
  */
