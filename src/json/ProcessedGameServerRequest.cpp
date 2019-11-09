@@ -7,6 +7,10 @@ str2action(const std::string& str) {
     {
         return GET_ACHIEVEMENTS;
     }
+    if (str == GET_GLOBAL_ACHIEVEMENTS_STR)
+    {
+        return GET_GLOBAL_ACHIEVEMENTS;
+    }
     else if (str == STORE_ACHIEVEMENTS_STR)
     {
         return STORE_ACHIEVEMENTS;

@@ -3,6 +3,7 @@
 // Message format shall be
 // all GET format
 #define GET_ACHIEVEMENTS_STR "GET_ACHIEVEMENTS"
+#define GET_GLOBAL_ACHIEVEMENTS_STR "GET_GLOBAL_ACHIEVEMENTS"
 #define STORE_ACHIEVEMENTS_STR "STORE_ACHIEVEMENTS"
 #define QUIT_GAME_STR "QUIT_GAME"
 
@@ -23,6 +24,7 @@
 // Would require more reorg of code structure
 enum SAM_ACTION {
     GET_ACHIEVEMENTS,
+    GET_GLOBAL_ACHIEVEMENTS,
     STORE_ACHIEVEMENTS,
     QUIT_GAME,
     INVALID
@@ -45,8 +47,6 @@ response
                 NAME_STR: "name"
                 DESC_STR: "desc"
                 ID_STR: "ID"
-                RATE_STR: global_achieved_rate
-                ICON_STR: icon
                 ACHIEVED_STR: true/fase
                 HIDDEN_STR: true/false
             },
@@ -80,7 +80,7 @@ only id and achieved status / stats changes
 
 response
 {
-    SAM_ACK: SAM_ACK,
+    SAM_ACK: SAM_ACK
 }
 
 quit active game
@@ -89,7 +89,30 @@ quit active game
 }
 response
 {
+    SAM_ACK: SAM_ACK
+}
+
+Get global achievements stats
+-->
+{
+    SAM_ACTION_STR: GET_GLOBAL_ACHIEVEMENTS_STR
+}
+
+<--
+{
     SAM_ACK: SAM_ACK,
+    ACHIEVEMENTS_LIST_STR: [
+        {
+            ID_STR: <the ach id>,
+            RATE_STR: global_achieved_rate
+            ICON_STR: icon
+        }
+    ],
+    NEXT_ACHIEVED_ACHIVEMENT: {
+        ID_STR: <the ach id>,
+        RATE_STR: global_achieved_rate
+        ICON_STR: icon
+    }
 }
 
 */

@@ -278,6 +278,30 @@ make_get_achivements_request_string() {
 }
 
 std::string 
+make_get_global_achivements_request_string() {
+    const unsigned char * buf;
+    size_t len;
+    std::string ret;
+
+    yajl_gen handle = yajl_gen_alloc(NULL);
+    if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    encode_request(handle, GET_GLOBAL_ACHIEVEMENTS_STR);
+
+    if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    yajl_gen_get_buf(handle, &buf, &len);
+    ret = std::string((const char*)buf);
+    yajl_gen_free(handle);
+
+    return ret;
+}
+
+std::string 
 make_store_achivements_request_string(const std::vector<AchievementChange_t>& changes) {
     const unsigned char * buf; 
     size_t len;

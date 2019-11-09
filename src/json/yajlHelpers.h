@@ -60,6 +60,11 @@ std::vector<AchievementChange_t> decode_changes(const ProcessedGameServerRequest
 std::string make_get_achivements_request_string();
 
 /**
+ * Generate a GET_GLOBAL_ACHIEVEMENTS request string
+ */
+std::string make_get_global_achivements_request_string();
+
+/**
  * Generate a STORE_ACHIEVEMENTS request string
  */
 std::string make_store_achivements_request_string(const std::vector<AchievementChange_t>& changes);
