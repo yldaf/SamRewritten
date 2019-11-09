@@ -119,7 +119,9 @@ m_ignore_toggle(false)
     }
 
     ach_title_text = "<b>" + data.name + "</b>";
-    ach_player_percent_text = "Achieved by " + std::to_string(data.global_achieved_rate) + " of the players";
+    char tmpbuf[32];
+    snprintf(tmpbuf, 32, "%.1f", data.global_achieved_rate);
+    ach_player_percent_text = "Achieved by " + std::string(tmpbuf) + "% of the players";
 
     //TODO create and set new level bar only if ach has progress bar
     m_main_box = gtk_list_box_row_new();
@@ -139,7 +141,7 @@ m_ignore_toggle(false)
     GtkWidget *sep_one = gtk_separator_menu_item_new();
     GtkWidget *sep_two = gtk_separator_menu_item_new();
     GtkWidget *progression_label = gtk_label_new("Achievement progress");
-    GtkWidget *ach_level_bar = gtk_level_bar_new_for_interval (0, 100);
+    GtkWidget *ach_level_bar = gtk_progress_bar_new();
     GtkWidget *ach_progress_label_value = gtk_label_new("TODO / TODO");
 
     gtk_label_set_markup(GTK_LABEL(title_label), ach_title_text.c_str());
@@ -151,7 +153,7 @@ m_ignore_toggle(false)
     gtk_widget_set_size_request(GTK_WIDGET(m_lock_unlock_button), 150, -1);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(m_lock_unlock_button), FALSE);
     gtk_container_set_border_width(GTK_CONTAINER(popover_box), 5);
-    gtk_level_bar_set_value(GTK_LEVEL_BAR(ach_level_bar), data.global_achieved_rate);
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(ach_level_bar), data.global_achieved_rate / 100);
     gtk_style_context_add_class(
         gtk_widget_get_style_context( GTK_WIDGET(more_info_button) ),
         "circular"
@@ -167,9 +169,9 @@ m_ignore_toggle(false)
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(more_info_label), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(sep_one), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(percentage_players_label), FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_level_bar), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(sep_two), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(progression_label), FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_level_bar), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_progress_label_value), FALSE, TRUE, 0);
 
     gtk_container_add(GTK_CONTAINER(popover_menu), GTK_WIDGET(popover_box));

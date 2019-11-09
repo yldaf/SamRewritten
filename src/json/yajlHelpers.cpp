@@ -61,9 +61,7 @@ encode_achievement(yajl_gen handle, Achievement_t achievement) {
     yajl_gen_string_wrap(handle, ID_STR);
     yajl_gen_string_wrap(handle, achievement.id.c_str());
 
-    // For some obscure reasons, my generated output looks like this "RATE":86,5
-    // So this is.. invalid JSON? Since a valid value would be "RATE":86.5
-    // yajl_gen_double, wtf is wrong with you..
+    // https://github.com/lloyd/yajl/issues/222
     yajl_gen_string_wrap(handle, RATE_STR);
     if (yajl_gen_double(handle, (double)achievement.global_achieved_rate) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
@@ -106,13 +104,12 @@ encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements) {
 
         if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
-        }            
+        }
     }
 
     if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;
     }
-
 }
 
 //parsing the array inline would not be nice, so just extract them all here
