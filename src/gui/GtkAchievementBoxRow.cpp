@@ -142,7 +142,7 @@ m_ignore_toggle(false)
     GtkWidget *sep_two = gtk_separator_menu_item_new();
     GtkWidget *progression_label = gtk_label_new("Achievement progress");
     GtkWidget *ach_level_bar = gtk_progress_bar_new();
-    GtkWidget *ach_progress_label_value = gtk_label_new("TODO / TODO");
+    GtkWidget *ach_progress_bar = gtk_label_new("TODO / TODO");
 
     gtk_label_set_markup(GTK_LABEL(title_label), ach_title_text.c_str());
     gtk_label_set_markup(GTK_LABEL(more_info_label), "<b>Additional information</b>");
@@ -164,6 +164,21 @@ m_ignore_toggle(false)
     gtk_box_pack_start(GTK_BOX(title_desc_box), GTK_WIDGET(desc_label), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(ach_pic), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(title_desc_box), TRUE, TRUE, 0);
+
+    if (data.special & ACHIEVEMENT_RARE)
+    {
+        GtkWidget* image = gtk_label_new("💎   ");
+        gtk_widget_set_tooltip_text(image, "This is a difficult achievement, less than 5% people earned it!");
+        gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(image), FALSE, TRUE, 0);
+    }
+
+    if (data.special & ACHIEVEMENT_NEXT_MOST_ACHIEVED)
+    {
+        GtkWidget* image = gtk_label_new("📈   ");
+        gtk_widget_set_tooltip_text(image, "This is the next most unlocked achievement");
+        gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(image), FALSE, TRUE, 0);
+    }
+
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(more_info_button), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(layout), GTK_WIDGET(m_lock_unlock_button), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(more_info_label), FALSE, TRUE, 0);
@@ -172,7 +187,7 @@ m_ignore_toggle(false)
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_level_bar), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(sep_two), FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(progression_label), FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_progress_label_value), FALSE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(popover_box), GTK_WIDGET(ach_progress_bar), FALSE, TRUE, 0);
 
     gtk_container_add(GTK_CONTAINER(popover_menu), GTK_WIDGET(popover_box));
     gtk_widget_show_all(popover_box);

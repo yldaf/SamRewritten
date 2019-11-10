@@ -471,6 +471,7 @@ Did you make a typo?</property>
           <object class="GtkButton" id="store_button">
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Confirm changes &amp; send to Steam</property>
             <signal name="clicked" handler="on_store_button_clicked" swapped="no"/>
             <child>
               <object class="GtkImage">
