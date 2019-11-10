@@ -52,7 +52,13 @@
         "bit": "cpp",
         "map": "cpp",
         "string": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "iterator": "cpp",
+        "memory_resource": "cpp",
+        "random": "cpp",
+        "cinttypes": "cpp",
+        "valarray": "cpp",
+        "variant": "cpp"
     },
     "C_Cpp.intelliSenseEngine": "Tag Parser"
 }

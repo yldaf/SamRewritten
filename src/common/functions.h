@@ -13,7 +13,6 @@ pid_t create_process();
  * or fail hard on error
  */
 void read_count(int fd, void *buf, size_t count);
-
 void write_count(int fd, void *buf, size_t count);
 
 /**
@@ -31,6 +30,11 @@ char* concat(const char *s1, const char *s2);
  * Insensitive "string in string"
  */
 bool strstri(const std::string & strHaystack, const std::string & strNeedle);
+
+/**
+ * Returns true if str is only containing digits, and is not empty
+ */
+bool digits_only(const std::string& str);
 
 /**
  * Make a directory with reasonable defaults

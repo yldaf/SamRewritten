@@ -424,7 +424,7 @@ Did you make a typo?</property>
             <property name="primary_icon_name">edit-find-symbolic</property>
             <property name="primary_icon_activatable">False</property>
             <property name="primary_icon_sensitive">False</property>
-            <property name="placeholder_text" translatable="yes">Name of the game...</property>
+            <property name="placeholder_text" translatable="yes">Game name or AppID..</property>
             <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
             <signal name="search-changed" handler="on_game_search_changed" swapped="no"/>
           </object>

@@ -70,6 +70,11 @@ bool strstri(const std::string & strHaystack, const std::string & strNeedle)
   return (it != strHaystack.end() );
 }
 
+bool digits_only(const std::string &str)
+{
+    return std::all_of(str.begin(), str.end(), ::isdigit) && str.length() > 0;
+}
+
 void mkdir_default(const char *pathname)
 {
     int mkdir_error = mkdir(pathname, S_IRWXU | S_IRWXG | S_IROTH);

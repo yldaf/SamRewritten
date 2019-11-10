@@ -5,6 +5,7 @@
 #include "../globals.h"
 #include "../types/Achievement.h"
 #include "gtk_callbacks.h"
+#include "gtk_input_appid_game_row.h"
 
 
 MainPickerWindow::MainPickerWindow()
@@ -37,6 +38,9 @@ MainPickerWindow::MainPickerWindow()
 
     g_signal_connect(m_game_list, "row-activated", (GCallback)on_game_row_activated, NULL);
     gtk_builder_connect_signals(m_builder, NULL);
+
+    m_input_appid_row = gtk_input_appid_game_row_new();
+    gtk_list_box_insert(m_game_list, GTK_WIDGET(m_input_appid_row), -1);
     
     // Show the placeholder widget right away, which is the loading widget
     show_fetch_games_placeholder();
@@ -51,7 +55,7 @@ MainPickerWindow::MainPickerWindow()
  */
 void 
 MainPickerWindow::reset_game_list() {
-    for (std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
+    for (std::map<AppId_t, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         gtk_widget_destroy( GTK_WIDGET(it->second) );
     }
@@ -64,14 +68,14 @@ void
 MainPickerWindow::reset_achievements_list() {
     for ( GtkAchievementBoxRow* row : m_achievement_list_rows )
     {
+        // gtk_widget_destroy called in destructor of GtkAchievementBoxRow
         delete row;
         row = nullptr;
     }
 
-    m_achievement_list_rows.clear(); // Just to be sure
+    m_achievement_list_rows.clear();
 }
 // => reset_achievements_list
-
 
 /**
  * Add a game to the list. Ignores warnings for the obsolete GtkArrow.
@@ -110,7 +114,7 @@ MainPickerWindow::add_to_game_list(const Game_t& app) {
     gtk_list_box_insert(m_game_list, GTK_WIDGET(wrapper), -1);
     
     //Save the created row somewhere for EZ access
-    m_game_list_rows.insert(std::pair<unsigned long, GtkWidget*>(app.app_id, wrapper));
+    m_game_list_rows.insert(std::pair<AppId_t, GtkWidget*>(app.app_id, wrapper));
 }
 // => add_to_game_list
 
@@ -135,6 +139,7 @@ MainPickerWindow::confirm_achievement_list() {
 void 
 MainPickerWindow::confirm_game_list() {
     gtk_widget_show_all( GTK_WIDGET(m_game_list) );
+    gtk_widget_hide(m_input_appid_row);
 }
 // => confirm_game_list
 
@@ -190,13 +195,20 @@ void
 MainPickerWindow::filter_games(const char* filter_text) {
     const std::string text_filter(filter_text);
     std::string text_label;
-        
+    
     gtk_widget_show_all( GTK_WIDGET(m_game_list) );
+    gtk_widget_hide( GTK_WIDGET(m_input_appid_row) );
     if(text_filter.empty()) {
         return;
     }
 
-    for (std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
+    if (digits_only(text_filter))
+    {
+        gtk_widget_show_all( GTK_WIDGET(m_input_appid_row) );
+        gtk_input_appid_game_row_set_appid(m_input_appid_row, text_filter);
+    }
+
+    for (std::map<AppId_t, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         GList *children;
         GtkLabel* label;
@@ -206,7 +218,7 @@ MainPickerWindow::filter_games(const char* filter_text) {
         label = GTK_LABEL( children->data );
 
         if( !GTK_IS_LABEL(label) ) {
-            std::cerr << "The layout may have been modified, please tell me you're a dev, look at MainPikerWindow Blah blah TODO" << std::endl;
+            std::cerr << "The layout has been modified, please open an issue on Github if you can read this." << std::endl;
             exit(EXIT_FAILURE);
         }
 
@@ -240,9 +252,9 @@ MainPickerWindow::filter_achievements(const char* filter_text) {
 }
 // => filter_achievements
 
-unsigned long 
+AppId_t 
 MainPickerWindow::get_corresponding_appid_for_row(GtkListBoxRow *row) {
-    for(std::map<unsigned long, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
+    for(std::map<AppId_t, GtkWidget*>::iterator it = m_game_list_rows.begin(); it != m_game_list_rows.end(); ++it)
     {
         if( (gpointer)it->second == (gpointer)row ) {
             return it->first;
