@@ -28,15 +28,29 @@ enum SAM_ACTION {
     INVALID
 };
 
-/* JSON format shall be
-messages are sent as plaintext strings
-messages are delimited by the usual string NULL terminator
+/* 
 
-get all achievements for active game
+JSON format shall be
+* messages are sent as plaintext strings
+* messages are delimited by the usual string NULL terminator
+
+For all the examples given, you can provide additional keys to the request, only the ones 
+shown are taken in account.
+The server can also answer with more keys, but if so their value will likely be garbage value.
+
+
+# 1. Get all achievements for active game
+
+Request
+Client --> Server
+
 {
     SAM_ACTION_STR: GET_ACHIEVEMENTS_STR
 }
-response
+
+Response
+Server --> Client
+
 {
     SAM_ACK: SAM_ACK,
     ACHIEVEMENT_LIST_STR:
@@ -45,10 +59,9 @@ response
                 NAME_STR: "name"
                 DESC_STR: "desc"
                 ID_STR: "ID"
-                RATE_STR: global_achieved_rate
-                ICON_STR: icon
                 ACHIEVED_STR: true/fase
-                HIDDEN_STR: true/false
+                HIDDEN_STR: true/false,
+                RATE_STR: float value (0 to 100)
             },
             .
             .
@@ -56,21 +69,17 @@ response
         ]
 }
 
-store a list of achievement changes
-can be reduced to not encode the whole achievement,
-only id and achieved status / stats changes
+# 2. Lock or unlock an achievement for active game
+
+Client --> Server
+
 {
     SAM_ACTION_STR: STORE_ACHIEVEMENTS_STR
     ACHIEVEMENT_LIST_STR:
         [
             {
-                NAME_STR: ""
-                DESC_STR: ""
                 ID_STR: "ID"
-                RATE_STR: 0
-                ICON_STR: 0
                 ACHIEVED_STR: true/fase
-                HIDDEN_STR: false
             },
             .
             .
@@ -78,18 +87,24 @@ only id and achieved status / stats changes
         ]
 }
 
-response
+Server --> Client
+
 {
-    SAM_ACK: SAM_ACK,
+    SAM_ACK: SAM_ACK
 }
 
-quit active game
+# 3. Stop the server
+
+Client --> Server
+
 {
     SAM_ACTION_STR: SAM_QUIT_STR
 }
-response
+
+Server --> Client
+
 {
-    SAM_ACK: SAM_ACK,
+    SAM_ACK: SAM_ACK
 }
 
 */

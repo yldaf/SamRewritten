@@ -18,7 +18,37 @@ extern "C"
 
         g_main_gui->reset_achievements_list();
 
-        //TODO: just pass in the array directly?
+        // Assigning special to achievements
+        long next_most_achieved_index = -1;
+        float next_most_achieved_rate = 0;
+        bool ach_is_special;
+        Achievement_t tmp;
+        for(size_t i = 0; i < achievements.size(); i++) {
+            tmp = achievements[i];
+            ach_is_special = false;
+            if ( !tmp.achieved && tmp.global_achieved_rate > next_most_achieved_rate )
+            {
+                next_most_achieved_rate = tmp.global_achieved_rate;
+                next_most_achieved_index = i;
+            }
+
+            if ( tmp.global_achieved_rate <= 5.f )
+            {
+                ach_is_special = true;
+                achievements[i].special = ACHIEVEMENT_RARE;
+            }
+            
+            if ( !ach_is_special )
+            {
+                achievements[i].special = ACHIEVEMENT_NORMAL;
+            }
+        }
+
+        if (next_most_achieved_index != -1)
+        {
+            achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
+        }
+        
         for(Achievement_t achievement : achievements) {
             g_main_gui->add_to_achievement_list(achievement);
         }

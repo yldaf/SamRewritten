@@ -12,7 +12,7 @@ public:
     static SteamAppDAO* get_instance();
     
     /**
-     * Redownloads http://api.steampowered.com/ISteamApps/GetAppList/v0002/
+     * Redownloads the app list
      * if necessary. Redownloads every few days.
      * TODO: Maybe pass a boolean too as argument for "Override redownload"
      */

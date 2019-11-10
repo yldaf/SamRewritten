@@ -23,7 +23,8 @@ decode_ack(std::string response) {
     yajl_val node = yajl_tree_parse(response.c_str(), NULL, 0);
 
     if (node == NULL) {
-        std::cerr << "Parsing error";
+        std::cerr << "Parsing error. Data: " << std::endl;
+        std::cerr << response << std::endl;
         exit(EXIT_FAILURE);
     }
     const char * path[] = { SAM_ACK_STR, (const char*)0 };
@@ -60,6 +61,7 @@ encode_achievement(yajl_gen handle, Achievement_t achievement) {
     yajl_gen_string_wrap(handle, ID_STR);
     yajl_gen_string_wrap(handle, achievement.id.c_str());
 
+    // https://github.com/lloyd/yajl/issues/222
     yajl_gen_string_wrap(handle, RATE_STR);
     if (yajl_gen_double(handle, (double)achievement.global_achieved_rate) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
@@ -102,13 +104,12 @@ encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements) {
 
         if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
-        }            
+        }
     }
 
     if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;
     }
-
 }
 
 //parsing the array inline would not be nice, so just extract them all here

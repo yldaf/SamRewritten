@@ -12,7 +12,10 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [{"name":"LD_LIBRARY_PATH","value":"${workspaceFolder}/bin"}],
+            "environment": [
+                {"name":"LD_LIBRARY_PATH","value":"${workspaceFolder}/bin"},
+                {"name":"LC_NUMERIC","value":"en_US.UTF-8"}
+            ],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

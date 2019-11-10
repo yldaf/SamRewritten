@@ -4,6 +4,8 @@
 #include "../types/Actions.h"
 #include "../json/ProcessedGameServerRequest.h"
 #include "../json/yajlHelpers.h"
+#include "../globals.h"
+#include "../common/PerfMon.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -27,8 +29,7 @@ MyGameSocket::process_request(std::string request, bool& quit) {
 
     switch (r.getAction()) {
         case GET_ACHIEVEMENTS:
-            // Write achievements to handle
-            encode_achievements(handle, get_achievements());
+            encode_achievements(handle, get_achievements());  // Write achievements to handle
             break;
 
         case STORE_ACHIEVEMENTS:
@@ -72,14 +73,68 @@ MyGameSocket::get_achievements() {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
+    if (!get_global_stats())
+    {
+        std::cerr << "An error occurred getting global stats." << std::endl;
+        return m_achievement_list;
+    }
+
+    if (!get_global_achievements_stats())
+    {
+        std::cerr << "An error occurred getting global achievements stats." << std::endl;
+        return m_achievement_list;
+    }
+
     return m_achievement_list;
+}
+
+bool
+MyGameSocket::get_global_stats() {
+    if (!m_stats_callback_received)
+    {
+        std::cerr << "Requesting global stats when current stats haven't been fetched yet" << std::endl;
+        return false;
+    }
+    
+    m_global_callback_received = false;
+    SteamAPICall_t hSteamApiCall = SteamUserStats()->RequestGlobalStats(1);
+    m_GlobalStatsReceivedCallResult.Set( hSteamApiCall, this, &MyGameSocket::OnGlobalStatsReceived );
+
+    while (!m_global_callback_received) {
+        SteamAPI_RunCallbacks();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    return true;
+}
+
+bool
+MyGameSocket::get_global_achievements_stats() {
+    g_perfmon->log("Getting global stats");
+    if (!m_global_callback_received)
+    {
+        std::cerr << "Requesting global achievements stats when current global stats haven't been fetched yet" << std::endl;
+        return false;
+    }
+    
+    m_global_achievements_callback_ready = false;
+
+    SteamAPICall_t hSteamApiCall = SteamUserStats()->RequestGlobalAchievementPercentages();
+    m_GlobalAchievementPercentagesReadyCallResult.Set( hSteamApiCall, this, &MyGameSocket::OnGlobalAchievementPercentagesReceived );
+
+    while (!m_global_achievements_callback_ready) {
+        SteamAPI_RunCallbacks();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    }
+
+    return true;
 }
 
 void
 MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
 
     // Check if we received the values for the correct app
-    if (std::string(getenv("SteamAppId")) == std::to_string(callback->m_nGameID)) {
+    if (SteamUtils()->GetAppID() == callback->m_nGameID) {
         if ( k_EResultOK == callback->m_eResult ) {
             ISteamUserStats *stats_api = SteamUserStats();
 
@@ -104,14 +159,11 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 m_achievement_list[i].name = stats_api->GetAchievementDisplayAttribute(pchName, "name");
                 m_achievement_list[i].desc = stats_api->GetAchievementDisplayAttribute(pchName, "desc");
 
-                // TODO
-                // https://partner.steamgames.com/doc/api/ISteamUserStats#RequestGlobalAchievementPercentages
-                //stats_api->GetAchievementAchievedPercent(m_achievement_list[i].id, &(m_achievement_list[i].global_achieved_rate));
                 m_achievement_list[i].global_achieved_rate = 0;
                 stats_api->GetAchievement(pchName, &(m_achievement_list[i].achieved));
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute(pchName, "hidden" ), "0");
                 m_achievement_list[i].icon_handle = stats_api->GetAchievementIcon(pchName);
-                //m_achievement_list[i].icon_handle = 0;
+                //m_achievement_list[i].icon_handle = 0; // TODO
             }
 
         } else {
@@ -119,11 +171,49 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
         }
     } else {
         std::cerr << "Received stats for wrong game" << std::endl;
+        return;
     }
 
     m_stats_callback_received = true;
 }
 
+void
+MyGameSocket::OnGlobalStatsReceived(GlobalStatsReceived_t *callback, bool bIOFailure) {
+    if ( bIOFailure || callback->m_eResult != k_EResultOK )
+	{
+		std::cerr << "GlobalStatsReceived_t failed! Enum: " << callback->m_eResult << std::endl;
+		return;
+	}
+
+    std::cout << "Got stats, maybe I can do cool stuff with them, gotta check." << std::endl;
+    m_global_callback_received = true;
+}
+
+void
+MyGameSocket::OnGlobalAchievementPercentagesReceived(GlobalAchievementPercentagesReady_t *callback, bool bIOFailure) {
+
+    if ( bIOFailure || callback->m_eResult != k_EResultOK )
+	{
+		std::cerr << "GlobalAchievementPercentagesReady_t failed! Enum: " << callback->m_eResult << std::endl;
+		return;
+	}
+
+    for (Achievement_t& ach : m_achievement_list) {
+        float percent;
+        bool success = SteamUserStats()->GetAchievementAchievedPercent(ach.id.c_str(), &percent);
+        if (success)
+        {
+            ach.global_achieved_rate = percent;
+        }
+        else {
+            std::cerr << "Could not get global achievement rate for achievement " << ach.id << std::endl;
+            ach.global_achieved_rate = 0;
+        }
+        
+    }
+    
+    m_global_achievements_callback_ready = true;
+}
 
 void
 MyGameSocket::process_changes(std::vector<AchievementChange_t> changes) {
