@@ -2,9 +2,9 @@
 A Steam Achievements Manager for Linux
 ---
 
-[//]: # (**TODO TAKE A SCREENSHOT WHEN JUNK IS GONE**)
-
 ![SamRewritten logo](assets/icon_256.png)
+
+![SamRewritten screenshot](assets/screenshot.png)
 
 # Introduction
 
@@ -13,15 +13,6 @@ SamRewritten is an open-source program that allows you to unlock and relock your
 It comes with third-party tools integration and a nice user interface.
 
 SamRewritten is constantly under development, if you think you can give us a hand, feel free to reach us :)
-
-# Command line options
-
-I know you linux geeks love to use command line options.
-We have big ambitions for SamRewritten, and I believe many of them are related to these command-line options, so stay put, because that list will be growing soon!
-
-* -a \<appid\>
-	* Prevents the window from showing and sets your status to "In Game"
-	* `./bin/launch.sh -a 10` will idle Counter Strike
 
 # Building
 
@@ -45,6 +36,21 @@ To run SamRewritten, simply launch `$ ./bin/launch.sh`
 You can install SamRewritten from the AUR by installing the `samrewritten-git` package.
 
 Run SamRewritten by opening the corresponding desktop entry, or by using the `samrewritten` command.
+
+# Command line options
+
+I know you linux geeks love to use command line options.
+We have big ambitions for SamRewritten, and I believe many of them are related to these command-line options, so stay put, because that list will be growing soon!
+
+* -a \<appid\>
+	* Prevents the window from showing and sets your status to "In Game"
+	* `./bin/launch.sh -a 10` will idle Counter Strike
+
+---
+
+## Third-party apps integration
+
+SamRewritten uses JSON to communicate between the interface and the "backend logic". Communications are transmitted via unix sockets. If you plan to make an app using some of SamRewritten's features, feel free to ask for help, for features, or to contribute.
 
 ## Footnotes
 

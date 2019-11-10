@@ -81,7 +81,7 @@ SteamAppDAO::update_name_database() {
     int file_count = 0;
     
     if (retrieval_strategy == 1) {
-        file_url[0] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_list.json";
+        file_url[0] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_achievements_list.json";
         local_file_name[0] = concat(g_cache_folder, "/game_list.json");
         file_count = 1;
     } else if (retrieval_strategy == 2) {
