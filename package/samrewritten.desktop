@@ -6,3 +6,4 @@ Type=Application
 Icon=samrewritten
 Comment=Steam Achievement Manager
 Categories=Game;
+StartupWMClass=samrewritten;
