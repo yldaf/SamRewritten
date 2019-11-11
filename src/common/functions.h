@@ -37,3 +37,9 @@ bool strstri(const std::string & strHaystack, const std::string & strNeedle);
  * or fail hard on error
  */
 void mkdir_default(const char *pathname);
+
+/**
+ * Escape html characters inline a string.
+ * From https://stackoverflow.com/a/5665377
+ */
+void escape_html(std::string& data);

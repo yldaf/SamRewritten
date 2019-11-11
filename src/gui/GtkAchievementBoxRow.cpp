@@ -1,6 +1,7 @@
 #include "GtkAchievementBoxRow.h"
 #include "../MySteam.h"
 #include "../globals.h"
+#include "../common/functions.h"
 #include <string>
 #include <iostream>
 
@@ -118,7 +119,10 @@ m_ignore_toggle(false)
         ach_locked_text = "🔒 Locked";
     }
 
-    ach_title_text = "<b>" + data.name + "</b>";
+    // Make a copy of the name and escape it for markup purposes
+    std::string escaped_name = data.name;
+    escape_html(escaped_name);
+    ach_title_text = "<b>" + escaped_name + "</b>";
     char tmpbuf[32];
     snprintf(tmpbuf, 32, "%.1f", data.global_achieved_rate);
     ach_player_percent_text = "Achieved by " + std::string(tmpbuf) + "% of the players";
