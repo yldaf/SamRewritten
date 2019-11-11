@@ -110,7 +110,6 @@ MyGameSocket::get_global_stats() {
 
 bool
 MyGameSocket::get_global_achievements_stats() {
-    g_perfmon->log("Getting global stats");
     if (!m_global_callback_received)
     {
         std::cerr << "Requesting global achievements stats when current global stats haven't been fetched yet" << std::endl;

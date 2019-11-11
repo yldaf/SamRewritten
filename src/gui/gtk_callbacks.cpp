@@ -2,6 +2,7 @@
 #include <iostream>
 #include <future>
 #include "MainPickerWindow.h"
+#include "gtk_input_appid_game_row.h"
 #include "../common/PerfMon.h"
 #include "../MySteam.h"
 #include "../globals.h"
@@ -280,23 +281,28 @@ extern "C"
     void 
     on_game_row_activated(GtkListBox *box, GtkListBoxRow *row) {
 
-        const AppId_t appId = g_main_gui->get_corresponding_appid_for_row(row);
-
-        if( appId != 0 ) {
-            // Currently this doesn't actually show the fetch_achievements_placeholder
-            // because the thread gets blocked behind populate_achievements and gtk_main
-            // never gets a chance to run and refresh the window before it's replaced
-            // with achievement rows.
-            // So TODO: fire this populate_achievements in a different thread to not
-            //          block main thread?
-            g_main_gui->show_fetch_achievements_placeholder();
-            g_main_gui->switch_to_achievement_page();
-            g_steam->launch_game(appId);
-            populate_achievements();
-            g_main_gui->show_no_achievements_found_placeholder();
-        } else {
-            std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
+        AppId_t appId = g_main_gui->get_corresponding_appid_for_row(row);
+        
+        if ( appId == 0 ) {
+            appId = gtk_input_appid_game_row_get_appid(row);
         }
+        
+        if ( appId == 0 ) {
+            std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;
+            return;
+        }
+
+        // Currently this doesn't actually show the fetch_achievements_placeholder
+        // because the thread gets blocked behind populate_achievements and gtk_main
+        // never gets a chance to run and refresh the window before it's replaced
+        // with achievement rows.
+        // So TODO: fire this populate_achievements in a different thread to not
+        //          block main thread?
+        g_main_gui->show_fetch_achievements_placeholder();
+        g_main_gui->switch_to_achievement_page();
+        g_steam->launch_game(appId);
+        populate_achievements();
+        g_main_gui->show_no_achievements_found_placeholder();
 
     }
     // => on_game_row_activated

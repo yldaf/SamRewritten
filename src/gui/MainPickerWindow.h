@@ -93,7 +93,7 @@ public:
      * Give it a pointer to a row from the main game list, returns the associated
      * appid. Returns 0 on error;
      */
-    unsigned long get_corresponding_appid_for_row(GtkListBoxRow *row);
+    AppId_t get_corresponding_appid_for_row(GtkListBoxRow *row);
 
     /**
      * Access m_achievement_list_rows and call unlock for every one of them
@@ -180,7 +180,7 @@ public:
 
     int outstanding_icon_downloads;
     std::future<void> owned_apps_future;
-    std::map< AppId_t, std::future<void>> icon_download_futures;
+    std::map<AppId_t, std::future<void>> icon_download_futures;
 
 private:
     GtkWidget *m_main_window;
@@ -204,7 +204,8 @@ private:
     GtkWidget *m_no_games_found_placeholder;
     GtkWidget *m_fetch_achievements_placeholder;
     GtkWidget *m_no_achievements_found_placeholder;
+    GtkWidget *m_input_appid_row;
 
-    std::map<unsigned long, GtkWidget*> m_game_list_rows;
+    std::map<AppId_t, GtkWidget*> m_game_list_rows;
     std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;
 };
