@@ -3,6 +3,7 @@
 #include <fstream>
 #include <algorithm>
 #include <dirent.h>
+#include <bits/stdc++.h>
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_tree.h>
 #include "types/Game.h"
@@ -12,7 +13,32 @@
 #include "json/yajlHelpers.h"
 
 MySteam::MySteam() {
+    std::string data_home_path;
+    if (getenv("XDG_DATA_HOME") != NULL) {
+        data_home_path = getenv("XDG_DATA_HOME");
+    } else {
+        data_home_path = getenv("HOME") + std::string("/.local/share");
+    }
 
+    if (file_exists(data_home_path + "/Steam/appcache/appinfo.vdf")) {
+        m_steam_install_dir = std::string(data_home_path + "/Steam");
+        return;
+    }
+
+    const std::string home_path = getenv("HOME");
+    if (file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
+        m_steam_install_dir = std::string(home_path + "/.steam");
+        return;
+    }
+    else if (file_exists(home_path + "/.steam/steam/appcache/appinfo.vdf")) {
+        m_steam_install_dir = std::string(home_path + "/.steam/steam");
+        return;
+    }
+    else {
+        std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
+        system("zenity --error --no-wrap --text=\"Unable to find your Steam installation directory.. Please report this on Github!\"");
+        exit(EXIT_FAILURE);
+    }
 }
 // => Constructor
 
@@ -56,6 +82,7 @@ MySteam::launch_game(AppId_t appID) {
         return false;
     }
 
+    m_app_id = appID;
     return true;
 }
 // => launch_game
@@ -111,52 +138,33 @@ MySteam::refresh_owned_apps() {
 /**
  * Tries to locate the steam folder in multiple locations,
  * which is not a failsafe implementation.
- * 
- * The original steamclient library path is the returned path + "/linux64/steamclient.so"
  */
 std::string
 MySteam::get_steam_install_path() {
-    std::string data_home_path;
-    if (getenv("XDG_DATA_HOME") != NULL) {
-        data_home_path = getenv("XDG_DATA_HOME");
-    } else {
-        data_home_path = getenv("HOME") + std::string("/.local/share");
-    }
-
-    if (file_exists(data_home_path + "/Steam/appcache/appinfo.vdf")) {
-        return std::string(data_home_path + "/Steam");
-    }
-
-    std::cerr << "Trying to find Steam install with legacy Steam paths" << std::endl;
-
-    const std::string home_path = getenv("HOME");
-    if (file_exists(home_path + "/.steam/appcache/appinfo.vdf")) {
-        return std::string(home_path + "/.steam");
-    }
-    else if (file_exists(home_path + "/.steam/steam/appcache/appinfo.vdf")) {
-        return std::string(home_path + "/.steam/steam");
-    }
-    else {
-        std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    return m_steam_install_dir;
 }
 // => get_steam_install_path
 
 /**
  * Reminder that download_app_icon does check if the file is 
  * already there before attempting to download from the web.
- * It also has a "callback" that will refresh the view.
  */
 void 
-MySteam::refresh_icon(AppId_t app_id) {
+MySteam::refresh_app_icon(AppId_t app_id) {
     SteamAppDAO *appDAO = SteamAppDAO::get_instance();
     appDAO->download_app_icon(app_id);
 }
-// => refresh_icons
+// => refresh_app_icon
 
-std::vector<Achievement_t>
-MySteam::get_achievements() {
+void
+MySteam::refresh_achievement_icon(std::string id, std::string icon_download_name) {
+    SteamAppDAO *appDAO = SteamAppDAO::get_instance();
+    appDAO->download_achievement_icon(m_app_id, id, icon_download_name);
+}
+// => refresh_achievement_icon
+
+void
+MySteam::refresh_achievements() {
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Connection to game is broken" << std::endl;
@@ -169,9 +177,9 @@ MySteam::get_achievements() {
         std::cerr << "Failed to receive ack!" << std::endl;
     }
 
-    return decode_achievements(response);
+    m_achievements = decode_achievements(response);
 }
-// => get_achievements
+// => refresh_achievements
 
 /**
  * Adds an achievement to the list of achievements to unlock/lock

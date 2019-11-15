@@ -78,6 +78,11 @@ public:
     void refresh_app_icon(AppId_t app_id);
 
     /**
+     * Same as above for each achievement
+     */
+    void refresh_achievement_icon(AppId_t app_id, std::string id);
+
+    /**
      * Filters the game list. For a title to stay displayed,
      * filter_text must be included in it
      */
@@ -177,10 +182,16 @@ public:
      * and allowing multiple idle threads to corrupt the main window.
      */
     std::mutex m_game_refresh_lock;
+    std::mutex m_achievement_refresh_lock;
 
     int outstanding_icon_downloads;
     std::future<void> owned_apps_future;
-    std::map<AppId_t, std::future<void>> icon_download_futures;
+    std::map<AppId_t, std::future<void>> app_icon_download_futures;
+
+    // Achievement info for the currently running game
+    std::future<void> achievements_future;
+    std::future<bool> schema_parser_future;
+    std::map<std::string, std::future<void>> achievement_icon_download_futures;
 
 private:
     GtkWidget *m_main_window;
@@ -207,5 +218,5 @@ private:
     GtkWidget *m_input_appid_row;
 
     std::map<AppId_t, GtkWidget*> m_game_list_rows;
-    std::vector<GtkAchievementBoxRow*> m_achievement_list_rows;
+    std::map<std::string, GtkAchievementBoxRow*> m_achievement_list_rows;
 };

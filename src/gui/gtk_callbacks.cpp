@@ -6,26 +6,25 @@
 #include "../common/PerfMon.h"
 #include "../MySteam.h"
 #include "../globals.h"
+#include "../types/UserGameStatsSchemaParser.h"
 
 // See comments in the header file
 
 extern "C"
 {
+    // Assigning special to achievements
+    void 
+    parse_special() {
+        // TODO: Maybe split this up to be more amenable to threaded GUI loading, could fire off in thread
+        // TODO: achievements made public in MySteam, so we can modify them directly here, fix that
 
-    void
-    populate_achievements() {
-        // Get_achievements from game server
-        std::vector<Achievement_t> achievements = g_steam->get_achievements();
-
-        g_main_gui->reset_achievements_list();
-
-        // Assigning special to achievements
         long next_most_achieved_index = -1;
         float next_most_achieved_rate = 0;
         Achievement_t tmp;
-        for(size_t i = 0; i < achievements.size(); i++) {
-            tmp = achievements[i];
-            achievements[i].special = ACHIEVEMENT_NORMAL;
+
+        for(size_t i = 0; i < g_steam->m_achievements.size(); i++) {
+            tmp = g_steam->m_achievements[i];
+            g_steam->m_achievements[i].special = ACHIEVEMENT_NORMAL;
 
             if ( !tmp.achieved && tmp.global_achieved_rate > next_most_achieved_rate )
             {
@@ -35,20 +34,149 @@ extern "C"
 
             if ( tmp.global_achieved_rate <= 5.f )
             {
-                achievements[i].special = ACHIEVEMENT_RARE;
+                g_steam->m_achievements[i].special = ACHIEVEMENT_RARE;
             }
         }
 
         if ( next_most_achieved_index != -1 )
         {
-            achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
+            g_steam->m_achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
         }
-        
-        for( Achievement_t achievement : achievements ) {
-            g_main_gui->add_to_achievement_list(achievement);
+    }
+    // => parse_special
+
+    // see comments in load_apps_idle
+    static gboolean
+    load_achievements_idle (gpointer data_)
+    {
+        IdleData *data = (IdleData *)data_;
+
+        if (data->state == ACH_STATE_STARTED) {
+            g_perfmon->log("Starting achievement retrieval");
+            g_main_gui->achievements_future = std::async(std::launch::async, []{g_steam->refresh_achievements();});
+            data->state = ACH_STATE_WAITING_FOR_ACHIEVEMENTS;
+            return G_SOURCE_CONTINUE;
         }
 
-        g_main_gui->confirm_achievement_list();
+        if (data->state == ACH_STATE_WAITING_FOR_ACHIEVEMENTS) {
+            if (g_main_gui->achievements_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                g_perfmon->log("Done retrieving achievements");
+
+                // Fire off the schema parsing now.
+                // It will modify g_steam->m_icon_download_names directly
+                // TODO: figure out if all the icons are already there and skip parsing schema
+                g_main_gui->schema_parser_future = std::async(std::launch::async, load_user_game_stats_schema);
+                parse_special();
+                data->state = ACH_STATE_LOADING_GUI;
+            }
+            return G_SOURCE_CONTINUE;
+        }
+
+        if (data->state == ACH_STATE_LOADING_GUI) {
+            if (data->current_item == g_steam->get_achievements().size()) {
+                g_perfmon->log("Done adding achievements to GUI");
+                g_main_gui->confirm_achievement_list();
+                data->state = ACH_STATE_WAITING_FOR_SCHEMA_PARSER;
+                data->current_item = 0;
+                return G_SOURCE_CONTINUE;
+            }
+
+            auto achievement = g_steam->get_achievements()[data->current_item];
+            g_main_gui->add_to_achievement_list(achievement);
+            data->current_item++;
+            return G_SOURCE_CONTINUE;
+        }
+
+        if (data->state == ACH_STATE_WAITING_FOR_SCHEMA_PARSER) {
+            if (g_main_gui->schema_parser_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                g_perfmon->log("Done parsing schema to find achievement icon download names");
+                if (!g_main_gui->schema_parser_future.get()) {
+                    std::cerr << "Schema parsing failed, skipping icon downloads" << std::endl;
+                    data->state = ACH_STATE_FINISHED;
+                    return G_SOURCE_REMOVE;
+                }
+
+                data->state = ACH_STATE_DOWNLOADING_ICONS;
+            }
+            return G_SOURCE_CONTINUE;
+        }
+
+        if (data->state == ACH_STATE_DOWNLOADING_ICONS) {
+            // this could hang if we failed to parse all the icon download names
+            bool done_starting_downloads = (data->current_item == g_steam->get_achievements().size());
+
+            if (done_starting_downloads && (g_main_gui->achievement_icon_download_futures.size() == 0)) {
+                 g_perfmon->log("Done downloading achievement icons");
+                 data->state = ACH_STATE_FINISHED;
+                 return G_SOURCE_REMOVE;
+            }
+
+            if ( !done_starting_downloads && (g_main_gui->outstanding_icon_downloads < MAX_OUTSTANDING_ICON_DOWNLOADS))  {
+                // Fire off a new download thread
+                std::string id = g_steam->get_achievements()[data->current_item].id;
+                std::string icon_download_name = g_steam->m_icon_download_names[id];
+                
+                // Assuming it returns empty string on failing to lookup
+                if (icon_download_name.empty()) {
+                    std::cerr << "Failed to lookup achievement icon name: " << id << std::endl;
+                } else {
+                    g_main_gui->achievement_icon_download_futures.insert(std::make_pair(
+                        id, std::async(std::launch::async, [id, icon_download_name]{g_steam->refresh_achievement_icon(id, icon_download_name);})));
+                    g_main_gui->outstanding_icon_downloads++;
+                }
+
+                data->current_item++;
+
+                // continue on to service a thread if it's finished
+            }
+
+            for (auto const& [id, this_future] : g_main_gui->achievement_icon_download_futures) {
+                if (this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                    g_main_gui->refresh_achievement_icon(g_steam->m_app_id, id);
+                    g_main_gui->achievement_icon_download_futures.erase(id);
+                    g_main_gui->outstanding_icon_downloads--;
+                    // let's only process one at a time
+                    return G_SOURCE_CONTINUE;
+                }
+            }
+
+            // return G_SOURCE_CONTINUE;
+        }
+
+        // Should never reach here
+        return G_SOURCE_CONTINUE;
+    }
+    // => load_achievements_idle
+
+    static void
+    finish_load_achievements (gpointer data_)
+    {
+        IdleData *data = (IdleData *)data_;
+        g_perfmon->log("Achievements retrieved");
+        g_free(data);
+        g_main_gui->show_no_achievements_found_placeholder();
+        g_main_gui->m_achievement_refresh_lock.unlock();
+    }
+    // => finish_load_achievements
+
+    void
+    populate_achievements() {
+        if (g_main_gui->m_achievement_refresh_lock.try_lock()) {
+            IdleData *data = g_new(IdleData, 1);
+            data->current_item = 0;
+            data->state = ACH_STATE_STARTED;
+            g_main_gui->outstanding_icon_downloads = 0;
+            g_main_gui->reset_achievements_list();
+            g_main_gui->show_fetch_achievements_placeholder();
+
+            g_idle_add_full (G_PRIORITY_LOW,
+                            load_achievements_idle,
+                            data,
+                            finish_load_achievements);
+
+        } else {
+            std::cerr << "Not launching game/refreshing achievements because a refresh is already in progress" << std::endl;
+        }
     }
     // => populate_achievements
 
@@ -88,31 +216,31 @@ extern "C"
      * main loop to these latencies and potentially make it laggy.
      */
     static gboolean
-    load_items_idle (gpointer data_)
+    load_apps_idle (gpointer data_)
     {
         IdleData *data = (IdleData *)data_;
 
-        if (data->state == STATE_STARTED) {
+        if (data->state == APPS_STATE_STARTED) {
             g_main_gui->reset_game_list();
             g_perfmon->log("Starting library parsing.");
             g_main_gui->owned_apps_future = std::async(std::launch::async, []{g_steam->refresh_owned_apps();});
-            data->state = STATE_WAITING_FOR_OWNED_APPS;
+            data->state = APPS_STATE_WAITING_FOR_OWNED_APPS;
             return G_SOURCE_CONTINUE;
         }
 
-        if (data->state == STATE_WAITING_FOR_OWNED_APPS) {
+        if (data->state == APPS_STATE_WAITING_FOR_OWNED_APPS) {
             if (g_main_gui->owned_apps_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                 g_perfmon->log("Done retrieving and filtering owned apps");
-                data->state = STATE_LOADING_GUI;
+                data->state = APPS_STATE_LOADING_GUI;
             }
             return G_SOURCE_CONTINUE;
         }
 
-        if (data->state == STATE_LOADING_GUI) {
+        if (data->state == APPS_STATE_LOADING_GUI) {
             if (data->current_item == g_steam->get_subscribed_apps().size()) {
                 g_perfmon->log("Done adding apps to GUI");
                 g_main_gui->confirm_game_list();
-                data->state = STATE_DOWNLOADING_ICONS;
+                data->state = APPS_STATE_DOWNLOADING_ICONS;
                 data->current_item = 0;
                 return G_SOURCE_CONTINUE;
             }
@@ -123,7 +251,7 @@ extern "C"
             return G_SOURCE_CONTINUE;
         }
 
-        if (data->state == STATE_DOWNLOADING_ICONS) {
+        if (data->state == APPS_STATE_DOWNLOADING_ICONS) {
             // This must occur after the main gui game_list is
             // complete, otherwise we might have concurrent
             // access and modification of the GUI's game_list
@@ -131,9 +259,9 @@ extern "C"
             bool done_starting_downloads = (data->current_item == g_steam->get_subscribed_apps().size());
 
             // Make sure we're done starting all downloads and finshed with outstanding downloads
-            if (done_starting_downloads && (g_main_gui->icon_download_futures.size() == 0)) {
-                g_perfmon->log("Done downloading icons");
-                data->state = STATE_FINISHED;
+            if (done_starting_downloads && (g_main_gui->app_icon_download_futures.size() == 0)) {
+                g_perfmon->log("Done downloading app icons");
+                data->state = APPS_STATE_FINISHED;
                 return G_SOURCE_REMOVE;
             }
 
@@ -151,7 +279,7 @@ extern "C"
             if ( !done_starting_downloads && (g_main_gui->outstanding_icon_downloads < MAX_OUTSTANDING_ICON_DOWNLOADS))  {
                 // Fire off a new download thread
                 Game_t app = g_steam->get_subscribed_apps()[data->current_item];
-                g_main_gui->icon_download_futures.insert(std::make_pair(app.app_id, std::async(std::launch::async, g_steam->refresh_icon, app.app_id)));
+                g_main_gui->app_icon_download_futures.insert(std::make_pair(app.app_id, std::async(std::launch::async, g_steam->refresh_app_icon, app.app_id)));
                 g_main_gui->outstanding_icon_downloads++;
                 data->current_item++;
 
@@ -160,14 +288,14 @@ extern "C"
 
             // Try to find a thread that is finished. Only process at most 1 per GTK main loop.
             // The max time this takes to traverse is controlled by the size of the
-            // icon_download_futures size, which is controlled by MAX_ICON_DOWNLOADS.
+            // app_icon_download_futures size, which is controlled by MAX_ICON_DOWNLOADS.
             // Increasing this could lead to GUI stutter if it needs to traverse a large map,
             // although the map has logarithmic traversal and update complexity.
-            for (auto const& [app_id, this_future] : g_main_gui->icon_download_futures) {
+            for (auto const& [app_id, this_future] : g_main_gui->app_icon_download_futures) {
                 if (this_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
                     // TODO: remove the app if it has a bad icon? (because then it's mostly likely not a game)
                     g_main_gui->refresh_app_icon(app_id);
-                    g_main_gui->icon_download_futures.erase(app_id);
+                    g_main_gui->app_icon_download_futures.erase(app_id);
                     g_main_gui->outstanding_icon_downloads--;
                     // let's only process one at a time
                     return G_SOURCE_CONTINUE;
@@ -180,19 +308,19 @@ extern "C"
         // Should never reach here
         return G_SOURCE_CONTINUE;
     }
-    // => load_items_idle
+    // => load_apps_idle
 
     /* the finish function */
     static void
-    finish_load_items (gpointer data_)
+    finish_load_apps (gpointer data_)
     {
         IdleData *data = (IdleData *)data_;
         g_perfmon->log("Library parsed.");
         g_free(data);
-        g_main_gui->m_game_refresh_lock.unlock();
         g_main_gui->show_no_games_found_placeholder();
+        g_main_gui->m_game_refresh_lock.unlock();
     }
-    // => finish_load_items
+    // => finish_load_apps
 
     void
     on_about_button_clicked() {
@@ -207,20 +335,18 @@ extern "C"
     void 
     on_refresh_games_button_clicked() {
         if (g_main_gui->m_game_refresh_lock.try_lock()) {
-            IdleData *data;
-
-            data = g_new(IdleData, 1);
+            IdleData *data = g_new(IdleData, 1);
             data->current_item = 0;
-            data->state = STATE_STARTED;
+            data->state = APPS_STATE_STARTED;
             g_main_gui->outstanding_icon_downloads = 0;
             g_main_gui->show_fetch_games_placeholder();
 
             // Use low priority so we don't block showing the main window
             // This allows the main window to show up immediately
             g_idle_add_full (G_PRIORITY_LOW,
-                            load_items_idle,
+                            load_apps_idle,
                             data,
-                            finish_load_items);
+                            finish_load_apps);
         } else {
             std::cerr << "Not refreshing games because a refresh is already in progress" << std::endl;
         }
@@ -272,9 +398,8 @@ extern "C"
     }
     // => on_achievement_search_changed
 
-    void 
+    void
     on_game_row_activated(GtkListBox *box, GtkListBoxRow *row) {
-
         AppId_t appId = g_main_gui->get_corresponding_appid_for_row(row);
         
         if ( appId == 0 ) {
@@ -286,18 +411,9 @@ extern "C"
             return;
         }
 
-        // Currently this doesn't actually show the fetch_achievements_placeholder
-        // because the thread gets blocked behind populate_achievements and gtk_main
-        // never gets a chance to run and refresh the window before it's replaced
-        // with achievement rows.
-        // So TODO: fire this populate_achievements in a different thread to not
-        //          block main thread?
-        g_main_gui->show_fetch_achievements_placeholder();
         g_main_gui->switch_to_achievement_page();
         g_steam->launch_game(appId);
         populate_achievements();
-        g_main_gui->show_no_achievements_found_placeholder();
-
     }
     // => on_game_row_activated
 
