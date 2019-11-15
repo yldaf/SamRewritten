@@ -11,11 +11,11 @@ OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
 all: ${CURDIR}/bin/samrewritten
 
 ${CURDIR}/bin/samrewritten: $(OBJS)
-	${CXX} ${LDFLAGS} -o ${CURDIR}/bin/samrewritten $(OBJS) ${CXXFLAGS}
+	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS}
 
 ${OBJDIR}/%.o: %.cpp $(HFILES)
 	@mkdir -p $$(dirname $@)
-	$(CXX) $(CXXFLAGS) $< ${LDFLAGS} -c -o $@
+	$(CXX) -c -o $@ $< ${LDFLAGS} $(CXXFLAGS)
 
 clean:
 	${RMDIR} ${OBJDIR}
