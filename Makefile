@@ -1,14 +1,19 @@
-CXX=g++ -std=c++17 -g
+CXX=g++ -std=c++17
 RM=rm -f
 RMDIR=rm -rf
 HFILES:=$(shell find src/ -type f -iname *.h -print)
 CXXFILES:=$(shell find src/ -type f -iname *.cpp -print)
-CXXFLAGS=$(shell pkg-config --cflags --libs gtk+-3.0) -rdynamic -export-dynamic -pthread -Wall -lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl -ldl
+GTKFLAGS=$(shell pkg-config --cflags --libs gtk+-3.0)
+CXXFLAGS=$(GTKFLAGS) -rdynamic -export-dynamic -pthread -Wall -lpthread -lgmodule-2.0 -lsteam_api -lcurl -lyajl -ldl
 LDFLAGS=-L${CURDIR}/bin
 OBJDIR=obj
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
 
+all: CXXFLAGS += -O3
 all: ${CURDIR}/bin/samrewritten
+	@echo -e "==== Use '\033[1mmake dev\033[0m' to keep debug symbols"
+	@echo -e "==== Use '\033[1mmake clean\033[0m' to remove object files"
+	@echo -e "==== Nothing left to do."
 
 ${CURDIR}/bin/samrewritten: $(OBJS)
 	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS}
@@ -16,6 +21,9 @@ ${CURDIR}/bin/samrewritten: $(OBJS)
 ${OBJDIR}/%.o: %.cpp $(HFILES)
 	@mkdir -p $$(dirname $@)
 	$(CXX) -c -o $@ $< ${LDFLAGS} $(CXXFLAGS)
+
+dev: CXXFLAGS += -g
+dev: ${CURDIR}/bin/samrewritten
 
 clean:
 	${RMDIR} ${OBJDIR}
