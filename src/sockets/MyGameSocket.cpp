@@ -131,6 +131,7 @@ MyGameSocket::get_global_achievements_stats() {
 
 void
 MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
+    m_achievement_list.clear();
 
     // Check if we received the values for the correct app
     if (SteamUtils()->GetAppID() == callback->m_nGameID) {
@@ -146,7 +147,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 std::cerr << "No achievements for current game" << std::endl;
             }
 
-            m_achievement_list.clear();
             m_achievement_list.resize(num_ach);
 
             for (unsigned i = 0; i < num_ach ; i++) {
@@ -168,7 +168,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
         }
     } else {
         std::cerr << "Received stats for wrong game" << std::endl;
-        return;
     }
 
     m_stats_callback_received = true;
@@ -179,7 +178,6 @@ MyGameSocket::OnGlobalStatsReceived(GlobalStatsReceived_t *callback, bool bIOFai
     if ( bIOFailure || callback->m_eResult != k_EResultOK )
 	{
 		std::cerr << "GlobalStatsReceived_t failed! Enum: " << callback->m_eResult << std::endl;
-		return;
 	}
 
     std::cout << "Got stats, maybe I can do cool stuff with them, gotta check." << std::endl;
@@ -188,11 +186,9 @@ MyGameSocket::OnGlobalStatsReceived(GlobalStatsReceived_t *callback, bool bIOFai
 
 void
 MyGameSocket::OnGlobalAchievementPercentagesReceived(GlobalAchievementPercentagesReady_t *callback, bool bIOFailure) {
-
     if ( bIOFailure || callback->m_eResult != k_EResultOK )
 	{
 		std::cerr << "GlobalAchievementPercentagesReady_t failed! Enum: " << callback->m_eResult << std::endl;
-		return;
 	}
 
     for (Achievement_t& ach : m_achievement_list) {
@@ -214,8 +210,6 @@ MyGameSocket::OnGlobalAchievementPercentagesReceived(GlobalAchievementPercentage
 
 void
 MyGameSocket::process_changes(std::vector<AchievementChange_t> changes) {
-    //Untested
-
     ISteamUserStats *stats_api = SteamUserStats();
 
     for (AchievementChange_t change : changes) {
