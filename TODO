@@ -1,0 +1,15 @@
+// Too soon
+// Migrate to gtkmm 4 https://developer.gnome.org/gtkmm-tutorial/unstable/gtkmm-tutorial.html#changes-gtkmm4
+
+Move remaining gtk_callback funcs to helper class (eg populate_achievements) -> reduce nr of public methods on mainwindow after
+
+make zenity wrapper
+use zenity before crashes + better log messages
+
+check valgrind
+
+check todos (public variables)
+
+Update pkgbuild dependencies
+
+CSGO Icons don't work (localization issue?? working debug command strings -to --encoding=S UserGameStatsSchema_730.bin | grep japanese -C 5)

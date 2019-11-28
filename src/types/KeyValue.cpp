@@ -266,8 +266,8 @@ bool KeyValue::read_as_binary(std::istream* is) {
             }
 
             default:
-            {
-                std::cout << "Stats parser encountered invalid type!" << std::endl;
+            {ehehe
+                std::cout << "Stats parser encountered invalid type: " << static_cast<unsigned>(type) << " at offset " << is->tellg() << std::endl;
                 delete current;
                 return false;
             }

@@ -1,38 +1,37 @@
 #pragma once
 #include "../types/Achievement.h"
 #include "../types/Game.h"
-#include "GtkAchievementBoxRow.h"
+#include "AchievementBoxRow.h"
+#include "InputAppidBoxRow.h"
+#include "AppBoxRow.h"
+
 #include <vector>
 #include <map>
-#include <gtk/gtk.h>
 #include <mutex>
 #include <future>
+#include <gtkmm-3.0/gtkmm/applicationwindow.h>
+#include <gtkmm-3.0/gtkmm/listbox.h>
+#include <gtkmm-3.0/gtkmm/builder.h>
+#include <gtkmm-3.0/gtkmm/box.h>
+#include <gtkmm-3.0/gtkmm/searchentry.h>
+#include <gtkmm-3.0/gtkmm/scrolledwindow.h>
+#include <gtkmm-3.0/gtkmm/modelbutton.h>
+#include <gtkmm-3.0/gtkmm/aboutdialog.h>
+#include <gtkmm-3.0/gtkmm/stack.h>
 
 #define MAX_OUTSTANDING_ICON_DOWNLOADS 10
 
 /**
  * The main GUI class to display both the games ans the achievements to the user
- * TODO: make a GtkGameBoxRow class?
  */
-class MainPickerWindow {
+class MainPickerWindow : public Gtk::ApplicationWindow {
 public:
-    //Todo: destructor
-
     /**
-     * The constructor loads the gtk builder, the main elements,
-     * and shows the main window.
+     * Regular GtkMM constructor
+     * https://developer.gnome.org/gtkmm-tutorial/stable/sec-builder-using-derived-widgets.html
      */
-    MainPickerWindow();
-
-    /**
-     * Starts a gtk_main
-     */
-    void show();
-
-    /**
-     * Quit all
-     */
-    void stop();
+    MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder);
+    virtual ~MainPickerWindow();
 
     /**
      * Empty the game list, leaving only the placeholder widget,
@@ -83,39 +82,6 @@ public:
     void refresh_achievement_icon(AppId_t app_id, std::string id);
 
     /**
-     * Filters the game list. For a title to stay displayed,
-     * filter_text must be included in it
-     */
-    void filter_games(const char* filter_text);
-
-    /**
-     * Filters the achievement list. For an achievement to stay displayed,
-     * filter_text must be included in it
-     */
-    void filter_achievements(const char* filter_text);
-    
-    /**
-     * Give it a pointer to a row from the main game list, returns the associated
-     * appid. Returns 0 on error;
-     */
-    AppId_t get_corresponding_appid_for_row(GtkListBoxRow *row);
-
-    /**
-     * Access m_achievement_list_rows and call unlock for every one of them
-     */
-    void unlock_all_achievements();
-
-    /**
-     * Access m_achievement_list_rows and call lock for every one of them
-     */
-    void lock_all_achievements();
-
-    /**
-     * Access m_achievement_list_rows and call invert for every one of them
-     */
-    void invert_all_achievements();
-
-    /**
      * Set the game_list placeholder to the no games found placeholder
      * and show it
      */
@@ -150,21 +116,6 @@ public:
     void switch_to_games_page();
 
     /**
-     * Opens the About Dialog on top of the current page
-     */
-    void show_about_dialog();
-
-    /**
-     * Closes the About Dialog without destroying it for future calling
-     */
-    void hide_about_dialog();
-
-    /**
-     * Getter for the main window
-     */
-    GtkWidget* get_main_window() { return m_main_window; };
-
-    /**
      * TODO:
      * All these public variables may better belong in
      * gtk_callbacks.h if that becomes a class.
@@ -194,29 +145,46 @@ public:
     std::map<std::string, std::future<void>> achievement_icon_download_futures;
 
 private:
-    GtkWidget *m_main_window;
-    GtkWidget *m_about_dialog;
-    GtkButton *m_back_button;
-    GtkButton *m_store_button;
-    GtkButton *m_refresh_games_button;
-    GtkButton *m_refresh_achievements_button;
-    GtkButton *m_unlock_all_achievements_button;
-    GtkButton *m_lock_all_achievements_button;
-    GtkButton *m_invert_all_achievements_button;
-    GtkListBox *m_game_list;
-    GtkListBox *m_achievement_list;
-    GtkBuilder *m_builder;
-    GtkStack *m_main_stack;
-    GtkSearchEntry *m_game_search_bar;
-    GtkSearchEntry *m_achievement_search_bar;
-    GtkScrolledWindow *m_game_list_view;
-    GtkScrolledWindow *m_achievement_list_view;
-    GtkWidget *m_fetch_games_placeholder;
-    GtkWidget *m_no_games_found_placeholder;
-    GtkWidget *m_fetch_achievements_placeholder;
-    GtkWidget *m_no_achievements_found_placeholder;
-    GtkWidget *m_input_appid_row;
+    // Gtk Callbacks
+    void on_game_search_changed();
+    void on_achievement_search_changed();
+    void on_game_row_activated(Gtk::ListBoxRow* row);
+    void on_refresh_games_button_clicked();
+    void on_refresh_achievements_button_clicked();
+    void on_back_button_clicked();
+    void on_store_button_clicked();
+    void on_invert_all_achievements_button_clicked();
+    void on_lock_all_achievements_button_clicked();
+    void on_unlock_all_achievements_button_clicked();
+    void on_about_button_clicked();
+    void on_close_about_dialog(int response_id);
+    bool on_delete(GdkEventAny* evt);
 
-    std::map<AppId_t, GtkWidget*> m_game_list_rows;
-    std::map<std::string, GtkAchievementBoxRow*> m_achievement_list_rows;
+    // Member variables
+    Glib::RefPtr<Gtk::Builder> m_builder;
+    Gtk::AboutDialog *m_about_dialog;
+    Gtk::Button *m_back_button;
+    Gtk::Button *m_store_button;
+    Gtk::Button *m_refresh_games_button;
+    Gtk::ModelButton *m_about_button;
+    Gtk::ModelButton *m_refresh_achievements_button;
+    Gtk::ModelButton *m_unlock_all_achievements_button;
+    Gtk::ModelButton *m_lock_all_achievements_button;
+    Gtk::ModelButton *m_invert_all_achievements_button;
+    Gtk::ListBox *m_game_list;
+    Gtk::ListBox *m_achievement_list;
+    Gtk::Stack *m_main_stack;
+    Gtk::SearchEntry *m_game_search_bar;
+    Gtk::SearchEntry *m_achievement_search_bar;
+    Gtk::ScrolledWindow *m_game_list_view;
+    Gtk::ScrolledWindow *m_achievement_list_view;
+    Gtk::Box *m_fetch_games_placeholder;
+    Gtk::Box *m_no_games_found_placeholder;
+    Gtk::Box *m_fetch_achievements_placeholder;
+    Gtk::Box *m_no_achievements_found_placeholder;
+    
+    InputAppidBoxRow m_input_appid_row;
+
+    std::vector<AppBoxRow*> m_app_list_rows;
+    std::vector<AchievementBoxRow*> m_achievement_list_rows;
 };

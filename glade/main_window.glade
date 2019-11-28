@@ -41,8 +41,6 @@ telans (telans)</property>
     <property name="artists">Rejedai (rejedai)</property>
     <property name="logo">../assets/icon_256.png</property>
     <property name="license_type">gpl-3-0</property>
-    <signal name="delete-event" handler="on_about_dialog_close_button_clicked" swapped="no"/>
-    <signal name="response" handler="on_about_dialog_close_button_clicked" swapped="no"/>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -298,12 +296,11 @@ Did you make a typo?</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkModelButton">
+          <object class="GtkModelButton" id="about_button">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">About</property>
-            <signal name="clicked" handler="on_about_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -317,7 +314,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">Refresh Games</property>
-            <signal name="clicked" handler="on_refresh_games_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -330,7 +326,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">Refresh Achievements</property>
-            <signal name="clicked" handler="on_refresh_achievements_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -343,7 +338,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">Unlock All</property>
-            <signal name="clicked" handler="on_unlock_all_achievements_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -356,7 +350,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">Lock All</property>
-            <signal name="clicked" handler="on_lock_all_achievements_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -369,7 +362,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="text" translatable="yes">Invert All</property>
-            <signal name="clicked" handler="on_invert_all_achievements_button_clicked" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -389,8 +381,6 @@ Did you make a typo?</property>
     <property name="height_request">500</property>
     <property name="can_focus">False</property>
     <property name="icon">../assets/icon_256.png</property>
-    <signal name="delete-event" handler="on_close_button_clicked" swapped="no"/>
-    <signal name="show" handler="on_main_window_show" after="yes" swapped="no"/>
     <child type="titlebar">
       <object class="GtkHeaderBar">
         <property name="visible">True</property>
@@ -403,7 +393,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Return to the game list</property>
-            <signal name="clicked" handler="on_back_button_clicked" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
@@ -426,7 +415,6 @@ Did you make a typo?</property>
             <property name="primary_icon_sensitive">False</property>
             <property name="placeholder_text" translatable="yes">Game name or AppID..</property>
             <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-            <signal name="search-changed" handler="on_game_search_changed" swapped="no"/>
           </object>
           <packing>
             <property name="position">1</property>
@@ -441,7 +429,6 @@ Did you make a typo?</property>
             <property name="primary_icon_sensitive">False</property>
             <property name="placeholder_text" translatable="yes">Name of the achievement...</property>
             <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-            <signal name="search-changed" handler="on_achievement_search_changed" swapped="no"/>
           </object>
           <packing>
             <property name="position">4</property>
@@ -472,7 +459,6 @@ Did you make a typo?</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
             <property name="tooltip_text" translatable="yes">Confirm changes &amp; send to Steam</property>
-            <signal name="clicked" handler="on_store_button_clicked" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
