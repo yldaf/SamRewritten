@@ -58,14 +58,16 @@ float read_value_f32(std::istream * is) {
 }
 
 std::string read_string(std::istream * is) {
-    char buf[256];
+    char buf[512];
 
     // Even in unicode, NULL terminator will terminate the string.
     // C++ actually automatically interprets an array of bytes
     // as unicode if there are unicode encodings in it,
     // so no special modification is needed.
     // Eat the string and NULL terminator with getline.
-    is->getline( buf, 256, L'\0');
+    if( !is->getline( buf, 512, L'\0') ) {
+        std::cerr << "Failed to read a KeyValue. Increasing buffer size might help." << std::endl;
+    }
 
     // NULL is automatically appended
     return std::string(buf);
@@ -266,7 +268,7 @@ bool KeyValue::read_as_binary(std::istream* is) {
             }
 
             default:
-            {ehehe
+            {
                 std::cout << "Stats parser encountered invalid type: " << static_cast<unsigned>(type) << " at offset " << is->tellg() << std::endl;
                 delete current;
                 return false;
