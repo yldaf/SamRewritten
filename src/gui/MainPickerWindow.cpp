@@ -122,28 +122,28 @@ MainPickerWindow::on_game_row_activated(Gtk::ListBoxRow* row) {
 
     switch_to_achievement_page();
     g_steam->launch_game(appid);
-    populate_achievements();
+    m_async_loader.populate_achievements();
 }
 // => on_game_row_activated
 
 void
 MainPickerWindow::on_refresh_achievements_button_clicked() {
     g_steam->clear_changes();
-    populate_achievements();
+    m_async_loader.populate_achievements();
 }
 // => on_refresh_achievements_button_clicked
 
 void
 MainPickerWindow::on_refresh_games_button_clicked() {
     m_game_search_bar->set_text("");
-    on_refresh_games_button_clicked_old();
+    m_async_loader.on_refresh_games_button_clicked_old();
 }
 // => on_refresh_games_button_clicked
 
 void
 MainPickerWindow::on_store_button_clicked() {
     g_steam->commit_changes();
-    populate_achievements();
+    m_async_loader.populate_achievements();
 }
 // => on_store_button_clicked
 

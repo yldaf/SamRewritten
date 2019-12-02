@@ -24,18 +24,20 @@
 // The original SAM is available at https://github.com/gibbed/SteamAchievementManager
 // To comply with copyright, the above license is included.
 
+#include "UserGameStatsSchemaParser.h"
 #include "KeyValue.h"
-#include "UserStatType.h"
-#include "../MySteam.h"
-#include "../globals.h"
+#include "types/UserStatType.h"
+#include "MySteam.h"
+#include "globals.h"
 #include <strings.h>
 
 // this has at least as much error checking as the original version
 
-bool load_user_game_stats_schema() {
-    g_steam->m_icon_download_names.clear();
+bool 
+UserGameStatsSchemaParser::load_user_game_stats_schema() {
+    m_icon_download_names.clear();
 
-    std::string appid_string = std::to_string(g_steam->m_app_id);
+    std::string appid_string = std::to_string(g_steam->get_current_appid());
     std::string schema_file = g_steam->get_steam_install_path() + "/appcache/stats/UserGameStatsSchema_" + appid_string + ".bin";
     KeyValue* kv = KeyValue::load_as_binary(schema_file);
     if (kv == NULL) {
@@ -117,7 +119,7 @@ bool load_user_game_stats_schema() {
                         }
 
                         // inject into a map for later extraction and icon downloading
-                        g_steam->m_icon_download_names.insert(std::make_pair(id_kv->as_string(""), icon_kv->as_string("")));
+                        m_icon_download_names.insert(std::make_pair(id_kv->as_string(""), icon_kv->as_string("")));
                     }
                 }
 

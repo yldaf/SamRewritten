@@ -178,6 +178,8 @@ MySteam::refresh_achievements() {
     }
 
     m_achievements = decode_achievements(response);
+
+    set_special_flags();
 }
 // => refresh_achievements
 
@@ -233,3 +235,34 @@ MySteam::clear_changes() {
     m_pending_ach_modifications.clear();
 }
 // => clear_changes
+
+void
+MySteam::set_special_flags() {
+    // TODO: Maybe split this up to be more amenable to threaded GUI loading, could fire off in thread
+
+    long next_most_achieved_index = -1;
+    float next_most_achieved_rate = 0;
+    Achievement_t tmp;
+
+    for(size_t i = 0; i < m_achievements.size(); i++)
+    {
+        tmp = m_achievements[i];
+        m_achievements[i].special = ACHIEVEMENT_NORMAL;
+
+        if ( !tmp.achieved && tmp.global_achieved_rate > next_most_achieved_rate )
+        {
+            next_most_achieved_rate = tmp.global_achieved_rate;
+            next_most_achieved_index = i;
+        }
+
+        if ( tmp.global_achieved_rate <= 5.f )
+        {
+            m_achievements[i].special = ACHIEVEMENT_RARE;
+        }
+    }
+
+    if ( next_most_achieved_index != -1 )
+    {
+        m_achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
+    }
+}

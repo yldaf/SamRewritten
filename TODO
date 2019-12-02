@@ -6,10 +6,14 @@ Move remaining gtk_callback funcs to helper class (eg populate_achievements) -> 
 make zenity wrapper
 use zenity before crashes + better log messages
 
+Make a schema parser folder for classes UserGameStatsSchemaParser and KeyValue
+
 check valgrind
+
+AsyncGuiLoader should have MainPickerWindow as a pointer reference in the constructor
 
 check todos (public variables)
 
 Update pkgbuild dependencies
 
-CSGO Icons don't work (localization issue?? working debug command strings -to --encoding=S UserGameStatsSchema_730.bin | grep japanese -C 5)
+Check for public member varialbles

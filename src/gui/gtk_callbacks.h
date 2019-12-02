@@ -1,6 +1,8 @@
 #pragma once
 
-typedef unsigned int guint;
+#include "../UserGameStatsSchemaParser.h"
+
+#include <glib-2.0/glib.h>
 
 /**
  * This file is what is left of the former implementation with GTK C.
@@ -45,18 +47,28 @@ typedef struct
     guint current_item;
 } IdleData;
 
-/** 
- * When the user wants to refresh the game list.
- * This is also called when the main window just got spawned.
- * - Clear the game list (will show the loading widget)
- * - Do the backend work (get owned apps..)
- * - Add all the retrieved data to the view.
- * - Do the backend work again for icons: view must be initialized first
- *   to display the app logos.
- * - Draw the result.
- */
-void 
-on_refresh_games_button_clicked_old();
+class AsyncGuiLoader 
+{
+public:
+    /** 
+     * When the user wants to refresh the game list.
+     * This is also called when the main window just got spawned.
+     * - Clear the game list (will show the loading widget)
+     * - Do the backend work (get owned apps..)
+     * - Add all the retrieved data to the view.
+     * - Do the backend work again for icons: view must be initialized first
+     *   to display the app logos.
+     * - Draw the result.
+     */
+    void 
+    on_refresh_games_button_clicked_old();
 
-void 
-populate_achievements();
+    void 
+    populate_achievements();
+private:
+    bool load_achievements_idle();
+    bool load_apps_idle();
+
+    IdleData m_idle_data;
+    UserGameStatsSchemaParser m_schema_parser;
+};

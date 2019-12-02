@@ -26,9 +26,25 @@
 
 #pragma once
 
-/**
- * Parse the schema file and store information in g_steam
- * For now, just parse out icon download information.
- * This has the potential to parse out much more info as needed.
- */
-bool load_user_game_stats_schema();
+#include <map>
+#include <string>
+
+class UserGameStatsSchemaParser
+{
+public:
+    /**
+     * Parse the schema file and store information in g_steam
+     * For now, just parse out icon download information.
+     * This has the potential to parse out much more info as needed.
+     */
+    bool load_user_game_stats_schema();
+
+    /**
+     * Simple getter
+     */
+    std::map<std::string, std::string> get_icon_download_names() const { return m_icon_download_names; };
+private:
+    // Mapping between achievement ID and the actual icon name on servers.
+    // Icon name is retrieved by the stats schema parser
+    std::map<std::string, std::string> m_icon_download_names;
+};

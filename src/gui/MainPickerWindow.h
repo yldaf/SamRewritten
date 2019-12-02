@@ -1,6 +1,7 @@
 #pragma once
 #include "../types/Achievement.h"
 #include "../types/Game.h"
+#include "gtk_callbacks.h"
 #include "AchievementBoxRow.h"
 #include "InputAppidBoxRow.h"
 #include "AppBoxRow.h"
@@ -187,4 +188,5 @@ private:
 
     std::vector<AppBoxRow*> m_app_list_rows;
     std::vector<AchievementBoxRow*> m_achievement_list_rows;
+    AsyncGuiLoader m_async_loader;
 };
