@@ -1,5 +1,5 @@
 #pragma once
-#include "sockets/MyClientSocket.h"
+#include "../sockets/MyClientSocket.h"
 
 // This class handles:
 // - Creation of GameServer which acts like a Steam game

@@ -26,12 +26,11 @@
 
 #include "UserGameStatsSchemaParser.h"
 #include "KeyValue.h"
-#include "types/UserStatType.h"
-#include "MySteam.h"
-#include "globals.h"
+#include "../types/UserStatType.h"
+#include "../controller/MySteam.h"
+#include "../globals.h"
 #include <strings.h>
 
-// this has at least as much error checking as the original version
 
 bool 
 UserGameStatsSchemaParser::load_user_game_stats_schema() {
@@ -128,7 +127,7 @@ UserGameStatsSchemaParser::load_user_game_stats_schema() {
 
             default:
             {
-                std::cerr << "invalid stat type" << std::endl;
+                std::cerr << "Invalid stat type" << std::endl;
                 delete kv;
                 return false;
             }

@@ -1,9 +1,9 @@
 #pragma once
+#include "../../steam/steam_api.h"
+#include "../globals.h"
+#include "MySteam.h"
 #include <iostream>
 #include <dlfcn.h>
-#include "../steam/steam_api.h"
-#include "MySteam.h"
-#include "globals.h"
 
 #define RELATIVE_STEAM_CLIENT_LIB_PATH "/linux64/steamclient.so"
 
@@ -23,28 +23,24 @@
  */
 class MySteamClient
 {
-private:
-    HSteamPipe m_pipe;
-    HSteamUser m_user;
-    void* m_handle = nullptr;
-    ISteamApps* m_steamapps = nullptr;
-    ISteamUser* m_steamuser = nullptr;
-    ISteamClient* m_steamclient = nullptr;
 public:
     HSteamPipe getPipe() const { return m_pipe; };
     HSteamUser getUser() const { return m_user; };
     ISteamApps* getSteamApps() const { return m_steamapps; };
     ISteamUser* getSteamUser() const { return m_steamuser; };
+    
     // Needed for child usage..
     void unloadLibrary() {
         dlclose(m_handle);
     }
+    
     ~MySteamClient() { 
         m_steamclient->ReleaseUser(m_pipe, m_user);
         m_steamclient->BReleaseSteamPipe(m_pipe);
         m_steamclient->BShutdownIfAllPipesClosed();
         dlclose(m_handle);
     }
+    
     MySteamClient() {
         char* error;
         const std::string steam_client_lib_path = g_steam->get_steam_install_path() + RELATIVE_STEAM_CLIENT_LIB_PATH;
@@ -86,4 +82,11 @@ public:
             exit(EXIT_FAILURE);
         }
     };
+private:
+    HSteamPipe m_pipe;
+    HSteamUser m_user;
+    void* m_handle = nullptr;
+    ISteamApps* m_steamapps = nullptr;
+    ISteamUser* m_steamuser = nullptr;
+    ISteamClient* m_steamclient = nullptr;
 };

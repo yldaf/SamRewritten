@@ -1,10 +1,8 @@
 #include "GameServerManager.h"
 #include "MyGameServer.h"
 #include "MySteamClient.h"
-
-// TODO: shouldn't really need MySteam inside here
 #include "MySteam.h"
-#include "globals.h"
+#include "../globals.h"
 #include <signal.h>
 #include <iostream>
 #include <unistd.h>

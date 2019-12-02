@@ -1,4 +1,12 @@
 #include "SteamAppDAO.h"
+
+#include "../../steam/steam_api.h"
+#include "../common/functions.h"
+#include "../common/Downloader.h"
+#include "../gui/MainPickerWindow.h"
+#include "../globals.h"
+#include "MySteamClient.h"
+
 #include <ctime>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -9,12 +17,6 @@
 #include <yajl/yajl_tree.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "common/functions.h"
-#include "common/Downloader.h"
-#include "../steam/steam_api.h"
-#include "MySteamClient.h"
-#include "gui/MainPickerWindow.h"
-#include "globals.h"
 
 // Wtf am I doing? Anyway thanks StackOverflow
 //TODO: Find a more elegant way to fix this shit.

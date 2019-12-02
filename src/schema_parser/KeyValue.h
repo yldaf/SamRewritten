@@ -56,8 +56,7 @@ public:
     bool valid = false;
     std::vector<KeyValue*> children;
 
-    // TODO: ugh operators
-    //KeyValue* operator[](std::string key);
+    //KeyValue* operator[](std::string key); // Would add spice?
     KeyValue* get(std::string key);
     KeyValue* get2(std::string key1, std::string key2);
 

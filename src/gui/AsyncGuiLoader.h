@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../UserGameStatsSchemaParser.h"
+#include "../../steam/steamtypes.h"
+#include "../schema_parser/UserGameStatsSchemaParser.h"
+#include <mutex>
+#include <future>
 
-#include <glib-2.0/glib.h>
+#define MAX_CONCURRENT_ICON_DOWNLOADS 10
 
-/**
- * This file is what is left of the former implementation with GTK C.
- * TODO: Move this somewhere wher it makes sense
- */
+class MainPickerWindow;
 
 /**
  * Information for implementing lazy loading of games.
@@ -36,7 +36,7 @@ enum {
 typedef struct
 {
     /* the current state */
-    guint state;
+    unsigned state;
 
     /**
      * other information is just pulled from the global
@@ -44,12 +44,14 @@ typedef struct
      */
 
     /* the currently loaded item */
-    guint current_item;
+    unsigned current_item;
 } IdleData;
 
 class AsyncGuiLoader 
 {
 public:
+    AsyncGuiLoader(MainPickerWindow* window);
+
     /** 
      * When the user wants to refresh the game list.
      * This is also called when the main window just got spawned.
@@ -61,7 +63,7 @@ public:
      * - Draw the result.
      */
     void 
-    on_refresh_games_button_clicked_old();
+    populate_apps();
 
     void 
     populate_achievements();
@@ -69,6 +71,21 @@ private:
     bool load_achievements_idle();
     bool load_apps_idle();
 
+    size_t m_concurrent_icon_downloads;
+    std::map<AppId_t, std::future<void>> m_app_icon_download_futures;
+    std::map<std::string, std::future<void>> m_achievement_icon_download_futures;
+    std::future<void> m_owned_apps_future;
+    std::future<void> m_achievements_future;
+    std::future<bool> m_schema_parser_future;
+    
+    /**
+     * Mutex to prevent on_refresh_games_button_clicked from being reentrant
+     * and allowing multiple idle threads to corrupt the main window.
+     */
+    std::mutex m_game_refresh_lock;
+    std::mutex m_achievement_refresh_lock;
+
     IdleData m_idle_data;
     UserGameStatsSchemaParser m_schema_parser;
+    MainPickerWindow* m_window;
 };

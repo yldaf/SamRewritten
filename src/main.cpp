@@ -3,17 +3,17 @@
  * this project. Thank you.
  *************************************/
 
-#include <iostream>
-#include <sys/stat.h>
-#include "MySteam.h"
-#include "MySteamClient.h"
-#include "MyGameServer.h"
+#include "controller/MySteam.h"
+#include "controller/MySteamClient.h"
+#include "controller/MyGameServer.h"
 #include "gui/MainPickerWindowFactory.h"
-#include "globals.h"
-#include "cli_funcs.h"
+#include "cli/cli_funcs.h"
 #include "common/functions.h"
 #include "common/PerfMon.h"
+#include "globals.h"
 
+#include <iostream>
+#include <sys/stat.h>
 #include <gtkmm-3.0/gtkmm/application.h>
 
 /**************************************

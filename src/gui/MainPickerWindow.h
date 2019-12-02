@@ -1,15 +1,12 @@
 #pragma once
 #include "../types/Achievement.h"
 #include "../types/Game.h"
-#include "gtk_callbacks.h"
+#include "AsyncGuiLoader.h"
 #include "AchievementBoxRow.h"
 #include "InputAppidBoxRow.h"
 #include "AppBoxRow.h"
 
 #include <vector>
-#include <map>
-#include <mutex>
-#include <future>
 #include <gtkmm-3.0/gtkmm/applicationwindow.h>
 #include <gtkmm-3.0/gtkmm/listbox.h>
 #include <gtkmm-3.0/gtkmm/builder.h>
@@ -19,8 +16,6 @@
 #include <gtkmm-3.0/gtkmm/modelbutton.h>
 #include <gtkmm-3.0/gtkmm/aboutdialog.h>
 #include <gtkmm-3.0/gtkmm/stack.h>
-
-#define MAX_OUTSTANDING_ICON_DOWNLOADS 10
 
 /**
  * The main GUI class to display both the games ans the achievements to the user
@@ -105,46 +100,6 @@ public:
      * and show it
      */
     void show_no_achievements_found_placeholder();
-
-    /**
-     * Shows the achievements list instead of the game list
-     */
-    void switch_to_achievement_page();
-
-    /**
-     * Shows the games list instead of the stats and achievements list
-     */
-    void switch_to_games_page();
-
-    /**
-     * TODO:
-     * All these public variables may better belong in
-     * gtk_callbacks.h if that becomes a class.
-     * Make them public for now so we can get to them from
-     * C functions in gtk_callbacks.cpp without yet having to
-     * deal with C++/C linkage differences
-     * 
-     * Putting std::futures in a C struct is a bad idea because C
-     * runtime libraries become confused and crash the program,
-     * so keep them in this C++ class for now.
-     */
-
-    /**
-     * Mutex to prevent on_refresh_games_button_clicked from being reentrant
-     * and allowing multiple idle threads to corrupt the main window.
-     */
-    std::mutex m_game_refresh_lock;
-    std::mutex m_achievement_refresh_lock;
-
-    int outstanding_icon_downloads;
-    std::future<void> owned_apps_future;
-    std::map<AppId_t, std::future<void>> app_icon_download_futures;
-
-    // Achievement info for the currently running game
-    std::future<void> achievements_future;
-    std::future<bool> schema_parser_future;
-    std::map<std::string, std::future<void>> achievement_icon_download_futures;
-
 private:
     // Gtk Callbacks
     void on_game_search_changed();
@@ -160,6 +115,10 @@ private:
     void on_about_button_clicked();
     void on_close_about_dialog(int response_id);
     bool on_delete(GdkEventAny* evt);
+
+    // Private Methods
+    void switch_to_achievement_page();
+    void switch_to_games_page();
 
     // Member variables
     Glib::RefPtr<Gtk::Builder> m_builder;

@@ -1,16 +1,17 @@
 #include "MainPickerWindow.h"
-#include <iostream>
 #include "../common/functions.h"
 #include "../common/PerfMon.h"
 #include "../globals.h"
 #include "../types/Achievement.h"
-#include "../MySteam.h"
-#include "gtk_callbacks.h"
+#include "../controller/MySteam.h"
+
+#include <iostream>
 
 
 MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder)
 : Gtk::ApplicationWindow(cobject),
-  m_builder(builder)
+  m_builder(builder),
+  m_async_loader(this)
 {
     // Load the required widgets through the builder
     m_builder->get_widget("game_list", m_game_list);
@@ -136,7 +137,7 @@ MainPickerWindow::on_refresh_achievements_button_clicked() {
 void
 MainPickerWindow::on_refresh_games_button_clicked() {
     m_game_search_bar->set_text("");
-    m_async_loader.on_refresh_games_button_clicked_old();
+    m_async_loader.populate_apps();
 }
 // => on_refresh_games_button_clicked
 

@@ -1,8 +1,8 @@
 #pragma once
-#include "types/Game.h"
-#include "types/Achievement.h"
+#include "../types/Game.h"
+#include "../types/Achievement.h"
+#include "../sockets/MyClientSocket.h"
 #include "GameServerManager.h"
-#include "sockets/MyClientSocket.h"
 #include <string>
 #include <vector>
 #include <map>

@@ -1,7 +1,9 @@
 #include "MyGameServer.h"
 #include <iostream>
 
-MyGameServer::MyGameServer(AppId_t appid) : m_appid(appid), m_socket(appid)
+MyGameServer::MyGameServer(AppId_t appid)
+: m_appid(appid), 
+  m_socket(appid)
 {
 
 }

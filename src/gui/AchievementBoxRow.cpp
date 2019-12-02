@@ -1,9 +1,7 @@
 #include "AchievementBoxRow.h"
-#include "../MySteam.h"
-#include "../globals.h"
+#include "../controller/MySteam.h"
 #include "../common/functions.h"
-#include <string>
-#include <iostream>
+#include "../globals.h"
 
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/popovermenu.h>

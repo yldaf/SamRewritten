@@ -1,19 +1,15 @@
 // Too soon
 // Migrate to gtkmm 4 https://developer.gnome.org/gtkmm-tutorial/unstable/gtkmm-tutorial.html#changes-gtkmm4
 
-Move remaining gtk_callback funcs to helper class (eg populate_achievements) -> reduce nr of public methods on mainwindow after
-
-make zenity wrapper
+make zenity wrapper (Also chnage old zenity calls)
 use zenity before crashes + better log messages
 
-Make a schema parser folder for classes UserGameStatsSchemaParser and KeyValue
-
 check valgrind
-
-AsyncGuiLoader should have MainPickerWindow as a pointer reference in the constructor
 
 check todos (public variables)
 
 Update pkgbuild dependencies
 
-Check for public member varialbles
+Fix SteamAppDAO
+
+Do something clever for AchievemetBoxRow Lock/relock/toggle

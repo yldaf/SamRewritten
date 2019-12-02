@@ -1,16 +1,15 @@
 #include "MySteam.h"
+#include "SteamAppDAO.h"
+#include "../types/Game.h"
+#include "../types/Actions.h"
+#include "../common/functions.h"
+#include "../json/yajlHelpers.h"
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <dirent.h>
 #include <bits/stdc++.h>
-#include <yajl/yajl_gen.h>
-#include <yajl/yajl_tree.h>
-#include "types/Game.h"
-#include "types/Actions.h"
-#include "SteamAppDAO.h"
-#include "common/functions.h"
-#include "json/yajlHelpers.h"
 
 MySteam::MySteam() {
     std::string data_home_path;
@@ -35,7 +34,7 @@ MySteam::MySteam() {
         return;
     }
     else {
-        std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
+        std::cerr << "Unable to locate the steam directory." << std::endl;
         system("zenity --error --no-wrap --text=\"Unable to find your Steam installation directory.. Please report this on Github!\"");
         exit(EXIT_FAILURE);
     }

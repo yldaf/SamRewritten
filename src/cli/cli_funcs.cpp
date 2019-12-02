@@ -1,6 +1,6 @@
 #include "cli_funcs.h"
-#include "MySteam.h"
-#include "globals.h"
+#include "../controller/MySteam.h"
+#include "../globals.h"
 #include <string>
 #include <iostream>
 #include <csignal>
