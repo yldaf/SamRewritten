@@ -187,8 +187,12 @@ MySteam::refresh_achievements() {
  */
 void 
 MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) {
-    std::cout << ach_id << ": " << (new_value ? "to unlock" : "to relock") << std::endl;
-    m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+    std::cout << "Adding modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
+    if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
+        m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+    } else {
+        std::cerr << "Warning: Cannot append " << ach_id << ", value already exists." << std::endl;
+    }
 }
 // => add_modification_ach
 
@@ -197,8 +201,9 @@ MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) 
  */
 void 
 MySteam::remove_modification_ach(const std::string& ach_id) {
+    std::cout << "Removing modification: " << ach_id << std::endl;
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
-        std::cerr << "WARNING: Could not cancel: modification was not pending";
+        std::cerr << "WARNING: Could not cancel: modification was not pending: " << ach_id << std::endl;
     } else {
         m_pending_ach_modifications.erase(ach_id);
     }

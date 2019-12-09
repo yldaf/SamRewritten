@@ -11,5 +11,3 @@ check todos (public variables)
 Update pkgbuild dependencies
 
 Fix SteamAppDAO
-
-Do something clever for AchievemetBoxRow Lock/relock/toggle

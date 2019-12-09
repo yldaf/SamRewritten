@@ -159,7 +159,7 @@ void
 MainPickerWindow::on_invert_all_achievements_button_clicked() {
     for ( AchievementBoxRow* row : m_achievement_list_rows )
     {
-        row->invert();
+        row->invert_scripted();
     }
 }
 // => on_invert_all_achievements_button_clicked
@@ -168,7 +168,7 @@ void
 MainPickerWindow::on_lock_all_achievements_button_clicked() {
     for ( AchievementBoxRow* row : m_achievement_list_rows )
     {
-        row->lock();
+        row->lock_scripted();
     }
 }
 // => on_lock_all_achievements_button_clicked
@@ -177,7 +177,7 @@ void
 MainPickerWindow::on_unlock_all_achievements_button_clicked() {
     for ( AchievementBoxRow* row : m_achievement_list_rows )
     {
-        row->unlock();
+        row->unlock_scripted();
     }
 }
 // => on_unlock_all_achievements_button_clicked

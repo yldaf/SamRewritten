@@ -94,69 +94,44 @@ AchievementBoxRow::AchievementBoxRow(const Achievement_t& data)
 AchievementBoxRow::~AchievementBoxRow() {}
 
 void
-AchievementBoxRow::unlock() {
-    const bool achieved = m_data.achieved;
-    const std::string ach_id = m_data.id;
-    
-    if (!m_active && !achieved) {
-        m_lock_unlock_button.set_label("To unlock");
-        m_lock_unlock_button.set_active(true);
-        m_active = true;
-        g_steam->add_modification_ach(ach_id, true);
-    } else if (m_active && achieved) {
-        m_lock_unlock_button.set_label("🔓 Unlocked");
-        m_lock_unlock_button.set_active(false);
-        m_active = false;
-        g_steam->remove_modification_ach(ach_id);
-    }
-    // Do nothing for all other conditions
+AchievementBoxRow::invert_scripted() {
+    const bool pressed = m_lock_unlock_button.get_active();
+    m_lock_unlock_button.set_active(!pressed);
 }
-// => unlock
 
 void
-AchievementBoxRow::lock() {
-    const bool achieved = m_data.achieved;
-    const std::string ach_id = m_data.id;
-
-    if (!m_active && achieved) {
-        m_lock_unlock_button.set_label("To relock");
+AchievementBoxRow::unlock_scripted() {
+    if ( !m_data.achieved ) {
         m_lock_unlock_button.set_active(true);
-        m_active = true;
-        g_steam->add_modification_ach(ach_id, false);
-    } else if (m_active && !achieved) {
-        m_lock_unlock_button.set_label("🔒 Locked");
-        m_lock_unlock_button.set_active(false);
-        m_active = false;
-        g_steam->remove_modification_ach(ach_id);
     }
-    // Do nothing for all other conditions
 }
-// => lock
+
+void
+AchievementBoxRow::lock_scripted() {
+    if ( m_data.achieved ) {
+        m_lock_unlock_button.set_active(true);
+    }
+}
 
 void
 AchievementBoxRow::invert() {
     const bool achieved = m_data.achieved;
     const std::string ach_id = m_data.id;
 
-    // TODO: is this the expected behavior for invert? Who uses this?
     if (!m_active && achieved) {
         m_lock_unlock_button.set_label("To relock");
-        m_lock_unlock_button.set_active(true);
         m_active = true;
         g_steam->add_modification_ach(ach_id, false);
     } else if (m_active && achieved) {
         m_lock_unlock_button.set_label("🔓 Unlocked");
-        m_lock_unlock_button.set_active(false);
         m_active = false;
         g_steam->remove_modification_ach(ach_id);
     } else if (!m_active && !achieved) {
         m_lock_unlock_button.set_label("To unlock");
-        m_lock_unlock_button.set_active(true);
         m_active = true;
         g_steam->add_modification_ach(ach_id, true);
     } else if (m_active && !achieved) {
         m_lock_unlock_button.set_label("🔒 Locked");
-        m_lock_unlock_button.set_active(false);
         m_active = false;
         g_steam->remove_modification_ach(ach_id);
     }
