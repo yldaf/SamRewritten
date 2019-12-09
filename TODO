@@ -3,11 +3,3 @@
 
 make zenity wrapper (Also chnage old zenity calls)
 use zenity before crashes + better log messages
-
-check valgrind
-
-check todos (public variables)
-
-Update pkgbuild dependencies
-
-Fix SteamAppDAO

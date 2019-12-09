@@ -18,10 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Wtf am I doing? Anyway thanks StackOverflow
-//TODO: Find a more elegant way to fix this shit.
-std::map<AppId_t, std::string> SteamAppDAO::m_app_names = std::map<AppId_t, std::string>();
-
 /**
  * Lazy singleton pattern
  */

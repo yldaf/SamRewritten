@@ -9,7 +9,7 @@ pkgdesc="A Steam Achievement Manager For Linux."
 arch=("any")
 url="https://github.com/PaulCombal/SamRewritten"
 license=("GPL3")
-depends=("steam" "yajl" "gtk3" "glibc" "curl")
+depends=("steam" "yajl" "gtkmm3" "glibc" "curl")
 optdepends=("zenity: error messages with style"
             "valgrind: for automated dev script"
             "massif-visualizer: for automated dev script")

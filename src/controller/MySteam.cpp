@@ -105,8 +105,8 @@ MySteam::quit_game() {
 
 
 /**
- * This retrieves all owned apps, which currently include
- * non-games like DLC and servers.
+ * This retrieves all owned apps, can include garbage apps
+ * depending on the users settings, in a near future.
  * Stores the owned games in m_all_subscribed_apps.
  */
 void 

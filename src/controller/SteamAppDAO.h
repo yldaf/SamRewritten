@@ -64,5 +64,5 @@ private:
      * Parse the app names from a given file and store to a give app names map
      */
     static void parse_app_names(const char * file_path, std::map<AppId_t, std::string>* app_names);
-    static std::map<AppId_t, std::string> m_app_names;
+    std::map<AppId_t, std::string> m_app_names;
 };
