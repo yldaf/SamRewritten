@@ -35,6 +35,7 @@ main(int argc, char *argv[])
 {
     if (getuid() == 0) {
         std::cout << "Do not run this application as root" << std::endl;
+        zenity("Please do not run this application as root..");
         exit(EXIT_FAILURE);
     }
 

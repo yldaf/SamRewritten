@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include "../types/Actions.h"
+#include "../common/functions.h"
 
 void 
 yajl_gen_string_wrap(yajl_gen handle, const char * a) {
@@ -25,6 +26,7 @@ decode_ack(std::string response) {
     if (node == NULL) {
         std::cerr << "Parsing error. Data: " << std::endl;
         std::cerr << response << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
     const char * path[] = { SAM_ACK_STR, (const char*)0 };
@@ -112,12 +114,14 @@ encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements) {
 std::vector<Achievement_t> 
 decode_achievements(std::string response) {
     std::vector<Achievement_t> achievements;
+    char error_buffer[500];
 
     //parse response
-    yajl_val node = yajl_tree_parse(response.c_str(), NULL, 0);
+    yajl_val node = yajl_tree_parse(response.c_str(), error_buffer, 500);
 
     if (node == NULL) {
-        std::cerr << "parsing error";
+        std::cerr << "Parsing error: " << error_buffer << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 

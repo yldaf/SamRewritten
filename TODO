@@ -1,5 +1,0 @@
-// Too soon
-// Migrate to gtkmm 4 https://developer.gnome.org/gtkmm-tutorial/unstable/gtkmm-tutorial.html#changes-gtkmm4
-
-make zenity wrapper (Also chnage old zenity calls)
-use zenity before crashes + better log messages

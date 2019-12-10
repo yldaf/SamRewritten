@@ -35,7 +35,7 @@ MySteam::MySteam() {
     }
     else {
         std::cerr << "Unable to locate the steam directory." << std::endl;
-        system("zenity --error --no-wrap --text=\"Unable to find your Steam installation directory.. Please report this on Github!\"");
+        zenity("Unable to find your Steam installation directory.. Please report this on Github!");
         exit(EXIT_FAILURE);
     }
 }
@@ -167,6 +167,7 @@ MySteam::refresh_achievements() {
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Connection to game is broken" << std::endl;
+        zenity("Connection to game is broken");
         exit(EXIT_FAILURE);
     }
 

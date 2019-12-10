@@ -11,7 +11,8 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
     {
         std::cerr << "It looks like the server before me did not shutdown properly." << std::endl;
         if(unlink(m_socket_path.c_str()) < 0) {
-            std::cout << "Something is wrong. Are you the right user? Exiting." << std::endl;
+            std::cout << "Unable to unlink previous socket. Exitting." << std::endl;
+            zenity("Unable to clean up after a previous failure. Please try running SamRewritten as the same user than last time you used it.");
             exit(EXIT_FAILURE);
         }
     }
@@ -20,6 +21,7 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
     if ((m_socket_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0)) == -1) 
     { 
         std::cerr << "Could not create the server socket. Exiting. Code: " << errno << std::endl;
+        zenity("An error occurred starting SamRewritten, please report it to Github with the following code to get directions: " + std::to_string(errno));
         exit(EXIT_FAILURE); 
     }
 
@@ -29,13 +31,15 @@ MyServerSocket::MyServerSocket(AppId_t appid) : MySocket(appid)
     strncpy(addr.sun_path, m_socket_path.c_str(), sizeof(addr.sun_path) - 1);
 
     if(bind(m_socket_fd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un)) == -1) {
-        std::cerr << "Failed to bind server socket " << m_socket_path << std::endl;
+        std::cerr << "Failed to bind server socket: " << m_socket_path << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
     if (listen(m_socket_fd, 20) < 0)
     {
         std::cerr << "Unable to listen to the socket. Exiting." << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -52,6 +56,7 @@ MyServerSocket::run_server()
 
         if (data_socket == -1) {
             std::cerr << "Server failed to accept. Exiting." << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
 

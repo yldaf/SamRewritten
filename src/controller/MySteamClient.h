@@ -1,5 +1,6 @@
 #pragma once
 #include "../../steam/steam_api.h"
+#include "../common/functions.h"
 #include "../globals.h"
 #include "MySteam.h"
 #include <iostream>
@@ -48,6 +49,7 @@ public:
         if (!m_handle) {
             std::cerr << "Error opening the Steam Client library. Exiting. Info:" << std::endl;
             std::cerr << dlerror() << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
         
@@ -57,6 +59,7 @@ public:
         if ((error = dlerror()) != NULL)  {
             std::cerr << "Error reading the CreateInterface symbol from the Steam Client library. Exiting. Info:" << std::endl;
             std::cerr << error << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
 
@@ -65,20 +68,23 @@ public:
         m_user = m_steamclient->ConnectToGlobalUser(m_pipe);
 
         if (m_pipe == 0 || m_user == 0) {
-            std::cout << "Uh oh. We could communicate with Steam.. Make sure you launched Steam and logged into your account." << std::endl;
+            std::cout << "We could interact with Steam.. Make sure you launched Steam and logged into your account." << std::endl;
             std::cerr << "Unable to create Steam Pipe or connect to global user. Exitting." << std::endl;
+            zenity("We could interact with Steam.. Make sure you launched Steam and logged into your account.");
             exit(EXIT_FAILURE);
         }
 
         m_steamapps = m_steamclient->GetISteamApps(m_user, m_pipe, STEAMAPPS_INTERFACE_VERSION);
         if (m_steamapps == NULL) {
             std::cerr << "Unable to get ISteamApps interface for MySteamClient. Exitting." << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
 
         m_steamuser = m_steamclient->GetISteamUser(m_user, m_pipe, STEAMUSER_INTERFACE_VERSION);
         if (m_steamuser == NULL) {
             std::cerr << "Unable to get ISteamUser interface for MySteamClient. Exitting." << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
     };

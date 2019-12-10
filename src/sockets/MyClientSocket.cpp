@@ -1,6 +1,7 @@
 #include "MyClientSocket.h"
 #include "../types/Actions.h"
 #include "../json/yajlHelpers.h"
+#include "../common/functions.h"
 
 #include <thread>
 #include <chrono>
@@ -26,6 +27,7 @@ MyClientSocket::connect_to_server()
     m_socket_fd = socket(AF_UNIX, SOCK_SEQPACKET, 0);
     if (m_socket_fd == -1) {
         std::cerr << "Unable to create client socket." << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -38,6 +40,7 @@ MyClientSocket::connect_to_server()
         if (retries == 20)
         {
             std::cerr << "Unable to connect to server after 20 retries: " << m_socket_path << std::endl;
+            zenity();
             exit(EXIT_FAILURE);
         }
     }

@@ -1,4 +1,5 @@
 #include "MainPickerWindowFactory.h"
+#include "../common/functions.h"
 #include <gtkmm-3.0/gtkmm/builder.h>
 #include <iostream>
 
@@ -12,7 +13,7 @@ MainPickerWindowFactory::create() {
     }
     catch(const Glib::Error& e) {
         std::cerr << "Fatal error: " << e.what() << std::endl;
-        system("zenity --no-wrap --error --text='Unable to load the UI file.. Was the installation completed? Please report this to us on Github!'");
+        zenity("Unable to load the UI file.. Was the installation completed? Please report this to us on Github!");
         exit(EXIT_FAILURE);
     }
     
@@ -25,7 +26,7 @@ MainPickerWindowFactory::create() {
     }
 
     std::cerr << "Fatal error: Could not get derived widget main_window." << std::endl;
-    system("zenity --no-wrap --error --text='Unable to load the main window.. Please report this to us on Github!'");
+    zenity("Unable to load the main window.. Please report this to us on Github!");
     exit(EXIT_FAILURE);
     return nullptr;
 }

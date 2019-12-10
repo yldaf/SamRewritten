@@ -24,6 +24,7 @@
 // The original SAM is available at https://github.com/gibbed/SteamAchievementManager
 // To comply with copyright, the above license is included.
 
+#include "../common/functions.h"
 #include "KeyValue.h"
 #include <strings.h>
 
@@ -118,6 +119,7 @@ std::string KeyValue::as_string(std::string default_value) {
         std::cout << "Stats parser encountered fatal error!" << std::endl;
         std::cout << "as_string attempted on non-string type" << std::endl;
         std::cout << "exiting now to avoid complications" << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 

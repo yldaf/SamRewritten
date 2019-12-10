@@ -6,6 +6,7 @@
 #include "../json/yajlHelpers.h"
 #include "../globals.h"
 #include "../common/PerfMon.h"
+#include "../common/functions.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -47,6 +48,7 @@ MyGameSocket::process_request(std::string request, bool& quit) {
 
     if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
         std::cerr << "Failed to make json." << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -64,7 +66,8 @@ MyGameSocket::get_achievements() {
 
     ISteamUserStats *stats_api = SteamUserStats();
     if (!stats_api->RequestCurrentStats()) {
-        std::cerr << "ERROR: User not logged in, exiting" << std::endl;
+        std::cerr << "ERROR: User not logged in, exiting." << std::endl;
+        zenity("Please login to Steam before using SamRewritten. If this is the case, please report it with a Github issue.");
         exit(EXIT_FAILURE);
     }
 
