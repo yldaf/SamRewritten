@@ -9,6 +9,9 @@
 #include <future>
 #include <glibmm-2.4/glibmm.h>
 
+// TODO use #ifndef __VALGRIND_H or similar
+// #include <valgrind/valgrind.h>
+
 AsyncGuiLoader::AsyncGuiLoader(MainPickerWindow* window)
 : m_window(window)
 {
@@ -75,11 +78,15 @@ AsyncGuiLoader::load_achievements_idle()
         bool done_starting_downloads = (m_idle_data.current_item == g_steam->get_achievements().size());
 
         if (done_starting_downloads && (m_achievement_icon_download_futures.size() == 0)) {
-                m_idle_data.state = ACH_STATE_FINISHED;
-                g_perfmon->log("Achievements retrieved with icons.");
-                m_window->show_no_achievements_found_placeholder();
-                m_achievement_refresh_lock.unlock();
-                return G_SOURCE_REMOVE;
+            m_idle_data.state = ACH_STATE_FINISHED;
+            g_perfmon->log("Achievements retrieved with icons.");
+            m_window->show_no_achievements_found_placeholder();
+            m_achievement_refresh_lock.unlock();
+            
+            // See top of the file
+            // VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+            
+            return G_SOURCE_REMOVE;
         }
 
         if ( !done_starting_downloads && (m_concurrent_icon_downloads < MAX_CONCURRENT_ICON_DOWNLOADS))  {

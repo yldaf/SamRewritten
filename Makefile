@@ -15,15 +15,15 @@ all: ${CURDIR}/bin/samrewritten
 	@echo -e "==== Use '\033[1mmake clean\033[0m' to remove object files"
 	@echo -e "==== Nothing left to do."
 
+dev: CXXFLAGS += -g
+dev: ${CURDIR}/bin/samrewritten
+
+clean:
+	${RMDIR} ${OBJDIR}
+
 ${CURDIR}/bin/samrewritten: $(OBJS)
 	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS}
 
 ${OBJDIR}/%.o: %.cpp $(HFILES)
 	@mkdir -p $$(dirname $@)
 	$(CXX) -c -o $@ $< ${LDFLAGS} $(CXXFLAGS)
-
-dev: CXXFLAGS += -g
-dev: ${CURDIR}/bin/samrewritten
-
-clean:
-	${RMDIR} ${OBJDIR}
