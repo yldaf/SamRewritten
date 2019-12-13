@@ -10,13 +10,19 @@
 #include <gtkmm-3.0/gtkmm/label.h>
 #include <gtkmm-3.0/gtkmm/menubutton.h>
 
+#define ACH_BOX_ROW_ICON_LOCKED "changes-prevent"
+#define ACH_BOX_ROW_ICON_UNLOCKED "changes-allow"
+#define ACH_BOX_ROW_ICON_TO_LOCK "emblem-important"
+#define ACH_BOX_ROW_ICON_TO_UNLOCK "emblem-default"
+
 AchievementBoxRow::AchievementBoxRow(const Achievement_t& data) 
 : m_active(false),
   m_data(data)
 {
-    std::string ach_title_text, ach_player_percent_text, ach_locked_text;
-    ach_locked_text = data.achieved ? "🔓 Unlocked" : "🔒 Locked";
-    std::string escaped_name = data.name;
+    std::string ach_title_text, ach_player_percent_text, ach_locked_text, button_icon_name, escaped_name;
+    ach_locked_text = data.achieved ? "  Unlocked" : "  Locked";
+    button_icon_name = data.achieved ? ACH_BOX_ROW_ICON_UNLOCKED : ACH_BOX_ROW_ICON_LOCKED;
+    escaped_name = data.name;
     escape_html(escaped_name);
     ach_title_text = "<b>" + escaped_name + "</b>";
     char tmpbuf[16];
@@ -42,7 +48,7 @@ AchievementBoxRow::AchievementBoxRow(const Achievement_t& data)
 
     set_size_request(-1, 80);
     set_missing();
-    m_lock_unlock_button.set_label(ach_locked_text);
+
     title_label->set_markup(ach_title_text);
     more_info_label->set_markup("<b>Additional information</b>");
     more_info_button->set_popover(*popover_menu);
@@ -50,6 +56,8 @@ AchievementBoxRow::AchievementBoxRow(const Achievement_t& data)
     more_info_button->set_margin_end(10);
     m_lock_unlock_button.set_size_request(150, -1);
     m_lock_unlock_button.set_active(false);
+    m_lock_unlock_button.set_label(ach_locked_text);
+    m_lock_unlock_button.set_image_from_icon_name(button_icon_name);
     popover_box->set_border_width(5);
     ach_ach_rate_bar->set_fraction(data.global_achieved_rate / 100);
     more_info_button->get_style_context()->add_class("circular");
@@ -119,19 +127,25 @@ AchievementBoxRow::invert() {
     const std::string ach_id = m_data.id;
 
     if (!m_active && achieved) {
-        m_lock_unlock_button.set_label("To relock");
+        m_lock_unlock_button.set_label("  To relock");
+        m_lock_unlock_button.set_image_from_icon_name(ACH_BOX_ROW_ICON_TO_LOCK);
         m_active = true;
         g_steam->add_modification_ach(ach_id, false);
     } else if (m_active && achieved) {
-        m_lock_unlock_button.set_label("🔓 Unlocked");
+        m_lock_unlock_button.set_label("  Unlocked");
+        m_lock_unlock_button.set_image_from_icon_name(ACH_BOX_ROW_ICON_UNLOCKED);
+
         m_active = false;
         g_steam->remove_modification_ach(ach_id);
     } else if (!m_active && !achieved) {
-        m_lock_unlock_button.set_label("To unlock");
+        m_lock_unlock_button.set_label("  To unlock");
+        m_lock_unlock_button.set_image_from_icon_name(ACH_BOX_ROW_ICON_TO_UNLOCK);
+
         m_active = true;
         g_steam->add_modification_ach(ach_id, true);
     } else if (m_active && !achieved) {
-        m_lock_unlock_button.set_label("🔒 Locked");
+        m_lock_unlock_button.set_label("  Locked");
+        m_lock_unlock_button.set_image_from_icon_name(ACH_BOX_ROW_ICON_LOCKED);
         m_active = false;
         g_steam->remove_modification_ach(ach_id);
     }
