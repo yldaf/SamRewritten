@@ -115,6 +115,10 @@ void
 MainPickerWindow::on_game_row_activated(Gtk::ListBoxRow* row) {
     AppBoxRow* game_row = static_cast<AppBoxRow*>(row);
     AppId_t appid = game_row->get_app().app_id;
+
+    if ( appid == 0 ) {
+        appid = m_input_appid_row.get_appid();
+    }
     
     if ( appid == 0 ) {
         std::cerr << "An error occurred figuring out which app to launch.. You can report this to the developer." << std::endl;

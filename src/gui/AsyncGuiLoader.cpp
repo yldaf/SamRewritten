@@ -33,7 +33,6 @@ AsyncGuiLoader::load_achievements_idle()
             g_perfmon->log("Done retrieving achievements");
 
             // Fire off the schema parsing now.
-            // It will modify g_steam->m_icon_download_names directly
             // TODO: figure out if all the icons are already there and skip parsing schema
             m_schema_parser_future = std::async(std::launch::async, [this]{return m_schema_parser.load_user_game_stats_schema();});
             m_idle_data.state = ACH_STATE_LOADING_GUI;
@@ -45,6 +44,15 @@ AsyncGuiLoader::load_achievements_idle()
         if (m_idle_data.current_item == g_steam->get_achievements().size()) {
             g_perfmon->log("Done adding achievements to GUI");
             m_window->confirm_achievement_list();
+
+            if ( g_steam->get_achievements().size() > 1000 ) {
+                // The game is an achievement printer of some kind, downloading the icons
+                // leads to serious performance issues and takes a lot of cache
+                g_perfmon->log("Achievements retrieved, no icons (Achievement farming app).");
+                m_achievement_refresh_lock.unlock();
+                return G_SOURCE_REMOVE;
+            }
+
             m_idle_data.state = ACH_STATE_WAITING_FOR_SCHEMA_PARSER;
             m_idle_data.current_item = 0;
             return G_SOURCE_CONTINUE;

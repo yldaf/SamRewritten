@@ -16,9 +16,8 @@ MyGameServer::run()
 
     if (!SteamAPI_Init()) {
         std::cerr << "An error occurred launching the Steam API. Aborting." << std::endl;
-        std::cerr << "Make sure you are trying to run an app you own." << std::endl;
-        zenity("Make sure you are trying to run an app you own.");
-        exit(EXIT_FAILURE);
+        zenity("Something went wrong, make sure you are trying to run an app you own.");
+        return;
     }
 
     m_socket.run_server();
