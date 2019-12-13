@@ -1,8 +1,8 @@
 #pragma once
-#include "types/Game.h"
-#include "types/Achievement.h"
+#include "../types/Game.h"
+#include "../types/Achievement.h"
+#include "../sockets/MyClientSocket.h"
 #include "GameServerManager.h"
-#include "sockets/MyClientSocket.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -80,7 +80,12 @@ public:
      * 
      * TODO: maybe don't name this the same as GameServer::get_achievements?
      */ 
-    std::vector<Achievement_t> get_achievements() { return m_achievements; };
+    std::vector<Achievement_t> get_achievements() const { return m_achievements; };
+
+    /**
+     * Simple getter
+     */
+    AppId_t get_current_appid() const { return m_app_id; };
 
     /**
      * Adds a modification to be done on the launched app.
@@ -110,20 +115,6 @@ public:
 
     MySteam(MySteam const&)                 = delete;
     void operator=(MySteam const&)          = delete;
-
-    // TODO: have this public now so we can operate on them..
-    // Achievements for the currently running game
-    std::vector<Achievement_t> m_achievements;
-    // Mapping between achievement ID and the actual icon name on servers.
-    // Icon name is retrieved by the stats schema parser
-    std::map<std::string, std::string> m_icon_download_names;
-
-    // Absolute path to Steam install dir
-    std::string m_steam_install_dir;
-
-    // Current app_id
-    AppId_t m_app_id;
-
 private:
     MySteam();
 
@@ -132,11 +123,22 @@ private:
      */
     static bool comp_app_name(Game_t app1, Game_t app2);
 
+    /**
+     * Add special flags to achievements
+     */
+    void set_special_flags();
+
+    // Absolute path to Steam install dir
+    std::string m_steam_install_dir;
+
+    // Current app_id
+    AppId_t m_app_id;
+
     GameServerManager m_server_manager;
     MyClientSocket* m_ipc_socket;
 
     std::vector<Game_t> m_all_subscribed_apps;
-
+    std::vector<Achievement_t> m_achievements;
 
     std::map<std::string, bool> m_pending_ach_modifications;
     std::map<std::string, double> m_pending_stat_modifications;

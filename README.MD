@@ -2,9 +2,17 @@
 A Steam Achievements Manager for Linux
 ---
 
-![SamRewritten logo](assets/icon_256.png)
+<p align=center>
+	<img src="assets/icon_256.png" alt="SamRewritten logo"/>
+</p>
 
-![SamRewritten screenshot](assets/screenshot.png)
+<p align=center>
+	<img src="assets/screenshot.png" alt="SamRewritten screenshot"/>
+</p>
+
+<p align=center>
+	<img src="assets/screenshot2.png" alt="SamRewritten screenshot"/>
+</p>
 
 # Introduction
 

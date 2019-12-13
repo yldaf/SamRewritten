@@ -26,9 +26,52 @@
 
 #pragma once
 
-/**
- * Parse the schema file and store information in g_steam
- * For now, just parse out icon download information.
- * This has the potential to parse out much more info as needed.
- */
-bool load_user_game_stats_schema();
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <any>
+
+enum class KeyValueType : unsigned char
+{
+    None = 0,
+    String = 1,
+    Int32 = 2,
+    Float32 = 3,
+    Pointer = 4,
+    WideString = 5,
+    Color = 6,
+    UInt64 = 7,
+    End = 8
+};
+
+class KeyValue {
+private:
+    // invalid doesn't map easily to C++,
+    // just use NULL for bad return of [] operator
+
+public:
+    std::string name = "<root>";
+    KeyValueType type = KeyValueType::None;
+    std::any value;
+    bool valid = false;
+    std::vector<KeyValue*> children;
+
+    //KeyValue* operator[](std::string key); // Would add spice?
+    KeyValue* get(std::string key);
+    KeyValue* get2(std::string key1, std::string key2);
+
+    std::string as_string(std::string default_value);
+    int as_integer(int default_value);
+    // Other as_type function can be implemented as needed
+    
+    static KeyValue* load_as_binary(std::string path);
+    bool read_as_binary(std::istream *is);
+
+    KeyValue() { valid = true;};
+    ~KeyValue() {
+        for (auto child : children) {
+            delete child;
+        }
+    };
+
+};

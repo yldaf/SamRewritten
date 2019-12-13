@@ -33,12 +33,13 @@ Downloader::download_file(const std::string& file_url, const std::string& local_
         }
         else {
             std::cerr << "An error occurred creating curl. Please report it to the developers!" << std::endl;
+            zenity("An error occurred creating curl. Please report it to the developers!");
             exit(EXIT_FAILURE);
         }
 
         if(res != 0) {
             std::cerr << "Curl errored with status " << res << ". (file: " <<  file_url << ")" << std::endl;
-            std::cout << "An error occurred while fetching an icon, are you connected to the internet?" << std::endl;
+            zenity("An error occurred while fetching an icon, are you connected to the internet?");
             exit(EXIT_FAILURE);
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
-#include <map>
-#include "../steam/steamtypes.h"
 
+#include "../../steam/steamtypes.h"
+#include <map>
 
 class SteamAppDAO
 {
@@ -14,7 +14,6 @@ public:
     /**
      * Redownloads the app list
      * if necessary. Redownloads every few days.
-     * TODO: Maybe pass a boolean too as argument for "Override redownload"
      */
     void update_name_database();
 
@@ -60,9 +59,10 @@ private:
      * Check if a given file exists and if so, if it's too old
      */
     static bool need_to_redownload(const char * file_path);
+    
     /**
      * Parse the app names from a given file and store to a give app names map
      */
     static void parse_app_names(const char * file_path, std::map<AppId_t, std::string>* app_names);
-    static std::map<AppId_t, std::string> m_app_names;
+    std::map<AppId_t, std::string> m_app_names;
 };

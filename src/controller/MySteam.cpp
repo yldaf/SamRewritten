@@ -1,16 +1,15 @@
 #include "MySteam.h"
+#include "SteamAppDAO.h"
+#include "../types/Game.h"
+#include "../types/Actions.h"
+#include "../common/functions.h"
+#include "../json/yajlHelpers.h"
+
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <dirent.h>
 #include <bits/stdc++.h>
-#include <yajl/yajl_gen.h>
-#include <yajl/yajl_tree.h>
-#include "types/Game.h"
-#include "types/Actions.h"
-#include "SteamAppDAO.h"
-#include "common/functions.h"
-#include "json/yajlHelpers.h"
 
 MySteam::MySteam() {
     std::string data_home_path;
@@ -35,8 +34,8 @@ MySteam::MySteam() {
         return;
     }
     else {
-        std::cerr << "Unable to locate the steam directory. TODO: implement a folder picker here" << std::endl;
-        system("zenity --error --no-wrap --text=\"Unable to find your Steam installation directory.. Please report this on Github!\"");
+        std::cerr << "Unable to locate the steam directory." << std::endl;
+        zenity("Unable to find your Steam installation directory.. Please report this on Github!");
         exit(EXIT_FAILURE);
     }
 }
@@ -106,8 +105,8 @@ MySteam::quit_game() {
 
 
 /**
- * This retrieves all owned apps, which currently include
- * non-games like DLC and servers.
+ * This retrieves all owned apps, can include garbage apps
+ * depending on the users settings, in a near future.
  * Stores the owned games in m_all_subscribed_apps.
  */
 void 
@@ -168,6 +167,7 @@ MySteam::refresh_achievements() {
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Connection to game is broken" << std::endl;
+        zenity("Connection to game is broken");
         exit(EXIT_FAILURE);
     }
 
@@ -178,6 +178,8 @@ MySteam::refresh_achievements() {
     }
 
     m_achievements = decode_achievements(response);
+
+    set_special_flags();
 }
 // => refresh_achievements
 
@@ -186,8 +188,12 @@ MySteam::refresh_achievements() {
  */
 void 
 MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) {
-    std::cout << ach_id << ": " << (new_value ? "to unlock" : "to relock") << std::endl;
-    m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+    std::cout << "Adding modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
+    if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
+        m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+    } else {
+        std::cerr << "Warning: Cannot append " << ach_id << ", value already exists." << std::endl;
+    }
 }
 // => add_modification_ach
 
@@ -196,8 +202,9 @@ MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) 
  */
 void 
 MySteam::remove_modification_ach(const std::string& ach_id) {
+    std::cout << "Removing modification: " << ach_id << std::endl;
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
-        std::cerr << "WARNING: Could not cancel: modification was not pending";
+        std::cerr << "WARNING: Could not cancel: modification was not pending: " << ach_id << std::endl;
     } else {
         m_pending_ach_modifications.erase(ach_id);
     }
@@ -233,3 +240,34 @@ MySteam::clear_changes() {
     m_pending_ach_modifications.clear();
 }
 // => clear_changes
+
+void
+MySteam::set_special_flags() {
+    // TODO: Maybe split this up to be more amenable to threaded GUI loading, could fire off in thread
+
+    long next_most_achieved_index = -1;
+    float next_most_achieved_rate = 0;
+    Achievement_t tmp;
+
+    for(size_t i = 0; i < m_achievements.size(); i++)
+    {
+        tmp = m_achievements[i];
+        m_achievements[i].special = ACHIEVEMENT_NORMAL;
+
+        if ( !tmp.achieved && tmp.global_achieved_rate > next_most_achieved_rate )
+        {
+            next_most_achieved_rate = tmp.global_achieved_rate;
+            next_most_achieved_index = i;
+        }
+
+        if ( tmp.global_achieved_rate <= 5.f )
+        {
+            m_achievements[i].special = ACHIEVEMENT_RARE;
+        }
+    }
+
+    if ( next_most_achieved_index != -1 )
+    {
+        m_achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
+    }
+}

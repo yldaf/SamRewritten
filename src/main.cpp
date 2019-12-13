@@ -3,17 +3,18 @@
  * this project. Thank you.
  *************************************/
 
-#include <iostream>
-#include <gmodule.h>
-#include <sys/stat.h>
-#include "MySteam.h"
-#include "MySteamClient.h"
-#include "MyGameServer.h"
-#include "gui/MainPickerWindow.h"
-#include "globals.h"
-#include "cli_funcs.h"
+#include "controller/MySteam.h"
+#include "controller/MySteamClient.h"
+#include "controller/MyGameServer.h"
+#include "gui/MainPickerWindowFactory.h"
+#include "cli/cli_funcs.h"
 #include "common/functions.h"
 #include "common/PerfMon.h"
+#include "globals.h"
+
+#include <iostream>
+#include <sys/stat.h>
+#include <gtkmm-3.0/gtkmm/application.h>
 
 /**************************************
  *  Declare global variables imported from globals.h
@@ -32,21 +33,11 @@ PerfMon* g_perfmon = nullptr;
 int
 main(int argc, char *argv[])
 {
-    // Test if glib2 is installed, gtk will not work without it.
-    if ( !g_module_supported() ) {
-        std::cout << "You are missing the Gnome libraries. Please read the README to know which libraries to install." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
     if (getuid() == 0) {
         std::cout << "Do not run this application as root" << std::endl;
+        zenity("Please do not run this application as root..");
         exit(EXIT_FAILURE);
     }
-
-    g_perfmon = new PerfMon();
-    gtk_init(&argc, &argv);
-    g_steam = MySteam::get_instance();
-    g_steamclient = new MySteamClient();
 
     if (getenv("XDG_CACHE_HOME")) {
         g_cache_folder = concat( getenv("XDG_CACHE_HOME"), "/SamRewritten" );
@@ -63,14 +54,19 @@ main(int argc, char *argv[])
         g_runtime_folder = g_cache_folder;
     }
 
-    g_main_gui = new MainPickerWindow();
+    g_perfmon = new PerfMon();
+    g_steam = MySteam::get_instance();
+    g_steamclient = new MySteamClient();
     g_perfmon->log("Globals initialized.");
 
     // Check for command-line options, which may prevent showing the GUI
     // Note that a rewriting should be done to further separate the GUI
     // from a command-line interface
 	if(!go_cli_mode(argc, argv)) {
-        g_main_gui->show();
+        auto app = Gtk::Application::create(argc, argv);
+        g_main_gui = MainPickerWindowFactory::create();
+
+        app->run(*g_main_gui);
 	}
 
     return EXIT_SUCCESS;

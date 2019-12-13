@@ -1,4 +1,5 @@
 #include "ProcessedGameServerRequest.h"
+#include "../common/functions.h"
 #include <iostream>
 
 SAM_ACTION
@@ -27,6 +28,7 @@ ProcessedGameServerRequest::ProcessedGameServerRequest(const std::string& reques
     if (m_fulltree == NULL) {
         std::cerr << "Parsing error. Data: " << std::endl;
         std::cerr << request << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -36,6 +38,7 @@ ProcessedGameServerRequest::ProcessedGameServerRequest(const std::string& reques
     yajl_val v = yajl_tree_get(m_fulltree, path, yajl_t_string);
     if (v == NULL || !YAJL_IS_STRING(v)) {
         std::cerr << "failed to get " << SAM_ACTION_STR << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 

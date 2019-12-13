@@ -59,3 +59,9 @@ std::string get_achievement_icon_path(AppId_t app_id, std::string id);
  * From https://stackoverflow.com/a/5665377
  */
 void escape_html(std::string& data);
+
+/**
+ * Show a regular dialog box. Return value is ignored for now,
+ * but feel free to add functionnlitie to this
+ */
+void zenity(const std::string text = "An internal error occurred, please open a Github issue with the console output to get it fixed!", const std::string type = "--error --no-wrap");

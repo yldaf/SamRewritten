@@ -1,4 +1,12 @@
 #include "SteamAppDAO.h"
+
+#include "../../steam/steam_api.h"
+#include "../common/functions.h"
+#include "../common/Downloader.h"
+#include "../gui/MainPickerWindow.h"
+#include "../globals.h"
+#include "MySteamClient.h"
+
 #include <ctime>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -9,16 +17,6 @@
 #include <yajl/yajl_tree.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "common/functions.h"
-#include "common/Downloader.h"
-#include "../steam/steam_api.h"
-#include "MySteamClient.h"
-#include "gui/MainPickerWindow.h"
-#include "globals.h"
-
-// Wtf am I doing? Anyway thanks StackOverflow
-//TODO: Find a more elegant way to fix this shit.
-std::map<AppId_t, std::string> SteamAppDAO::m_app_names = std::map<AppId_t, std::string>();
 
 /**
  * Lazy singleton pattern
@@ -48,6 +46,7 @@ SteamAppDAO::need_to_redownload(const char * file_path) {
             std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
             std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
             std::cerr << "your home folder folder." << std::endl;
+            zenity("An error occurred writing the cache files. Try deleting the cache folder (" + std::string(g_cache_folder) + ") and make sure you have enough permissions to write to it.");
             exit(EXIT_FAILURE);
         }
     }
@@ -169,10 +168,12 @@ SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::stri
 
     /* file read error handling */
     if (rd == 0 && !feof(stdin)) {
-        std::cerr << "error encountered on file read" << std::endl;
+        std::cerr << "Error encountered on file read: " << file_path << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     } else if (rd >= sizeof(fileData) - 1) {
         std::cerr << "app_names file too big (just increase the buffer size)" << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -187,6 +188,8 @@ SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::stri
         } else {
             std::cerr << "Unknown error" << std::endl;
         }
+
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -195,6 +198,7 @@ SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::stri
     yajl_val v = yajl_tree_get(node, path, yajl_t_array);
     if (v == NULL) {
         std::cerr << "app_names contains valid JSON, but its format is not supported" << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 

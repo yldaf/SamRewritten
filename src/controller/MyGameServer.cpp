@@ -1,7 +1,10 @@
 #include "MyGameServer.h"
+#include "../common/functions.h"
 #include <iostream>
 
-MyGameServer::MyGameServer(AppId_t appid) : m_appid(appid), m_socket(appid)
+MyGameServer::MyGameServer(AppId_t appid)
+: m_appid(appid), 
+  m_socket(appid)
 {
 
 }
@@ -13,7 +16,8 @@ MyGameServer::run()
 
     if (!SteamAPI_Init()) {
         std::cerr << "An error occurred launching the Steam API. Aborting." << std::endl;
-        std::cerr << "Make sure you are trying to run an app you own, and running with launch.sh" << std::endl;
+        std::cerr << "Make sure you are trying to run an app you own." << std::endl;
+        zenity("Make sure you are trying to run an app you own.");
         exit(EXIT_FAILURE);
     }
 

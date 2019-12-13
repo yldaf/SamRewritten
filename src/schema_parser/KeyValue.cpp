@@ -24,6 +24,7 @@
 // The original SAM is available at https://github.com/gibbed/SteamAchievementManager
 // To comply with copyright, the above license is included.
 
+#include "../common/functions.h"
 #include "KeyValue.h"
 #include <strings.h>
 
@@ -58,14 +59,16 @@ float read_value_f32(std::istream * is) {
 }
 
 std::string read_string(std::istream * is) {
-    char buf[256];
+    char buf[512];
 
     // Even in unicode, NULL terminator will terminate the string.
     // C++ actually automatically interprets an array of bytes
     // as unicode if there are unicode encodings in it,
     // so no special modification is needed.
     // Eat the string and NULL terminator with getline.
-    is->getline( buf, 256, L'\0');
+    if( !is->getline( buf, 512, L'\0') ) {
+        std::cerr << "Failed to read a KeyValue. Increasing buffer size might help." << std::endl;
+    }
 
     // NULL is automatically appended
     return std::string(buf);
@@ -116,6 +119,7 @@ std::string KeyValue::as_string(std::string default_value) {
         std::cout << "Stats parser encountered fatal error!" << std::endl;
         std::cout << "as_string attempted on non-string type" << std::endl;
         std::cout << "exiting now to avoid complications" << std::endl;
+        zenity();
         exit(EXIT_FAILURE);
     }
 
@@ -267,7 +271,7 @@ bool KeyValue::read_as_binary(std::istream* is) {
 
             default:
             {
-                std::cout << "Stats parser encountered invalid type!" << std::endl;
+                std::cout << "Stats parser encountered invalid type: " << static_cast<unsigned>(type) << " at offset " << is->tellg() << std::endl;
                 delete current;
                 return false;
             }

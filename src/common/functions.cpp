@@ -27,6 +27,7 @@ void read_count(int fd, void *buf, size_t count)
     bytes = read(fd, (void*)((char*)buf+i), count-i);
     if ((bytes == -1) || (bytes == 0 && errno > 0)) {
       std::cerr << "Read pipe encountered fatal error." << std::endl;
+      zenity();
       exit(EXIT_FAILURE);
     }
   }
@@ -41,6 +42,7 @@ void write_count(int fd, void *buf, size_t count)
     bytes = write(fd, (void*)((char*)buf+i), count-i);
     if ((bytes == -1) || (bytes == 0 && errno > 0)) {
       std::cerr << "Write pipe encountered fatal error." << std::endl;
+      zenity();
       exit(EXIT_FAILURE);
     }
   }
@@ -80,6 +82,7 @@ void mkdir_default(const char *pathname)
     int mkdir_error = mkdir(pathname, S_IRWXU | S_IRWXG | S_IROTH);
     if (mkdir_error != 0 && errno != EEXIST) {
 		    std::cerr << "Unable to create the folder " << pathname << ", errno " << errno << ")." << std::endl;
+        zenity("Unable to create the folder " + std::string(pathname) + ", errno " + std::to_string(errno) + ".");
         exit(EXIT_FAILURE);
     }
 }
@@ -106,4 +109,8 @@ void escape_html(std::string& data) {
         }
     }
     data.swap(buffer);
+}
+
+void zenity(const std::string text, const std::string type) {
+    system( std::string("zenity " + type + " --text=\"" + text + "\"").c_str() );
 }
