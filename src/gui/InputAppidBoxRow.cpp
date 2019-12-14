@@ -1,5 +1,8 @@
 #include "InputAppidBoxRow.h"
 
+#include <gtkmm-3.0/gtkmm/box.h>
+#include <gtkmm-3.0/gtkmm/arrow.h>
+
 InputAppidBoxRow::InputAppidBoxRow()
 : m_label("")
 {

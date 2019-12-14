@@ -64,4 +64,4 @@ void escape_html(std::string& data);
  * Show a regular dialog box. Return value is ignored for now,
  * but feel free to add functionnlitie to this
  */
-void zenity(const std::string text = "An internal error occurred, please open a Github issue with the console output to get it fixed!", const std::string type = "--error --no-wrap");
+int zenity(const std::string text = "An internal error occurred, please open a Github issue with the console output to get it fixed!", const std::string type = "--error --no-wrap");

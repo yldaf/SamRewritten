@@ -111,6 +111,6 @@ void escape_html(std::string& data) {
     data.swap(buffer);
 }
 
-void zenity(const std::string text, const std::string type) {
-    system( std::string("zenity " + type + " --text=\"" + text + "\"").c_str() );
+int zenity(const std::string text, const std::string type) {
+    return system( std::string("zenity " + type + " --text=\"" + text + "\" 2> /dev/null").c_str() );
 }
