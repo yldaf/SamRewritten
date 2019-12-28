@@ -9,17 +9,17 @@
 #define RELATIVE_STEAM_CLIENT_LIB_PATH "/linux64/steamclient.so"
 
 /**
- * Purpose: 
+ * Purpose:
  * The SteamClient() accessor does not work. It always returns NULL for some reason.
  * We use the Steam Client library to call the CreateInterface to create an instance anyway.
- * 
+ *
  * This is used so we can communicate with the Steam Client without being marked as "In-Game"
- * 
+ *
  * I did not experiment a lot with this class, but I would advise to create only one instance for the whole program.
- * 
+ *
  * I get SteamApps to get owned games (if one AppId is subscribed)
  * I could use ISteamUser to get the current user's Steam ID. (what for idk, but later features maybe)
- * 
+ *
  * https://partner.steamgames.com/doc/api/ISteamClient
  */
 class MySteamClient
@@ -29,30 +29,38 @@ public:
     HSteamUser getUser() const { return m_user; };
     ISteamApps* getSteamApps() const { return m_steamapps; };
     ISteamUser* getSteamUser() const { return m_steamuser; };
-    
+
     // Needed for child usage..
     void unloadLibrary() {
         dlclose(m_handle);
     }
-    
-    ~MySteamClient() { 
+
+    ~MySteamClient() {
         m_steamclient->ReleaseUser(m_pipe, m_user);
         m_steamclient->BReleaseSteamPipe(m_pipe);
         m_steamclient->BShutdownIfAllPipesClosed();
         dlclose(m_handle);
     }
-    
+
     MySteamClient() {
         char* error;
-        const std::string steam_client_lib_path = g_steam->get_steam_install_path() + RELATIVE_STEAM_CLIENT_LIB_PATH;
+        std::string steam_client_lib_path = g_steam->get_steam_install_path() + RELATIVE_STEAM_CLIENT_LIB_PATH;
         m_handle = dlopen(steam_client_lib_path.c_str(), RTLD_LAZY);
         if (!m_handle) {
-            std::cerr << "Error opening the Steam Client library. Exiting. Info:" << std::endl;
+            std::cerr << "Error opening the Steam Client library. ~/.local.share/Steam may not exist. Info:" << std::endl;
             std::cerr << dlerror() << std::endl;
-            zenity();
-            exit(EXIT_FAILURE);
+            std::cerr << "Trying alternate steam client lib path" << std::endl;
+
+            steam_client_lib_path = g_steam->get_steam_install_path() + "/.." + RELATIVE_STEAM_CLIENT_LIB_PATH;
+            m_handle = dlopen(steam_client_lib_path.c_str(), RTLD_LAZY);
+            if (!m_handle) {
+              std::cerr << "Error opening the Steam Client library. Exiting. Info:" << std::endl;
+              std::cerr << dlerror() << std::endl;
+              zenity();
+              exit(EXIT_FAILURE);
+           }
         }
-        
+
         ISteamClient* (*CreateInterface)(const char* version, void*);
 
         CreateInterface = (ISteamClient* (*)(const char*, void*))dlsym(m_handle, "CreateInterface");
