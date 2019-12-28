@@ -39,20 +39,20 @@ typedef struct
     unsigned state;
 
     /**
-     * other information is just pulled from the global
-     * or other singleton info for now
+     * other information is pulled from the
+     * AsyncGuiLoader object
      */
 
     /* the currently loaded item */
     unsigned current_item;
 } IdleData;
 
-class AsyncGuiLoader 
+class AsyncGuiLoader
 {
 public:
     AsyncGuiLoader(MainPickerWindow* window);
 
-    /** 
+    /**
      * When the user wants to refresh the game list.
      * This is also called when the main window just got spawned.
      * - Clear the game list (will show the loading widget)
@@ -62,10 +62,10 @@ public:
      *   to display the app logos.
      * - Draw the result.
      */
-    void 
+    void
     populate_apps();
 
-    void 
+    void
     populate_achievements();
 private:
     bool load_achievements_idle();
@@ -77,7 +77,7 @@ private:
     std::future<void> m_owned_apps_future;
     std::future<void> m_achievements_future;
     std::future<bool> m_schema_parser_future;
-    
+
     /**
      * Mutex to prevent on_refresh_games_button_clicked from being reentrant
      * and allowing multiple idle threads to corrupt the main window.
@@ -85,7 +85,9 @@ private:
     std::mutex m_game_refresh_lock;
     std::mutex m_achievement_refresh_lock;
 
-    IdleData m_idle_data;
+    IdleData m_app_idle_data;
+    IdleData m_achievement_idle_data;
+
     UserGameStatsSchemaParser m_schema_parser;
     MainPickerWindow* m_window;
 };
