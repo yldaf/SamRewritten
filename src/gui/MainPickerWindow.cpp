@@ -126,7 +126,7 @@ MainPickerWindow::on_game_row_activated(Gtk::ListBoxRow* row) {
     }
 
     switch_to_achievement_page();
-    g_steam->launch_game(appid);
+    g_steam->launch_app(appid);
     m_async_loader.populate_achievements();
 }
 // => on_game_row_activated

@@ -49,12 +49,24 @@ Run SamRewritten by opening the corresponding desktop entry, or by using the `sa
 
 # Command line options
 
-I know you linux geeks love to use command line options.
-We have big ambitions for SamRewritten, and I believe many of them are related to these command-line options, so stay put, because that list will be growing soon!
+I know you linux geeks love to use command line options! SamRewritten has a few, let us know if you want to see more!
 
-* -a \<appid\>
-	* Prevents the window from showing and sets your status to "In Game"
-	* `./bin/launch.sh -a 10` will idle Counter Strike
+```
+Usage:
+  samrewritten AppId [OPTION...]
+
+      --apps        Get the list of your owned apps.
+  -h, --help        Show CLI help.
+  -a, --app arg     Set which AppId you want to use. Same as using positional
+                    'AppId'
+  -i, --idle        Set your Steam profile as 'ingame'. Ctrl+c to stop.
+      --ls          Display stats (TODO) and achievements for selected app.
+      --unlock arg  Unlock achievements for an AppId. Separate achievement
+                    names by a comma.
+      --lock arg    Lock achievements for an AppId. Separate achievement
+                    names by a comma.
+      --launch      Actually just launch the app.
+```
 
 ---
 

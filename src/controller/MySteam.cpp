@@ -65,7 +65,7 @@ MySteam::get_instance() {
  * Fakes a new game being launched. Keeps running in the background until quit_game is called.
  */
 bool 
-MySteam::launch_game(AppId_t appID) {
+MySteam::launch_app(AppId_t appID) {
     // Print an error if a game is already launched
     // allow multiple games at the same time in the future via new window launching
 
@@ -84,7 +84,7 @@ MySteam::launch_game(AppId_t appID) {
     m_app_id = appID;
     return true;
 }
-// => launch_game
+// => launch_app
 
 
 /**
