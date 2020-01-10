@@ -53,7 +53,7 @@ I know you linux geeks love to use command line options! SamRewritten has a few,
 
 ```
 Usage:
-  samrewritten AppId [OPTION...]
+  samrewritten [AppId] [OPTION...]
 
       --apps        Get the list of your owned apps.
   -h, --help        Show CLI help.
@@ -61,6 +61,8 @@ Usage:
                     'AppId'
   -i, --idle        Set your Steam profile as 'ingame'. Ctrl+c to stop.
       --ls          Display stats (TODO) and achievements for selected app.
+      --sort arg    Sort option for --ls. You can leave empty or set to
+                    'unlock_rate'
       --unlock arg  Unlock achievements for an AppId. Separate achievement
                     names by a comma.
       --lock arg    Lock achievements for an AppId. Separate achievement

@@ -22,7 +22,7 @@ void idle_app(AppId_t appid)
 	signal(SIGINT, handle_sigint_cli);
 
 	// Wait for ctrl+c, so we can kill both processes, otherwise
-    // GUI process will exit while game process still goes on
+	// GUI process will exit while game process still goes on
 	for(;;) {
 		sleep(10000);
 	}
@@ -37,7 +37,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 	cxxopts::Options options(argv[0], "Steam Achievements Manager");
     
 	options
-      .positional_help("AppId")
+      .positional_help("[AppId]")
       .show_positional_help()
 	  .add_options()
 		("apps", "Get the list of your owned apps.")
@@ -45,6 +45,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		("a,app", "Set which AppId you want to use. Same as using positional 'AppId'", cxxopts::value<AppId_t>())
 		("i,idle", "Set your Steam profile as 'ingame'. Ctrl+c to stop.")
 		("ls", "Display stats (TODO) and achievements for selected app.")
+		("sort", "Sort option for --ls. You can leave empty or set to 'unlock_rate'", cxxopts::value<std::string>())
 		("unlock", "Unlock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
 		("lock", "Lock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
 		("launch", "Actually just launch the app.");
@@ -107,8 +108,16 @@ bool go_cli_mode(int argc, char* argv[]) {
 		auto achievements = g_steam->get_achievements();
 		g_steam->quit_game();
 		
-		// We want to order achievements from most unlocked to least unlocked
-		std::sort(achievements.begin(), achievements.end(), compareByUnlockRateDesc);
+		if (result.count("sort") > 0)
+		{
+			const std::string sort = result["sort"].as<std::string>();
+
+			if (sort == "unlock_rate")
+			{
+				std::sort(achievements.begin(), achievements.end(), compareByUnlockRateDesc);
+			}
+		}
+		
 
 		// https://github.com/haarcuba/cpp-text-table -> worth? nah but best I've found
 		std::cout << "Sorted by global unlock rate\n" << std::endl;
