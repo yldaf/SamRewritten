@@ -31,10 +31,10 @@ public:
      * given appId. Returns false if this process failed to launch.
      * The process may start successfully but fail during execution.
      */
-    bool launch_game(AppId_t appId);
+    bool launch_app(AppId_t appId);
 
     /**
-     * Stops the process started with the above method launch_game.
+     * Stops the process started with the above method launch_app.
      * Returns true if a process was successfully stopped.
      */
     bool quit_game();
