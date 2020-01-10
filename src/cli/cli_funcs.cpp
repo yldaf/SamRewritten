@@ -115,12 +115,12 @@ bool go_cli_mode(int argc, char* argv[]) {
 			if (sort == "unlock_rate")
 			{
 				std::sort(achievements.begin(), achievements.end(), compareByUnlockRateDesc);
+				std::cout << "Sorted by global unlock rate\n" << std::endl;
 			}
 		}
 		
 
 		// https://github.com/haarcuba/cpp-text-table -> worth? nah but best I've found
-		std::cout << "Sorted by global unlock rate\n" << std::endl;
 		std::cout << "API Name \t\tName \t\tDescription \t\tUnlock rate \t\tUnlocked" << std::endl;
 		std::cout << "--------------------------------------------------------------" << std::endl;
 		for ( Achievement_t& it : achievements )
