@@ -49,6 +49,9 @@ AchievementBoxRow::AchievementBoxRow(const Achievement_t& data)
     set_size_request(-1, 80);
     set_missing();
 
+    // https://developer.gnome.org/Labels/#Labels_in_resizable_windows
+    desc_label->set_line_wrap();
+    desc_label->set_width_chars(1); // Not sure what n_chars is
     title_label->set_markup(ach_title_text);
     more_info_label->set_markup("<b>Additional information</b>");
     more_info_button->set_popover(*popover_menu);
