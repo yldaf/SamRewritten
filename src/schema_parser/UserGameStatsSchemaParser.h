@@ -28,6 +28,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
+#include "../types/StatDefinition.h"
+
 
 class UserGameStatsSchemaParser
 {
@@ -40,11 +43,15 @@ public:
     bool load_user_game_stats_schema();
 
     /**
-     * Simple getter
+     * Simple getters
      */
     std::map<std::string, std::string> get_icon_download_names() const { return m_icon_download_names; };
+    std::vector<StatDefinition> get_stat_definitions() const { return m_stats; };
 private:
     // Mapping between achievement ID and the actual icon name on servers.
     // Icon name is retrieved by the stats schema parser
     std::map<std::string, std::string> m_icon_download_names;
+
+    // Container for app stats
+    std::vector<StatDefinition> m_stats;
 };

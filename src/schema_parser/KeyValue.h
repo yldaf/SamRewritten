@@ -46,8 +46,7 @@ enum class KeyValueType : unsigned char
 
 class KeyValue {
 private:
-    // invalid doesn't map easily to C++,
-    // just use NULL for bad return of [] operator
+    static KeyValue* Invalid;
 
 public:
     std::string name = "<root>";
@@ -62,6 +61,8 @@ public:
 
     std::string as_string(std::string default_value);
     int as_integer(int default_value);
+    float as_float(float default_value);
+    bool as_boolean(bool default_value);
     // Other as_type function can be implemented as needed
     
     static KeyValue* load_as_binary(std::string path);

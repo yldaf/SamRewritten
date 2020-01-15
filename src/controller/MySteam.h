@@ -24,7 +24,17 @@ public:
      * This is not failsafe and may require some tweaking to add 
      * support for your distribution
      */
-    std::string get_steam_install_path();
+    std::string get_steam_install_path() const { return m_steam_install_dir; };
+
+    /**
+     * Returns the absolute path to the runtime folder used by SAM
+     */
+    std::string get_runtime_path() const { return m_runtime_folder; };
+
+    /**
+     * Returns the absolute path to the cache folder used by SAM
+     */
+    std::string get_cache_path() const { return m_cache_folder; };
 
     /**
      * Starts a process that will emulate a steam game with the 
@@ -67,7 +77,7 @@ public:
     /**
      * Makes a list of all achievements for the currently running app
      */
-    void refresh_achievements();
+    void refresh_stats_and_achievements();
 
     /**
      * Get achievements of the launched app
@@ -128,8 +138,10 @@ private:
      */
     void set_special_flags();
 
-    // Absolute path to Steam install dir
+    // Absolute path to some important directories
     std::string m_steam_install_dir;
+    std::string m_cache_folder;
+    std::string m_runtime_folder;
 
     // Current app_id
     AppId_t m_app_id;

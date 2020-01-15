@@ -64,8 +64,7 @@ MyGameSocket::get_achievements() {
 
     m_stats_callback_received = false;
 
-    ISteamUserStats *stats_api = SteamUserStats();
-    if (!stats_api->RequestCurrentStats()) {
+    if (!SteamUserStats()->RequestCurrentStats()) {
         std::cerr << "ERROR: User not logged in, exiting." << std::endl;
         zenity("Please login to Steam before using SamRewritten. If this is the case, please report it with a Github issue.");
         exit(EXIT_FAILURE);
@@ -142,7 +141,7 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
             ISteamUserStats *stats_api = SteamUserStats();
 
             // ==============================
-            // RETRIEVE IDS
+            // RETRIEVE ACHIEVEMENTS
             // ==============================
             const unsigned num_ach = stats_api->GetNumAchievements();
 
@@ -165,6 +164,10 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                 stats_api->GetAchievement(pchName, &(m_achievement_list[i].achieved));
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute(pchName, "hidden" ), "0");
             }
+
+            // ============================
+            // RETRIEVE STATS
+            // ============================
 
         } else {
             std::cerr << "Received stats for the game, but an error occurrred." << std::endl;

@@ -12,6 +12,24 @@
 #include <bits/stdc++.h>
 
 MySteam::MySteam() {
+    // Cache folder
+    if (getenv("XDG_CACHE_HOME")) {
+        m_cache_folder = std::string(getenv("XDG_CACHE_HOME")) + "/SamRewritten";
+    } else {
+        m_cache_folder = std::string(getenv("HOME")) + "/.cache/SamRewritten";
+    }
+    mkdir_default(m_cache_folder.c_str());
+
+    // Runtime folder
+    if (getenv("XDG_RUNTIME_DIR")) {
+        m_runtime_folder = std::string(getenv("XDG_RUNTIME_DIR")) + "/SamRewritten";
+        mkdir_default(m_runtime_folder.c_str());
+    } else {
+        std::cerr << "XDG_RUNTIME_DIR is not set! Your distribution is improper... falling back to cache dir" << std::endl;
+        m_runtime_folder = m_cache_folder;
+    }
+
+    // Steam folder
     std::string data_home_path;
     if (getenv("XDG_DATA_HOME") != NULL) {
         data_home_path = getenv("XDG_DATA_HOME");
@@ -135,16 +153,6 @@ MySteam::refresh_owned_apps() {
 // => refresh_owned_apps
 
 /**
- * Tries to locate the steam folder in multiple locations,
- * which is not a failsafe implementation.
- */
-std::string
-MySteam::get_steam_install_path() {
-    return m_steam_install_dir;
-}
-// => get_steam_install_path
-
-/**
  * Reminder that download_app_icon does check if the file is 
  * already there before attempting to download from the web.
  */
@@ -163,7 +171,7 @@ MySteam::refresh_achievement_icon(std::string id, std::string icon_download_name
 // => refresh_achievement_icon
 
 void
-MySteam::refresh_achievements() {
+MySteam::refresh_stats_and_achievements() {
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Connection to game is broken" << std::endl;

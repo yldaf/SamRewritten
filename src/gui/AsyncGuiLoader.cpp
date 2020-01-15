@@ -23,7 +23,7 @@ AsyncGuiLoader::load_achievements_idle()
 {
     if (m_achievement_idle_data.state == ACH_STATE_STARTED) {
         g_perfmon->log("Starting achievement retrieval");
-        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_achievements();});
+        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_stats_and_achievements();});
         m_achievement_idle_data.state = ACH_STATE_WAITING_FOR_ACHIEVEMENTS;
         return G_SOURCE_CONTINUE;
     }
@@ -34,7 +34,7 @@ AsyncGuiLoader::load_achievements_idle()
 
             // Fire off the schema parsing now.
             // TODO: figure out if all the icons are already there and skip parsing schema
-            m_schema_parser_future = std::async(std::launch::async, [this]{return m_schema_parser.load_user_game_stats_schema();});
+            m_schema_parser_future = std::async(std::launch::async, [this]{return g_schema_parser->load_user_game_stats_schema();});
             m_achievement_idle_data.state = ACH_STATE_LOADING_GUI;
         }
         return G_SOURCE_CONTINUE;
@@ -103,7 +103,7 @@ AsyncGuiLoader::load_achievements_idle()
         if ( !done_starting_downloads && (m_concurrent_icon_downloads < MAX_CONCURRENT_ICON_DOWNLOADS))  {
             // Fire off a new download thread
             std::string id = g_steam->get_achievements()[m_achievement_idle_data.current_item].id;
-            std::string icon_download_name = m_schema_parser.get_icon_download_names()[id];
+            std::string icon_download_name = g_schema_parser->get_icon_download_names()[id];
 
             // Assuming it returns empty string on failing to lookup
             if (icon_download_name.empty()) {

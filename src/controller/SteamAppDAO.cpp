@@ -46,7 +46,7 @@ SteamAppDAO::need_to_redownload(const char * file_path) {
             std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
             std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
             std::cerr << "your home folder folder." << std::endl;
-            zenity("An error occurred writing the cache files. Try deleting the cache folder (" + std::string(g_cache_folder) + ") and make sure you have enough permissions to write to it.");
+            zenity("An error occurred writing the cache files. Try deleting the cache folder (" + g_steam->get_cache_path() + ") and make sure you have enough permissions to write to it.");
             exit(EXIT_FAILURE);
         }
     }
@@ -77,22 +77,23 @@ SteamAppDAO::update_name_database() {
 
     static const char* file_url[2];
     static const char* local_file_name[2];
+    const char* cache_folder = g_steam->get_cache_path().c_str();
     int file_count = 0;
     
     if (retrieval_strategy == 1) {
         file_url[0] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_achievements_list.json";
-        local_file_name[0] = concat(g_cache_folder, "/game_list.json");
+        local_file_name[0] = concat(cache_folder, "/game_list.json");
         file_count = 1;
     } else if (retrieval_strategy == 2) {
         // need to download 2 files for this one
         file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
-        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        local_file_name[0] = concat(cache_folder, "/app_names");
         file_url[1] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/not_games.json";
-        local_file_name[1] = concat(g_cache_folder, "/not_games.json");
+        local_file_name[1] = concat(cache_folder, "/not_games.json");
         file_count = 2;
     } else if (retrieval_strategy == 3) {
         file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
-        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        local_file_name[0] = concat(cache_folder, "/app_names");
         file_count = 1;
     }
 
@@ -132,8 +133,9 @@ SteamAppDAO::get_app_name(AppId_t app_id) {
 
 void 
 SteamAppDAO::download_app_icon(AppId_t app_id) {
-    const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
-    const std::string local_path = get_app_icon_path(app_id);
+    const std::string cache_folder = g_steam->get_cache_path();
+    const std::string local_folder(cache_folder + "/" + std::to_string(app_id));
+    const std::string local_path = get_app_icon_path(cache_folder, app_id);
     const std::string url("http://cdn.akamai.steamstatic.com/steam/apps/" + std::to_string(app_id) + "/header_292x136.jpg");
 
     mkdir_default(local_folder.c_str());
@@ -142,8 +144,9 @@ SteamAppDAO::download_app_icon(AppId_t app_id) {
 
 void
 SteamAppDAO::download_achievement_icon(AppId_t app_id, std::string id, std::string icon_download_name) {
-    const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
-    const std::string local_path = get_achievement_icon_path(app_id, id);
+    const std::string cache_folder = g_steam->get_cache_path();
+    const std::string local_folder(cache_folder + "/" + std::to_string(app_id));
+    const std::string local_path = get_achievement_icon_path(cache_folder, app_id, id);
     const std::string url("http://media.steamcommunity.com/steamcommunity/public/images/apps/" + std::to_string(app_id) + "/" + icon_download_name); 
 
     mkdir_default(local_folder.c_str());

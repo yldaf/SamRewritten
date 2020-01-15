@@ -284,7 +284,7 @@ MainPickerWindow::confirm_game_list() {
  */
 void
 MainPickerWindow::refresh_app_icon(AppId_t app_id) {
-    const std::string path = get_app_icon_path(app_id);
+    const std::string path = get_app_icon_path(g_steam->get_cache_path(), app_id);
 
     for ( AppBoxRow* i : m_app_list_rows )
     {
@@ -303,9 +303,8 @@ MainPickerWindow::refresh_app_icon(AppId_t app_id) {
  */
 void 
 MainPickerWindow::refresh_achievement_icon(AppId_t app_id, std::string id) {
-    const std::string path = get_achievement_icon_path(app_id, id);
+    const std::string path = get_achievement_icon_path(g_steam->get_cache_path(), app_id, id);
 
-    // replace_icon(path, m_achievement_list_rows[id]->get_main_widget(), 64, 64);
     for ( AchievementBoxRow* i : m_achievement_list_rows )
     {
         if ( i->get_achievement().id == id ) {

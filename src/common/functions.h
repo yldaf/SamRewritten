@@ -47,12 +47,12 @@ void mkdir_default(const char *pathname);
 /**
  * Generate path to given app icon
  */
-std::string get_app_icon_path(AppId_t app_id);
+std::string get_app_icon_path(std::string cache_folder, AppId_t app_id);
 
 /**
  * Generate path to given app achievement icon
  */
-std::string get_achievement_icon_path(AppId_t app_id, std::string id);
+std::string get_achievement_icon_path(std::string cache_folder, AppId_t app_id, std::string id);
 
 /**
  * Escape html characters inline a string.

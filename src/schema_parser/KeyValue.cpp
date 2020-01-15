@@ -28,6 +28,9 @@
 #include "KeyValue.h"
 #include <strings.h>
 
+// https://stackoverflow.com/questions/8267847/why-should-i-initialize-static-class-variables-in-c
+KeyValue* KeyValue::Invalid = new KeyValue();
+
 // Stream helper functions
 
 int8_t read_value_u8(std::istream * is) {
@@ -74,11 +77,11 @@ std::string read_string(std::istream * is) {
     return std::string(buf);
 }
 
-// returns NULL if no children or children not found
+// returns KeyValue::Invalid if no children or children not found
 //KeyValue* KeyValue::operator[](std::string key) {
 KeyValue* KeyValue::get(std::string key) {
     if (this->valid == false) {
-        return NULL;
+        return KeyValue::Invalid;
     }
 
     KeyValue* select_child = NULL;
@@ -88,7 +91,8 @@ KeyValue* KeyValue::get(std::string key) {
             select_child = child;
         }
     }
-    return select_child;
+
+    return select_child ?: KeyValue::Invalid;
 }
 
 KeyValue* KeyValue::get2(std::string key1, std::string key2) {
@@ -139,10 +143,9 @@ int KeyValue::as_integer(int default_value) {
         case KeyValueType::String:
         case KeyValueType::WideString:
         {
-            // eh exception handling
             try {
                 return std::stoi(std::any_cast<std::string>(this->value));
-            } catch (std::exception& e) {
+            } catch (std::exception&) {
                 return default_value;
             }
         }
@@ -163,17 +166,88 @@ int KeyValue::as_integer(int default_value) {
             break;
         }
 
-        case KeyValueType::Color:
-        case KeyValueType::Pointer:
+        default: {}
+    }
+
+    return default_value;
+}
+
+float KeyValue::as_float(float default_value) {
+    if (this->valid == false) {
+        return default_value;
+    }
+
+    if (!this->value.has_value()) { // This check is not part of original C# SAM
+        return default_value;
+    }
+
+    switch (this->type) {
+        case KeyValueType::String:
+        case KeyValueType::WideString:
         {
-            break;
+            try {
+                return std::stof(std::any_cast<std::string>(this->value));
+            } catch (std::exception&) {
+                return default_value;
+            }
         }
 
-        default:
+        case KeyValueType::Int32:
         {
-            std::cout << "Invalid type referenced in stats parser!" << std::endl;
-            return default_value;
+            return std::any_cast<int32_t>(this->value);
         }
+
+        case KeyValueType::UInt64:
+        {
+            return std::any_cast<uint64_t>(this->value);
+        }
+
+        case KeyValueType::Float32:
+        {
+            return std::any_cast<float>(this->value);
+        }
+
+        default: {}
+    }
+
+    return default_value;
+}
+
+bool KeyValue::as_boolean(bool default_value) {
+    if (this->valid == false)
+    {
+        return default_value;
+    }
+
+    switch (this->type)
+    {
+        case KeyValueType::String:
+        case KeyValueType::WideString:
+        {
+            try {
+                int pr = std::stoi(std::any_cast<std::string>(this->value));
+                return pr != 0;
+            } catch (std::exception&) {
+                return default_value;
+            }
+        }
+        
+        case KeyValueType::Int32:
+        {
+            return std::any_cast<int32_t>(this->value) != 0;
+        }
+
+        case KeyValueType::UInt64:
+        {
+            return std::any_cast<uint64_t>(this->value) != 0;
+        }
+
+        case KeyValueType::Float32:
+        {
+            return std::any_cast<float>(this->value) != 0;
+        }
+
+        default: {}
     }
 
     return default_value;

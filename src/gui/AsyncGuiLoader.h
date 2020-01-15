@@ -88,6 +88,5 @@ private:
     IdleData m_app_idle_data;
     IdleData m_achievement_idle_data;
 
-    UserGameStatsSchemaParser m_schema_parser;
     MainPickerWindow* m_window;
 };
