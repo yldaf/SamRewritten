@@ -30,6 +30,10 @@ struct StatDefinition
     std::string DisplayName;
     int Permission;
     UserStatType type;
+
+    // https://stackoverflow.com/questions/36736167/c-cast-struct-dynamically-based-on-subtype
+    // We need this or any other virtual member to make Base polymorphic
+    virtual ~StatDefinition () { }
 };
 
 typedef struct StatDefinition StatDefinition;

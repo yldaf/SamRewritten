@@ -9,13 +9,24 @@
 // Mirroring structure of Achievement_t, should be combined with that
 #define SAM_ACTION_STR "SAM_ACTION"
 #define ACHIEVEMENT_LIST_STR "ACHIEVEMENT_LIST"
+#define STAT_LIST_STR "STAT_LIST"
 #define NAME_STR "NAME"
 #define DESC_STR "DESC"
+#define ICON_STR "ICON"
 #define ID_STR "ID"
 #define RATE_STR "RATE"
 #define ACHIEVED_STR "ACHIEVED"
 #define HIDDEN_STR "HIDDEN"
 
+// Mirroring structure of StatValue_t, should be combined with that
+#define STAT_TYPE_STR "STAT_TYPE"
+#define STAT_ID_STR "STAT_ID"
+#define STAT_DISPLAY_STR "STAT_DISPLAY"
+#define STAT_VALUE_STR "STAT_VALUE"
+#define STAT_INCREMENTONLY_STR "STAT_INCREMENTONLY"
+#define STAT_PERMISSION_STR "STAT_PERMISSION"
+
+// Misc
 #define SAM_ACK_STR "SAM_ACK"
 
 // TODO: Add SAM_START as an action to this too?
@@ -66,6 +77,7 @@ Server --> Client
             .
             .
         ]
+        // THERE MUST BE STATS HERE TOO TODO
 }
 
 # 2. Lock or unlock an achievement for active game

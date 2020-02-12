@@ -16,6 +16,7 @@ all: ${CURDIR}/bin/samrewritten
 	@echo -e "==== Nothing left to do."
 
 dev: CXXFLAGS += -g
+dev: CXXFLAGS += -DDEBUG_CERR
 dev: ${CURDIR}/bin/samrewritten
 
 clean:

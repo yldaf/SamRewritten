@@ -3,9 +3,6 @@
 #include "../globals.h"
 #include "../common/cxxopts.hpp"
 
-// REMOOOVE
-#include "../schema_parser/UserGameStatsSchemaParser.h"
-
 #include <string>
 #include <iostream>
 #include <csignal>
@@ -60,15 +57,6 @@ bool go_cli_mode(int argc, char* argv[]) {
 	bool cli = false;
 	AppId_t app = 0;
 
-	UserGameStatsSchemaParser parser;
-	parser.load_user_game_stats_schema();
-
-	for ( auto def : parser.get_stat_definitions() )
-	{
-		std::cout << def.Id << std::endl;
-	}
-	return true;
-
 	if (result.count("help"))
     {
 		std::cout << options.help() << std::endl;
@@ -118,7 +106,14 @@ bool go_cli_mode(int argc, char* argv[]) {
 		g_steam->launch_app(app);
 		g_steam->refresh_stats_and_achievements();
 		auto achievements = g_steam->get_achievements();
+		auto stats = g_steam->get_stats();
 		g_steam->quit_game();
+
+		for (auto stat : stats )
+		{
+			std::cout << stat.id << std::endl;
+		}
+		
 		
 		if (result.count("sort") > 0)
 		{

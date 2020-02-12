@@ -23,8 +23,6 @@ MySteam* g_steam = nullptr;
 MainPickerWindow* g_main_gui = nullptr;
 MySteamClient* g_steamclient = nullptr;
 PerfMon* g_perfmon = nullptr;
-UserGameStatsSchemaParser* g_schema_parser = nullptr;
-
 
 /**************************************
  * Main entry point
@@ -41,7 +39,6 @@ main(int argc, char *argv[])
     g_perfmon = new PerfMon();
     g_steam = MySteam::get_instance();
     g_steamclient = new MySteamClient();
-    g_schema_parser = new UserGameStatsSchemaParser();
     g_perfmon->log("Globals initialized.");
 
     // Check for command-line options, which may prevent showing the GUI

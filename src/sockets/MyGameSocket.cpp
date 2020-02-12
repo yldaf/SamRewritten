@@ -2,11 +2,16 @@
 #include <yajl/yajl_tree.h>
 #include "MyGameSocket.h"
 #include "../types/Actions.h"
+#include "../types/IntegerStatDefinition.h"
+#include "../types/FloatStatDefinition.h"
 #include "../json/ProcessedGameServerRequest.h"
 #include "../json/yajlHelpers.h"
 #include "../globals.h"
 #include "../common/PerfMon.h"
 #include "../common/functions.h"
+#include "../schema_parser/UserGameStatsSchemaParser.h"
+
+#include "../controller/MySteam.h"
 
 MyGameSocket::MyGameSocket(AppId_t appid) :
 MyServerSocket(appid),
@@ -30,7 +35,8 @@ MyGameSocket::process_request(std::string request, bool& quit) {
 
     switch (r.getAction()) {
         case GET_ACHIEVEMENTS:
-            encode_achievements(handle, get_achievements());  // Write achievements to handle
+            populate_stats_and_achievements();
+            encode_achievements(handle, get_achievements(), get_stats());  // Write achievements to handle
             break;
 
         case STORE_ACHIEVEMENTS:
@@ -56,12 +62,15 @@ MyGameSocket::process_request(std::string request, bool& quit) {
     ret = std::string((const char*)buf);
     yajl_gen_free(handle);
 
+    #ifdef DEBUG_CERR
+    std::cerr << "--> Sending buffer " << ret << std::endl;
+    #endif
+
     return ret;
 }
 
-std::vector<Achievement_t>
-MyGameSocket::get_achievements() {
-
+void
+MyGameSocket::populate_stats_and_achievements() {
     m_stats_callback_received = false;
 
     if (!SteamUserStats()->RequestCurrentStats()) {
@@ -78,16 +87,14 @@ MyGameSocket::get_achievements() {
     if (!get_global_stats())
     {
         std::cerr << "An error occurred getting global stats." << std::endl;
-        return m_achievement_list;
+        return;
     }
 
     if (!get_global_achievements_stats())
     {
         std::cerr << "An error occurred getting global achievements stats." << std::endl;
-        return m_achievement_list;
+        return;
     }
-
-    return m_achievement_list;
 }
 
 bool
@@ -134,11 +141,13 @@ MyGameSocket::get_global_achievements_stats() {
 void
 MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
     m_achievement_list.clear();
+    m_stats_list.clear();
 
     // Check if we received the values for the correct app
     if (SteamUtils()->GetAppID() == callback->m_nGameID) {
         if ( k_EResultOK == callback->m_eResult ) {
             ISteamUserStats *stats_api = SteamUserStats();
+            m_schema_parser.load_user_game_stats_schema();
 
             // ==============================
             // RETRIEVE ACHIEVEMENTS
@@ -152,22 +161,82 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
             m_achievement_list.resize(num_ach);
 
             for (unsigned i = 0; i < num_ach ; i++) {
+                const char * pchName = stats_api->GetAchievementName(i);
 
-                m_achievement_list[i].id   = stats_api->GetAchievementName(i);
-
-                const char * pchName = m_achievement_list[i].id.c_str();
-
+                m_achievement_list[i].id   = pchName;
                 m_achievement_list[i].name = stats_api->GetAchievementDisplayAttribute(pchName, "name");
                 m_achievement_list[i].desc = stats_api->GetAchievementDisplayAttribute(pchName, "desc");
 
+                // Value set in OnGlobalAchievementPercentagesReceived
                 m_achievement_list[i].global_achieved_rate = 0;
                 stats_api->GetAchievement(pchName, &(m_achievement_list[i].achieved));
                 m_achievement_list[i].hidden = (bool)strcmp(stats_api->GetAchievementDisplayAttribute(pchName, "hidden" ), "0");
+                m_achievement_list[i].icon_name = m_schema_parser.get_icon_download_names()[m_achievement_list[i].id];
             }
 
             // ============================
             // RETRIEVE STATS
             // ============================
+
+            for ( auto def : m_schema_parser.get_stat_definitions() )
+            {
+                StatValue_t sv;
+
+                if ( def->type == UserStatType::Integer )
+                {
+                    IntegerStatDefinition* cast = dynamic_cast<IntegerStatDefinition*>(def);
+
+                    if (cast == NULL) {
+                        std::cerr << "Cast error to int for " << def->Id << ", please report to Github!" << std::endl;
+                        continue;
+                    }
+
+                    int value;
+                    bool success = stats_api->GetStat(def->Id.c_str(), &value);
+                    if ( !success )
+                    {
+                        std::cerr << "Unable to get int stat " << def->Id << std::endl;
+                        continue;
+                    }
+
+                    sv.type = cast->type;
+                    sv.display_name = cast->DisplayName;
+                    sv.id = cast->Id;
+                    sv.incrementonly = cast->IncrementOnly;
+                    sv.original_value = value;
+                    sv.value = value;
+                    sv.permission = cast->Permission;
+
+                    m_stats_list.push_back(sv);
+                }
+                else if ( def->type == UserStatType::Float )
+                {
+                    FloatStatDefinition* cast = dynamic_cast<FloatStatDefinition*>(def);
+
+                    if (cast == NULL) {
+                        std::cerr << "Cast error to float for " << def->Id << ", please report to Github!" << std::endl;
+                        continue;
+                    }
+
+                    float value;
+                    bool success = stats_api->GetStat(def->Id.c_str(), &value);
+                    if ( !success )
+                    {
+                        std::cerr << "Unable to get float stat " << def->Id << std::endl;
+                        continue;
+                    }
+
+                    sv.type = cast->type;
+                    sv.display_name = cast->DisplayName;
+                    sv.id = cast->Id;
+                    sv.incrementonly = cast->IncrementOnly;
+                    sv.original_value = value;
+                    sv.value = value;
+                    sv.permission = cast->Permission;
+
+                    m_stats_list.push_back(sv);
+                }
+            }
 
         } else {
             std::cerr << "Received stats for the game, but an error occurrred." << std::endl;

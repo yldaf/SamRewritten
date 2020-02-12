@@ -25,6 +25,7 @@
 // To comply with copyright, the above license is included.
 
 #include <strings.h>
+#include <memory>
 
 #include "UserGameStatsSchemaParser.h"
 #include "KeyValue.h"
@@ -39,9 +40,9 @@
 bool 
 UserGameStatsSchemaParser::load_user_game_stats_schema() {
     m_icon_download_names.clear();
-    m_stats.clear();
+    clear_stat_definitions();
 
-    std::string appid_string = "730"; std::to_string(g_steam->get_current_appid());
+    std::string appid_string = std::to_string(g_steam->get_current_appid());
     std::string schema_file = g_steam->get_steam_install_path() + "/appcache/stats/UserGameStatsSchema_" + appid_string + ".bin";
     KeyValue* kv = KeyValue::load_as_binary(schema_file);
     if (kv == NULL) {
@@ -79,16 +80,16 @@ UserGameStatsSchemaParser::load_user_game_stats_schema() {
 
             case UserStatType::Integer:
             {
-                IntegerStatDefinition def;
-                def.type = UserStatType::Integer;
-                def.Id = stat->get("name")->as_string("");
-                def.DisplayName = stat->get2("display", "name")->as_string("");
-                def.MinValue = stat->get("min")->as_integer(0);
-                def.MaxValue = stat->get("max")->as_integer(0);
-                def.MaxChange = stat->get("maxchange")->as_integer(0);
-                def.IncrementOnly = stat->get("incrementonly")->as_boolean(false);
-                def.DefaultValue = stat->get("default")->as_integer(0);
-                def.Permission = stat->get("permission")->as_integer(0);
+                IntegerStatDefinition* def = new IntegerStatDefinition;
+                def->type = UserStatType::Integer;
+                def->Id = stat->get("name")->as_string("");
+                def->DisplayName = stat->get2("display", "name")->as_string("");
+                def->MinValue = stat->get("min")->as_integer(0);
+                def->MaxValue = stat->get("max")->as_integer(0);
+                def->MaxChange = stat->get("maxchange")->as_integer(0);
+                def->IncrementOnly = stat->get("incrementonly")->as_boolean(false);
+                def->DefaultValue = stat->get("default")->as_integer(0);
+                def->Permission = stat->get("permission")->as_integer(0);
                 m_stats.push_back(def);
                 break;
             }
@@ -96,16 +97,16 @@ UserGameStatsSchemaParser::load_user_game_stats_schema() {
             case UserStatType::Float:
             case UserStatType::AverageRate:
             {
-                FloatStatDefinition def;
-                def.type = UserStatType::Float;
-                def.Id = stat->get("name")->as_string("");
-                def.DisplayName = stat->get2("display", "name")->as_string("");
-                def.MinValue = stat->get("min")->as_float(0);
-                def.MaxValue = stat->get("max")->as_float(0);
-                def.MaxChange = stat->get("maxchange")->as_float(0);
-                def.IncrementOnly = stat->get("incrementonly")->as_boolean(false);
-                def.DefaultValue = stat->get("default")->as_float(0);
-                def.Permission = stat->get("permission")->as_integer(0);
+                FloatStatDefinition* def = new FloatStatDefinition;
+                def->type = UserStatType::Float;
+                def->Id = stat->get("name")->as_string("");
+                def->DisplayName = stat->get2("display", "name")->as_string("");
+                def->MinValue = stat->get("min")->as_float(0);
+                def->MaxValue = stat->get("max")->as_float(0);
+                def->MaxChange = stat->get("maxchange")->as_float(0);
+                def->IncrementOnly = stat->get("incrementonly")->as_boolean(false);
+                def->DefaultValue = stat->get("default")->as_float(0);
+                def->Permission = stat->get("permission")->as_integer(0);
                 m_stats.push_back(def);
                 break;
             }
@@ -161,4 +162,13 @@ UserGameStatsSchemaParser::load_user_game_stats_schema() {
 
     delete kv;
     return true;
+}
+
+void
+UserGameStatsSchemaParser::clear_stat_definitions() {
+    for (auto p : m_stats )
+    {
+        delete p;
+    }
+    m_stats.clear();
 }

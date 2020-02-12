@@ -254,8 +254,13 @@ bool KeyValue::as_boolean(bool default_value) {
 }
 
 KeyValue* KeyValue::load_as_binary(std::string path) {
+    #ifdef DEBUG_CERR
+    std::cerr << "Parsing schema file " << path << std::endl;
+    #endif
+
     std::filebuf fb;
     if (!fb.open(path, std::ios::in)) {
+        std::cerr << "Unable to open schema file: " << path << std::endl;
         return NULL;
     }
 

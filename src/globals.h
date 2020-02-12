@@ -4,7 +4,6 @@ class MySteam;
 class MainPickerWindow;
 class MySteamClient;
 class PerfMon;
-class UserGameStatsSchemaParser;
 
 // Reason for the globals is that it's easier to access them in GTK callbacks,
 // or the data they hold may be needed both by the parent process and its children.
@@ -32,8 +31,3 @@ extern MainPickerWindow *g_main_gui;
  * A basic performance monitor. Used to log stuff along with process info.
  */
 extern PerfMon *g_perfmon;
-
-/**
- * The schema parser holds data about the achievement icons, and stat definitions.
- */
-extern UserGameStatsSchemaParser *g_schema_parser;

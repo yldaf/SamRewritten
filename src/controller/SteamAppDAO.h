@@ -58,11 +58,11 @@ private:
     /**
      * Check if a given file exists and if so, if it's too old
      */
-    static bool need_to_redownload(const char * file_path);
+    static bool need_to_redownload(const std::string file_path);
     
     /**
      * Parse the app names from a given file and store to a give app names map
      */
-    static void parse_app_names(const char * file_path, std::map<AppId_t, std::string>* app_names);
+    static void parse_app_names(const std::string file_path, std::map<AppId_t, std::string>* app_names);
     std::map<AppId_t, std::string> m_app_names;
 };

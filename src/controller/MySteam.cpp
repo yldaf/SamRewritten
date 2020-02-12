@@ -92,14 +92,16 @@ MySteam::launch_app(AppId_t appID) {
         return false;
     }
     
+    // Set the appID BEFORE forking, otherwise the child won't be able to access it
+    m_app_id = appID;
     m_ipc_socket = m_server_manager.quick_server_create(appID);
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Failed to get connection to game" << std::endl;
+        m_app_id = 0;
         return false;
     }
 
-    m_app_id = appID;
     return true;
 }
 // => launch_app
@@ -165,8 +167,7 @@ MySteam::refresh_app_icon(AppId_t app_id) {
 
 void
 MySteam::refresh_achievement_icon(std::string id, std::string icon_download_name) {
-    SteamAppDAO *appDAO = SteamAppDAO::get_instance();
-    appDAO->download_achievement_icon(m_app_id, id, icon_download_name);
+    SteamAppDAO::get_instance()->download_achievement_icon(m_app_id, id, icon_download_name);
 }
 // => refresh_achievement_icon
 
@@ -186,6 +187,7 @@ MySteam::refresh_stats_and_achievements() {
     }
 
     m_achievements = decode_achievements(response);
+    m_stats = decode_stats(response);
 
     set_special_flags();
 }
