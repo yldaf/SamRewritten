@@ -255,7 +255,10 @@ MyGameSocket::OnGlobalStatsReceived(GlobalStatsReceived_t *callback, bool bIOFai
 		std::cerr << "GlobalStatsReceived_t failed! Enum: " << callback->m_eResult << std::endl;
 	}
 
+    #ifdef DEBUG_CERR
     std::cout << "Got stats, maybe I can do cool stuff with them, gotta check." << std::endl;
+    #endif
+    
     m_global_callback_received = true;
 }
 

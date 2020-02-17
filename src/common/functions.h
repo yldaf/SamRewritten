@@ -5,6 +5,13 @@
 #include "../../steam/steam_api.h"
 
 /**
+ * Stats hold a value of type any, but can be either int or float.
+ * This macro casts the value to the right type.
+ * The cast types are the ones used by YAJL
+ */
+#define GET_STAT_VALUE(stat) (stat.type == UserStatType::Integer ? std::any_cast<long long>(stat.value) : std::any_cast<double>(stat.value))
+
+/**
  * Wrapper for fork()
  */
 pid_t create_process();

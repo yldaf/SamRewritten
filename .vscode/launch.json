@@ -10,7 +10,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/samrewritten",
-            "args": ["206690", "--ls"],
+            "args": ["730", "--ls"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [

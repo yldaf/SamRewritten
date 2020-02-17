@@ -2,6 +2,7 @@
 #include "../controller/MySteam.h"
 #include "../globals.h"
 #include "../common/cxxopts.hpp"
+#include "../common/functions.h"
 
 #include <string>
 #include <iostream>
@@ -108,12 +109,6 @@ bool go_cli_mode(int argc, char* argv[]) {
 		auto achievements = g_steam->get_achievements();
 		auto stats = g_steam->get_stats();
 		g_steam->quit_game();
-
-		for (auto stat : stats )
-		{
-			std::cout << stat.id << std::endl;
-		}
-		
 		
 		if (result.count("sort") > 0)
 		{
@@ -128,7 +123,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		
 
 		// https://github.com/haarcuba/cpp-text-table -> worth? nah but best I've found
-		std::cout << "API Name \t\tName \t\tDescription \t\tUnlock rate \t\tUnlocked" << std::endl;
+		std::cout << "API Name \t\tName \t\tDescription \t\tUnlock rate \t\tUnlocked\n";
 		std::cout << "--------------------------------------------------------------" << std::endl;
 		for ( Achievement_t& it : achievements )
 		{
@@ -139,6 +134,28 @@ bool go_cli_mode(int argc, char* argv[]) {
 				<< it.global_achieved_rate << "% \t"
 				<< (it.achieved ? "✔️" : "❌") << std::endl;
 		}
+
+		std::cout << "\n";
+
+		if ( stats.size() == 0 )
+		{
+			std::cout << "No stats found for this app.." << std::endl;
+		}
+		else
+		{
+			std::cout << "\nSTATS\n";
+			std::cout << "API Name \t\tValue \t\t Increment Only\n";
+			std::cout << "----------------------------------------" << std::endl;
+			for (auto stat : stats )
+			{
+				std::cout 
+					<< stat.id << " \t"
+					<< GET_STAT_VALUE(stat) << " \t"
+					<< (stat.incrementonly ? "Yes" : "No")
+					<< std::endl;
+			}
+		}
+		
 	}
 
 	if (result.count("unlock") > 0)

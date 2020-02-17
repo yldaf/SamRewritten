@@ -121,7 +121,7 @@ encode_stat(yajl_gen handle, StatValue_t stat) {
     }
     else if ( stat.type == UserStatType::Float )
     {
-        int value = std::any_cast<float>(stat.value);
+        float value = std::any_cast<float>(stat.value);
 
         yajl_gen_string_wrap(handle, STAT_VALUE_STR);
         if (yajl_gen_double(handle, value) != yajl_gen_status_ok) {
