@@ -164,9 +164,16 @@ SteamAppDAO::parse_app_names(const std::string file_path, std::map<AppId_t, std:
     yajl_val node;
     char errbuf[1024];
     std::string file_contents;
+    std::ifstream stream(file_path);
+
+    if (!stream.is_open())
+    {
+        std::cerr << "SteamAppDAO::parse_app_names: Unable to open file " << file_path << std::endl;
+        zenity();
+        exit(EXIT_FAILURE);
+    }
 
     try {
-        std::ifstream stream(file_path);
         std::stringstream buffer;
         buffer << stream.rdbuf();
         file_contents = buffer.str();
@@ -175,6 +182,8 @@ SteamAppDAO::parse_app_names(const std::string file_path, std::map<AppId_t, std:
         zenity();
         exit(EXIT_FAILURE);
     }
+
+    stream.close();
 
     /* we have the whole config file in memory. let's parse it ... */
     node = yajl_tree_parse(file_contents.c_str(), errbuf, sizeof(errbuf));

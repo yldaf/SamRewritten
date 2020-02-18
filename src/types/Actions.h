@@ -76,8 +76,21 @@ Server --> Client
             .
             .
             .
+        ],
+    STAT_LIST_STR:
+        [
+            {
+                STAT_DISPLAY_STR: "desc",
+                STAT_ID_STR: "ID",
+                STAT_INCREMENTONLY_STR: true/false,
+                STAT_PERMISSION_STR: <int value>,
+                STAT_TYPE_STR: <int cast of UserStatType>,
+                STAT_VALUE_STR: <int or float>
+            },
+            .
+            .
+            .
         ]
-        // THERE MUST BE STATS HERE TOO TODO
 }
 
 # 2. Lock or unlock an achievement for active game
