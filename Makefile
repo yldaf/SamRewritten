@@ -15,8 +15,7 @@ all: ${CURDIR}/bin/samrewritten
 	@echo -e "==== Use '\033[1mmake clean\033[0m' to remove object files"
 	@echo -e "==== Nothing left to do."
 
-dev: CXXFLAGS += -g
-dev: CXXFLAGS += -DDEBUG_CERR
+dev: CXXFLAGS += -g -DDEBUG_CERR
 dev: ${CURDIR}/bin/samrewritten
 
 clean:

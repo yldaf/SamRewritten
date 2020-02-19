@@ -45,7 +45,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		("h,help", "Show CLI help.")
 		("a,app", "Set which AppId you want to use. Same as using positional 'AppId'", cxxopts::value<AppId_t>())
 		("i,idle", "Set your Steam profile as 'ingame'. Ctrl+c to stop.")
-		("ls", "Display stats (TODO) and achievements for selected app.")
+		("ls", "Display achievements and stats for selected app.")
 		("sort", "Sort option for --ls. You can leave empty or set to 'unlock_rate'", cxxopts::value<std::string>())
 		("unlock", "Unlock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
 		("lock", "Lock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())

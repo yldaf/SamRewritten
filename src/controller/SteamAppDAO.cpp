@@ -166,8 +166,7 @@ SteamAppDAO::parse_app_names(const std::string file_path, std::map<AppId_t, std:
     std::string file_contents;
     std::ifstream stream(file_path);
 
-    if (!stream.is_open())
-    {
+    if ( !stream.is_open() ) {
         std::cerr << "SteamAppDAO::parse_app_names: Unable to open file " << file_path << std::endl;
         zenity();
         exit(EXIT_FAILURE);
@@ -183,6 +182,7 @@ SteamAppDAO::parse_app_names(const std::string file_path, std::map<AppId_t, std:
         exit(EXIT_FAILURE);
     }
 
+    // Stream is RAII, but we close it here since we won't use it after
     stream.close();
 
     /* we have the whole config file in memory. let's parse it ... */

@@ -9,8 +9,9 @@
 #include <future>
 #include <glibmm-2.4/glibmm.h>
 
-// TODO use #ifndef __VALGRIND_H or similar
-// #include <valgrind/valgrind.h>
+#ifdef DEBUG_CERR
+#include <valgrind/valgrind.h>
+#endif
 
 AsyncGuiLoader::AsyncGuiLoader(MainPickerWindow* window)
 : m_window(window)
@@ -40,8 +41,6 @@ AsyncGuiLoader::load_achievements_idle()
             #endif
 
             // Fire off the schema parsing now.
-            // TODO: figure out if all the icons are already there and skip parsing schema
-            // TODO: We want schema parsing to be done serverside now, and pass the result via IPC
             m_achievement_idle_data.state = ACH_STATE_LOADING_GUI;
         }
         return G_SOURCE_CONTINUE;
@@ -84,8 +83,9 @@ AsyncGuiLoader::load_achievements_idle()
             m_window->show_no_achievements_found_placeholder();
             m_achievement_refresh_lock.unlock();
 
-            // See top of the file
-            // VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+            #ifdef DEBUG_CERR
+            VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+            #endif
 
             return G_SOURCE_REMOVE;
         }
