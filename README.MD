@@ -60,7 +60,7 @@ Usage:
   -a, --app arg     Set which AppId you want to use. Same as using positional
                     'AppId'
   -i, --idle        Set your Steam profile as 'ingame'. Ctrl+c to stop.
-      --ls          Display stats (TODO) and achievements for selected app.
+      --ls          Display achievements and stats for selected app.
       --sort arg    Sort option for --ls. You can leave empty or set to
                     'unlock_rate'
       --unlock arg  Unlock achievements for an AppId. Separate achievement

@@ -27,7 +27,11 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
+#include "../types/StatDefinition.h"
+
 
 class UserGameStatsSchemaParser
 {
@@ -40,11 +44,22 @@ public:
     bool load_user_game_stats_schema();
 
     /**
-     * Simple getter
+     * Simple getters
      */
     std::map<std::string, std::string> get_icon_download_names() const { return m_icon_download_names; };
+    std::vector<StatDefinition*> get_stat_definitions() const { return m_stats; };
+
+    /**
+     * Because stats are pointers, we need to free them before clearing the array
+     * Should I use make_unique instead? Probably
+     */
+    void clear_stat_definitions();
+
 private:
     // Mapping between achievement ID and the actual icon name on servers.
     // Icon name is retrieved by the stats schema parser
     std::map<std::string, std::string> m_icon_download_names;
+
+    // Container for app stats. Pointer for later casts
+    std::vector<StatDefinition*> m_stats;
 };

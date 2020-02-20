@@ -5,6 +5,13 @@
 #include "../../steam/steam_api.h"
 
 /**
+ * Stats hold a value of type any, but can be either int or float.
+ * This macro casts the value to the right type.
+ * The cast types are the ones used by YAJL
+ */
+#define GET_STAT_VALUE(stat) (stat.type == UserStatType::Integer ? std::any_cast<long long>(stat.value) : std::any_cast<double>(stat.value))
+
+/**
  * Wrapper for fork()
  */
 pid_t create_process();
@@ -47,12 +54,12 @@ void mkdir_default(const char *pathname);
 /**
  * Generate path to given app icon
  */
-std::string get_app_icon_path(AppId_t app_id);
+std::string get_app_icon_path(std::string cache_folder, AppId_t app_id);
 
 /**
  * Generate path to given app achievement icon
  */
-std::string get_achievement_icon_path(AppId_t app_id, std::string id);
+std::string get_achievement_icon_path(std::string cache_folder, AppId_t app_id, std::string id);
 
 /**
  * Escape html characters inline a string.

@@ -23,6 +23,15 @@ Downloader::download_file(const std::string& file_url, const std::string& local_
         curl = curl_easy_init();
         if (curl) {
             fp = fopen(local_path.c_str(),"wb");
+
+            if (fp == NULL)
+            {
+                std::cerr << "An error occurred downloading " << file_url  << " and saving it to ";
+                std::cerr << local_path << std::endl;
+                zenity("An error occurred downloading a file. Please report it to the developers!");
+                exit(EXIT_FAILURE);
+            }
+            
             curl_easy_setopt(curl, CURLOPT_URL, file_url.c_str());
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);

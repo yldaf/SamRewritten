@@ -27,7 +27,6 @@ enum {
     ACH_STATE_STARTED,                  /* start state */
     ACH_STATE_WAITING_FOR_ACHIEVEMENTS, /* waiting for child to fetch achievements */
     ACH_STATE_LOADING_GUI,              /* feeding game rows to the model */
-    ACH_STATE_WAITING_FOR_SCHEMA_PARSER,/* waiting for stats schema parser to get icons download names */
     ACH_STATE_DOWNLOADING_ICONS,        /* fire off icon downloads (to be added to the model) */
     ACH_STATE_FINISHED                  /* fin ish state */
 };
@@ -88,6 +87,5 @@ private:
     IdleData m_app_idle_data;
     IdleData m_achievement_idle_data;
 
-    UserGameStatsSchemaParser m_schema_parser;
     MainPickerWindow* m_window;
 };

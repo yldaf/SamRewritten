@@ -2,6 +2,7 @@
 #include "../controller/MySteam.h"
 #include "../globals.h"
 #include "../common/cxxopts.hpp"
+#include "../common/functions.h"
 
 #include <string>
 #include <iostream>
@@ -44,7 +45,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		("h,help", "Show CLI help.")
 		("a,app", "Set which AppId you want to use. Same as using positional 'AppId'", cxxopts::value<AppId_t>())
 		("i,idle", "Set your Steam profile as 'ingame'. Ctrl+c to stop.")
-		("ls", "Display stats (TODO) and achievements for selected app.")
+		("ls", "Display achievements and stats for selected app.")
 		("sort", "Sort option for --ls. You can leave empty or set to 'unlock_rate'", cxxopts::value<std::string>())
 		("unlock", "Unlock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
 		("lock", "Lock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
@@ -104,8 +105,9 @@ bool go_cli_mode(int argc, char* argv[]) {
 		}
 
 		g_steam->launch_app(app);
-		g_steam->refresh_achievements();
+		g_steam->refresh_stats_and_achievements();
 		auto achievements = g_steam->get_achievements();
+		auto stats = g_steam->get_stats();
 		g_steam->quit_game();
 		
 		if (result.count("sort") > 0)
@@ -121,7 +123,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		
 
 		// https://github.com/haarcuba/cpp-text-table -> worth? nah but best I've found
-		std::cout << "API Name \t\tName \t\tDescription \t\tUnlock rate \t\tUnlocked" << std::endl;
+		std::cout << "API Name \t\tName \t\tDescription \t\tUnlock rate \t\tUnlocked\n";
 		std::cout << "--------------------------------------------------------------" << std::endl;
 		for ( Achievement_t& it : achievements )
 		{
@@ -132,6 +134,28 @@ bool go_cli_mode(int argc, char* argv[]) {
 				<< it.global_achieved_rate << "% \t"
 				<< (it.achieved ? "✔️" : "❌") << std::endl;
 		}
+
+		std::cout << "\n";
+
+		if ( stats.size() == 0 )
+		{
+			std::cout << "No stats found for this app.." << std::endl;
+		}
+		else
+		{
+			std::cout << "\nSTATS\n";
+			std::cout << "API Name \t\tValue \t\t Increment Only\n";
+			std::cout << "----------------------------------------" << std::endl;
+			for (auto stat : stats )
+			{
+				std::cout 
+					<< stat.id << " \t"
+					<< GET_STAT_VALUE(stat) << " \t"
+					<< (stat.incrementonly ? "Yes" : "No")
+					<< std::endl;
+			}
+		}
+		
 	}
 
 	if (result.count("unlock") > 0)

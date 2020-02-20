@@ -53,6 +53,11 @@ MyClientSocket::request_response(std::string request)
     send_message(request);
     std::string ret = receive_message();
     disconnect();
+
+    #ifdef DEBUG_CERR
+    std::cerr << "<-- Receiving " << ret << std::endl;
+    #endif
+
     return ret;
 }
 

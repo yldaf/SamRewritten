@@ -9,8 +9,9 @@
 #include <future>
 #include <glibmm-2.4/glibmm.h>
 
-// TODO use #ifndef __VALGRIND_H or similar
-// #include <valgrind/valgrind.h>
+#ifdef DEBUG_CERR
+#include <valgrind/valgrind.h>
+#endif
 
 AsyncGuiLoader::AsyncGuiLoader(MainPickerWindow* window)
 : m_window(window)
@@ -23,7 +24,7 @@ AsyncGuiLoader::load_achievements_idle()
 {
     if (m_achievement_idle_data.state == ACH_STATE_STARTED) {
         g_perfmon->log("Starting achievement retrieval");
-        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_achievements();});
+        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_stats_and_achievements();});
         m_achievement_idle_data.state = ACH_STATE_WAITING_FOR_ACHIEVEMENTS;
         return G_SOURCE_CONTINUE;
     }
@@ -32,9 +33,14 @@ AsyncGuiLoader::load_achievements_idle()
         if (m_achievements_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
             g_perfmon->log("Done retrieving achievements");
 
+            #if DEBUG_CERR
+            std::cerr << "Printing achievement ID & icon:" << std::endl;
+            for (auto a : g_steam->get_achievements()) {
+                std::cerr << a.id << " " << a.icon_name << std::endl;
+            }
+            #endif
+
             // Fire off the schema parsing now.
-            // TODO: figure out if all the icons are already there and skip parsing schema
-            m_schema_parser_future = std::async(std::launch::async, [this]{return m_schema_parser.load_user_game_stats_schema();});
             m_achievement_idle_data.state = ACH_STATE_LOADING_GUI;
         }
         return G_SOURCE_CONTINUE;
@@ -56,7 +62,7 @@ AsyncGuiLoader::load_achievements_idle()
                 return G_SOURCE_REMOVE;
             }
 
-            m_achievement_idle_data.state = ACH_STATE_WAITING_FOR_SCHEMA_PARSER;
+            m_achievement_idle_data.state = ACH_STATE_DOWNLOADING_ICONS;
             m_achievement_idle_data.current_item = 0;
             return G_SOURCE_CONTINUE;
         }
@@ -64,23 +70,6 @@ AsyncGuiLoader::load_achievements_idle()
         auto achievement = g_steam->get_achievements()[m_achievement_idle_data.current_item];
         m_window->add_to_achievement_list(achievement);
         m_achievement_idle_data.current_item++;
-        return G_SOURCE_CONTINUE;
-    }
-
-    if (m_achievement_idle_data.state == ACH_STATE_WAITING_FOR_SCHEMA_PARSER) {
-        if (m_schema_parser_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            g_perfmon->log("Done parsing schema to find achievement icon download names");
-            if (!m_schema_parser_future.get()) {
-                std::cerr << "Schema parsing failed, skipping icon downloads" << std::endl;
-                m_achievement_idle_data.state = ACH_STATE_FINISHED;
-                g_perfmon->log("Achievements retrieved, no icons.");
-                m_window->show_no_achievements_found_placeholder();
-                m_achievement_refresh_lock.unlock();
-                return G_SOURCE_REMOVE;
-            }
-
-            m_achievement_idle_data.state = ACH_STATE_DOWNLOADING_ICONS;
-        }
         return G_SOURCE_CONTINUE;
     }
 
@@ -94,16 +83,19 @@ AsyncGuiLoader::load_achievements_idle()
             m_window->show_no_achievements_found_placeholder();
             m_achievement_refresh_lock.unlock();
 
-            // See top of the file
-            // VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+            #ifdef DEBUG_CERR
+            VALGRIND_MONITOR_COMMAND("detailed_snapshot");
+            #endif
 
             return G_SOURCE_REMOVE;
         }
 
         if ( !done_starting_downloads && (m_concurrent_icon_downloads < MAX_CONCURRENT_ICON_DOWNLOADS))  {
+            const Achievement_t ach = g_steam->get_achievements()[m_achievement_idle_data.current_item];
+            
             // Fire off a new download thread
-            std::string id = g_steam->get_achievements()[m_achievement_idle_data.current_item].id;
-            std::string icon_download_name = m_schema_parser.get_icon_download_names()[id];
+            std::string id = ach.id;
+            std::string icon_download_name = ach.icon_name;
 
             // Assuming it returns empty string on failing to lookup
             if (icon_download_name.empty()) {
@@ -147,10 +139,6 @@ AsyncGuiLoader::populate_achievements() {
         m_window->show_fetch_achievements_placeholder();
 
         Glib::signal_idle().connect(sigc::mem_fun(this, &AsyncGuiLoader::load_achievements_idle), G_PRIORITY_LOW);
-        // g_idle_add_full (G_PRIORITY_LOW,
-        //                 this->load_achievements_idle,
-        //                 data,
-        //                 finish_load_achievements);
 
     } else {
         std::cerr << "Not launching game/refreshing achievements because a refresh is already in progress" << std::endl;

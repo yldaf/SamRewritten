@@ -29,14 +29,14 @@ SteamAppDAO::get_instance() {
 // => get_instance
 
 bool
-SteamAppDAO::need_to_redownload(const char * file_path) {
+SteamAppDAO::need_to_redownload(const std::string file_path) {
     struct stat file_info;
     const std::time_t current_time(std::time(0));
     bool b_need_to_redownload = false;
 
     if (file_exists(file_path)) {
         //Check the last time it was updated
-        if (stat(file_path, &file_info) == 0) {
+        if (stat(file_path.c_str(), &file_info) == 0) {
             //If a week has passed
             if (current_time - file_info.st_mtime > 60 * 60 * 24 * 7) {
                 b_need_to_redownload = true;
@@ -46,7 +46,7 @@ SteamAppDAO::need_to_redownload(const char * file_path) {
             std::cerr << "~/.cache/SamRewritten/app_names exists but an error occurred analyzing it. To avoid further complications, ";
             std::cerr << "the program will stop here. Before retrying make sure you have enough privilege to read and write to ";
             std::cerr << "your home folder folder." << std::endl;
-            zenity("An error occurred writing the cache files. Try deleting the cache folder (" + std::string(g_cache_folder) + ") and make sure you have enough permissions to write to it.");
+            zenity("An error occurred writing the cache files. Try deleting the cache folder (" + g_steam->get_cache_path() + ") and make sure you have enough permissions to write to it.");
             exit(EXIT_FAILURE);
         }
     }
@@ -75,24 +75,25 @@ SteamAppDAO::update_name_database() {
     // TODO: turn this into a command line option, or a setting
     const int retrieval_strategy = 1;
 
-    static const char* file_url[2];
-    static const char* local_file_name[2];
+    static std::string file_url[2];
+    static std::string local_file_name[2];
+    const std::string cache_folder = g_steam->get_cache_path();
     int file_count = 0;
     
     if (retrieval_strategy == 1) {
         file_url[0] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/game_achievements_list.json";
-        local_file_name[0] = concat(g_cache_folder, "/game_list.json");
+        local_file_name[0] = cache_folder + "/game_list.json";
         file_count = 1;
     } else if (retrieval_strategy == 2) {
         // need to download 2 files for this one
         file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
-        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        local_file_name[0] = cache_folder + "/app_names";
         file_url[1] = "https://raw.githubusercontent.com/PaulCombal/SteamAppsListDumps/master/not_games.json";
-        local_file_name[1] = concat(g_cache_folder, "/not_games.json");
+        local_file_name[1] = cache_folder + "/not_games.json";
         file_count = 2;
     } else if (retrieval_strategy == 3) {
         file_url[0] = "http://api.steampowered.com/ISteamApps/GetAppList/v0002/";
-        local_file_name[0] = concat(g_cache_folder, "/app_names");
+        local_file_name[0] = cache_folder + "/app_names";
         file_count = 1;
     }
 
@@ -132,8 +133,9 @@ SteamAppDAO::get_app_name(AppId_t app_id) {
 
 void 
 SteamAppDAO::download_app_icon(AppId_t app_id) {
-    const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
-    const std::string local_path = get_app_icon_path(app_id);
+    const std::string cache_folder = g_steam->get_cache_path();
+    const std::string local_folder(cache_folder + "/" + std::to_string(app_id));
+    const std::string local_path = get_app_icon_path(cache_folder, app_id);
     const std::string url("http://cdn.akamai.steamstatic.com/steam/apps/" + std::to_string(app_id) + "/header_292x136.jpg");
 
     mkdir_default(local_folder.c_str());
@@ -142,43 +144,49 @@ SteamAppDAO::download_app_icon(AppId_t app_id) {
 
 void
 SteamAppDAO::download_achievement_icon(AppId_t app_id, std::string id, std::string icon_download_name) {
-    const std::string local_folder(std::string(g_cache_folder) + "/" + std::to_string(app_id));
-    const std::string local_path = get_achievement_icon_path(app_id, id);
+    const std::string cache_folder = g_steam->get_cache_path();
+    const std::string local_folder(cache_folder + "/" + std::to_string(app_id));
+    const std::string local_path = get_achievement_icon_path(cache_folder, app_id, id);
     const std::string url("http://media.steamcommunity.com/steamcommunity/public/images/apps/" + std::to_string(app_id) + "/" + icon_download_name); 
+
+    #ifdef DEBUG_CERR
+    std::cerr << "Asking DAO to download achievement icon " << id << " from " << url << std::endl;
+    #endif
 
     mkdir_default(local_folder.c_str());
     Downloader::get_instance()->download_file(url, local_path);
 }
 
 void
-SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::string>* app_names) {
+SteamAppDAO::parse_app_names(const std::string file_path, std::map<AppId_t, std::string>* app_names) {
     app_names->clear();
 
-    size_t rd;
     yajl_val node;
     char errbuf[1024];
-    char fileData[5000000];
-    FILE *f = fopen(file_path, "rb");
+    std::string file_contents;
+    std::ifstream stream(file_path);
 
-    /* null plug buffers */
-    fileData[0] = errbuf[0] = 0;
-
-    /* read the entire config file */
-    rd = fread((void *) fileData, 1, sizeof(fileData) - 1, f);
-
-    /* file read error handling */
-    if (rd == 0 && !feof(stdin)) {
-        std::cerr << "Error encountered on file read: " << file_path << std::endl;
-        zenity();
-        exit(EXIT_FAILURE);
-    } else if (rd >= sizeof(fileData) - 1) {
-        std::cerr << "app_names file too big (just increase the buffer size)" << std::endl;
+    if ( !stream.is_open() ) {
+        std::cerr << "SteamAppDAO::parse_app_names: Unable to open file " << file_path << std::endl;
         zenity();
         exit(EXIT_FAILURE);
     }
 
+    try {
+        std::stringstream buffer;
+        buffer << stream.rdbuf();
+        file_contents = buffer.str();
+    } catch(std::exception& e) {
+        std::cerr << "SteamAppDAO::parse_app_names: " << e.what() << std::endl;
+        zenity();
+        exit(EXIT_FAILURE);
+    }
+
+    // Stream is RAII, but we close it here since we won't use it after
+    stream.close();
+
     /* we have the whole config file in memory. let's parse it ... */
-    node = yajl_tree_parse((const char *) fileData, errbuf, sizeof(errbuf));
+    node = yajl_tree_parse(file_contents.c_str(), errbuf, sizeof(errbuf));
 
     /* parse error handling */
     if (node == NULL) {
@@ -213,7 +221,6 @@ SteamAppDAO::parse_app_names(const char * file_path, std::map<AppId_t, std::stri
         app_names->insert(std::pair<AppId_t, std::string>(tmp_appid, tmp_appname));
     }
 
-    fclose(f);
     yajl_tree_free(node);
 }
 

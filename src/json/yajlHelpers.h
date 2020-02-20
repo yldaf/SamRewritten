@@ -5,6 +5,7 @@
 #include <yajl/yajl_gen.h>
 #include <yajl/yajl_tree.h>
 #include "../types/Achievement.h"
+#include "../types/StatValue.h"
 #include "../types/Actions.h"
 #include "ProcessedGameServerRequest.h"
 
@@ -35,12 +36,17 @@ void encode_request(yajl_gen handle, const char * request);
  * Encode an array at a time because decoding individual
  * achievements in YAJL would be messy
  */
-void encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements);
+void encode_achievements(yajl_gen handle, std::vector<Achievement_t> achievements, std::vector<StatValue_t> stats);
 
 /**
  * Decode the achievement vector from a json response
  */
 std::vector<Achievement_t> decode_achievements(std::string response);
+
+/**
+ * Decode the stats vector from a json response
+ */
+std::vector<StatValue_t> decode_stats(std::string response);
 
 /**
  * Encode just achievement changes into a handle

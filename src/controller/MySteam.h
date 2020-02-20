@@ -1,6 +1,7 @@
 #pragma once
 #include "../types/Game.h"
 #include "../types/Achievement.h"
+#include "../types/StatValue.h"
 #include "../sockets/MyClientSocket.h"
 #include "GameServerManager.h"
 #include <string>
@@ -24,7 +25,31 @@ public:
      * This is not failsafe and may require some tweaking to add 
      * support for your distribution
      */
-    std::string get_steam_install_path();
+    std::string get_steam_install_path() const { return m_steam_install_dir; };
+
+    /**
+     * Returns the absolute path to the runtime folder used by SAM.
+     * It's used for storing the UNIX sockets used by the program.
+     * 
+     * XDG Base Directory Specification is followed:
+     * If present, this variable uses XDG_RUNTIME_DIR and takes the value
+     *      $XDG_RUNTIME_DIR/SamRewritten
+     * 
+     * Warnings are properly issued if it is not set, but  still defaults to the
+     * cache folder for simplicity
+     */
+    std::string get_runtime_path() const { return m_runtime_folder; };
+
+    /**
+     * Returns the absolute path to the cache folder used by SAM
+     * 
+     * XDG Base Directory Specification is followed:
+     * If present, this variable uses XDG_CACHE_HOME and takes the value
+     *      $XDG_CACHE_HOME/SamRewritten
+     * Otherwise, this variable properly defaults to
+     *      ~/.cache/SamRewritten
+     */
+    std::string get_cache_path() const { return m_cache_folder; };
 
     /**
      * Starts a process that will emulate a steam game with the 
@@ -67,7 +92,7 @@ public:
     /**
      * Makes a list of all achievements for the currently running app
      */
-    void refresh_achievements();
+    void refresh_stats_and_achievements();
 
     /**
      * Get achievements of the launched app
@@ -78,9 +103,12 @@ public:
      * Make sure to call refresh_achievements at least once to get
      * correct results
      * 
+     * The same goes for the stats
+     * 
      * TODO: maybe don't name this the same as GameServer::get_achievements?
      */ 
     std::vector<Achievement_t> get_achievements() const { return m_achievements; };
+    std::vector<StatValue_t> get_stats() const { return m_stats; };
 
     /**
      * Simple getter
@@ -128,8 +156,10 @@ private:
      */
     void set_special_flags();
 
-    // Absolute path to Steam install dir
+    // Absolute path to some important directories
     std::string m_steam_install_dir;
+    std::string m_cache_folder;
+    std::string m_runtime_folder;
 
     // Current app_id
     AppId_t m_app_id;
@@ -139,6 +169,7 @@ private:
 
     std::vector<Game_t> m_all_subscribed_apps;
     std::vector<Achievement_t> m_achievements;
+    std::vector<StatValue_t> m_stats;
 
     std::map<std::string, bool> m_pending_ach_modifications;
     std::map<std::string, double> m_pending_stat_modifications;

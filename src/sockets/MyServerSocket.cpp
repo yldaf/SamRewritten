@@ -66,7 +66,9 @@ MyServerSocket::run_server()
 
         if (quit)
         {
+            #ifdef DEBUG_CERR
             std::cout << "Shutting down server safely." << std:: endl;
+            #endif
             // destruction of this object will take care of shutdown
             break;
         }

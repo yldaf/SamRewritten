@@ -3,12 +3,12 @@
  * this project. Thank you.
  *************************************/
 
+#include "schema_parser/UserGameStatsSchemaParser.h"
 #include "controller/MySteam.h"
 #include "controller/MySteamClient.h"
 #include "controller/MyGameServer.h"
 #include "gui/MainPickerWindowFactory.h"
 #include "cli/cli_funcs.h"
-#include "common/functions.h"
 #include "common/PerfMon.h"
 #include "globals.h"
 
@@ -21,11 +21,8 @@
  **************************************/
 MySteam* g_steam = nullptr;
 MainPickerWindow* g_main_gui = nullptr;
-char* g_cache_folder = nullptr;
-char* g_runtime_folder = nullptr;
 MySteamClient* g_steamclient = nullptr;
 PerfMon* g_perfmon = nullptr;
-
 
 /**************************************
  * Main entry point
@@ -37,21 +34,6 @@ main(int argc, char *argv[])
         std::cout << "Do not run this application as root" << std::endl;
         zenity("Please do not run this application as root..");
         exit(EXIT_FAILURE);
-    }
-
-    if (getenv("XDG_CACHE_HOME")) {
-        g_cache_folder = concat( getenv("XDG_CACHE_HOME"), "/SamRewritten" );
-    } else {
-        g_cache_folder = concat( getenv("HOME"), "/.cache/SamRewritten" );
-    }
-    mkdir_default(g_cache_folder);
-
-    if (getenv("XDG_RUNTIME_DIR")) {
-        g_runtime_folder = concat( getenv("XDG_RUNTIME_DIR"), "/SamRewritten" );
-        mkdir_default(g_runtime_folder);
-    } else {
-        std::cerr << "XDG_RUNTIME_DIR is not set! Your distribution is improper... falling back to cache dir" << std::endl;
-        g_runtime_folder = g_cache_folder;
     }
 
     g_perfmon = new PerfMon();

@@ -31,6 +31,7 @@ struct Achievement_t {
     std::string name;
     std::string desc;
     std::string id;
+    std::string icon_name;
     float global_achieved_rate;  
 	bool achieved;
     bool hidden;
