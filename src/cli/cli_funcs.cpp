@@ -144,15 +144,21 @@ bool go_cli_mode(int argc, char* argv[]) {
 		else
 		{
 			std::cout << "\nSTATS\n";
-			std::cout << "API Name \t\tValue \t\t Increment Only\n";
+			std::cout << "API Name \t\tType \t\t Value \t\tIncrement Only\n";
 			std::cout << "----------------------------------------" << std::endl;
 			for (auto stat : stats )
 			{
-				std::cout 
-					<< stat.id << " \t"
-					<< GET_STAT_VALUE(stat) << " \t"
-					<< (stat.incrementonly ? "Yes" : "No")
-					<< std::endl;
+				std::cout << stat.id << " \t";
+
+				if (stat.type == UserStatType::Integer) {
+					std::cout << "Integer \t" << std::to_string(std::any_cast<long long>(stat.value)) << " \t";
+				} else if (stat.type == UserStatType::Float) {
+					std::cout << "Float \t" << std::to_string(std::any_cast<double>(stat.value)) << " \t";
+				} else {
+					std::cout << "Unknown \tUnknown \t";
+				}
+
+				std::cout << (stat.incrementonly ? "Yes" : "No") << std::endl;
 			}
 		}
 		
