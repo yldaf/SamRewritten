@@ -172,7 +172,7 @@ MySteam::refresh_achievement_icon(std::string id, std::string icon_download_name
 // => refresh_achievement_icon
 
 void
-MySteam::refresh_stats_and_achievements() {
+MySteam::refresh_achievements_and_stats() {
 
     if (m_ipc_socket == nullptr) {
         std::cerr << "Connection to game is broken" << std::endl;

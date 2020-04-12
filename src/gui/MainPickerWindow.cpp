@@ -18,10 +18,11 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("game_search_bar", m_game_search_bar);
     m_builder->get_widget("achievement_search_bar", m_achievement_search_bar);
     m_builder->get_widget("achievement_list", m_achievement_list);
+    m_builder->get_widget("stat_list", m_stat_list);
     m_builder->get_widget("about_dialog", m_about_dialog);
     m_builder->get_widget("main_stack", m_main_stack);
     m_builder->get_widget("game_list_view", m_game_list_view);
-    m_builder->get_widget("achievement_and_stat_list_view", m_achievement_and_stat_list_view);
+    m_builder->get_widget("achievement_and_stat_notebook", m_achievement_and_stat_notebook);
     m_builder->get_widget("back_button", m_back_button);
     m_builder->get_widget("store_button", m_store_button);
     m_builder->get_widget("refresh_games_button", m_refresh_games_button);
@@ -227,7 +228,7 @@ MainPickerWindow::reset_game_list() {
 // => reset_game_list
 
 void
-MainPickerWindow::reset_achievements_list() {
+MainPickerWindow::reset_achievement_list() {
     for ( AchievementBoxRow* row : m_achievement_list_rows) {    
         delete row;
         row = nullptr;
@@ -235,7 +236,18 @@ MainPickerWindow::reset_achievements_list() {
 
     m_achievement_list_rows.clear();
 }
-// => reset_achievements_list
+// => reset_achievement_list
+
+void
+MainPickerWindow::reset_stat_list() {
+    for ( StatBoxRow* row : m_stat_list_rows) {    
+        delete row;
+        row = nullptr;
+    }
+
+    m_stat_list_rows.clear();
+}
+// => reset_stat_list
 
 /**
  * Add a game to the list.
@@ -259,14 +271,13 @@ MainPickerWindow::add_to_achievement_list(const Achievement_t& achievement) {
 }
 // => add_to_achievement_list
 
-/**
- * Draws all the achievements that have not been shown yet
- */
 void
-MainPickerWindow::confirm_achievement_list() {
-    m_achievement_list->show_all();
+MainPickerWindow::add_to_stat_list(const StatValue_t& stat) {
+    StatBoxRow* row = new StatBoxRow(stat);
+    m_stat_list->insert(*row, -1);
+    m_stat_list_rows.push_back(row);
 }
-// => confirm_achievement_list
+// => add_to_stat_list
 
 /**
  * Draws all the games that have not been shown yet
@@ -277,6 +288,24 @@ MainPickerWindow::confirm_game_list() {
     m_input_appid_row.hide();
 }
 // => confirm_game_list
+
+/**
+ * Draws all the achievements that have not been shown yet
+ */
+void
+MainPickerWindow::confirm_achievement_list() {
+    m_achievement_list->show_all();
+}
+// => confirm_achievement_list
+
+/**
+ * Draws all the stats that have not been shown yet
+ */
+void
+MainPickerWindow::confirm_stat_list() {
+    m_stat_list->show_all();
+}
+// => confirm_stat_list
 
 /**
  * Refreshes the icon for the specified app ID
@@ -355,7 +384,7 @@ MainPickerWindow::switch_to_achievement_page() {
     m_refresh_games_button->set_visible(false);
     m_game_search_bar->set_visible(false);
 
-    m_main_stack->set_visible_child(*m_achievement_and_stat_list_view);
+    m_main_stack->set_visible_child(*m_achievement_and_stat_notebook);
 }
 // => switch_to_achievement_page
 
@@ -374,6 +403,7 @@ MainPickerWindow::switch_to_games_page() {
 
     m_main_stack->set_visible_child(*m_game_list_view);
     m_achievement_search_bar->set_text("");
-    reset_achievements_list();
+    reset_achievement_list();
+    reset_stat_list();
 }
 // => switch_to_games_page

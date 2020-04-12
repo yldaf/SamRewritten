@@ -105,7 +105,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		}
 
 		g_steam->launch_app(app);
-		g_steam->refresh_stats_and_achievements();
+		g_steam->refresh_achievements_and_stats();
 		auto achievements = g_steam->get_achievements();
 		auto stats = g_steam->get_stats();
 		g_steam->quit_game();

@@ -24,14 +24,14 @@ AsyncGuiLoader::load_achievements_idle()
 {
     if (m_achievement_idle_data.state == ACH_STATE_STARTED) {
         g_perfmon->log("Starting achievement retrieval");
-        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_stats_and_achievements();});
-        m_achievement_idle_data.state = ACH_STATE_WAITING_FOR_ACHIEVEMENTS;
+        m_achievements_future = std::async(std::launch::async, []{g_steam->refresh_achievements_and_stats();});
+        m_achievement_idle_data.state = ACH_STATE_WAITING_FOR_ACHIEVEMENTS_AND_STATS;
         return G_SOURCE_CONTINUE;
     }
 
-    if (m_achievement_idle_data.state == ACH_STATE_WAITING_FOR_ACHIEVEMENTS) {
+    if (m_achievement_idle_data.state == ACH_STATE_WAITING_FOR_ACHIEVEMENTS_AND_STATS) {
         if (m_achievements_future.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
-            g_perfmon->log("Done retrieving achievements");
+            g_perfmon->log("Done retrieving achievements and stats");
 
             #if DEBUG_CERR
             std::cerr << "Printing achievement ID & icon:" << std::endl;
@@ -40,16 +40,31 @@ AsyncGuiLoader::load_achievements_idle()
             }
             #endif
 
-            // Fire off the schema parsing now.
-            m_achievement_idle_data.state = ACH_STATE_LOADING_GUI;
+            m_achievement_idle_data.state = ACH_STATE_LOADING_ACHIEVEMENTS_GUI;
         }
         return G_SOURCE_CONTINUE;
     }
 
-    if (m_achievement_idle_data.state == ACH_STATE_LOADING_GUI) {
+    if (m_achievement_idle_data.state == ACH_STATE_LOADING_ACHIEVEMENTS_GUI) {
         if (m_achievement_idle_data.current_item == g_steam->get_achievements().size()) {
             g_perfmon->log("Done adding achievements to GUI");
             m_window->confirm_achievement_list();
+
+            m_achievement_idle_data.state = ACH_STATE_LOADING_STATS_GUI;
+            m_achievement_idle_data.current_item = 0;
+            return G_SOURCE_CONTINUE;
+        }
+
+        auto achievement = g_steam->get_achievements()[m_achievement_idle_data.current_item];
+        m_window->add_to_achievement_list(achievement);
+        m_achievement_idle_data.current_item++;
+        return G_SOURCE_CONTINUE;
+    }
+
+    if (m_achievement_idle_data.state == ACH_STATE_LOADING_STATS_GUI) {
+        if (m_achievement_idle_data.current_item == g_steam->get_stats().size()) {
+            g_perfmon->log("Done adding stats to GUI");
+            m_window->confirm_stat_list();
 
             if ( g_steam->get_achievements().size() > 1000 ) {
                 // The game is an achievement printer of some kind, downloading the icons
@@ -67,8 +82,8 @@ AsyncGuiLoader::load_achievements_idle()
             return G_SOURCE_CONTINUE;
         }
 
-        auto achievement = g_steam->get_achievements()[m_achievement_idle_data.current_item];
-        m_window->add_to_achievement_list(achievement);
+        auto stat = g_steam->get_stats()[m_achievement_idle_data.current_item];
+        m_window->add_to_stat_list(stat);
         m_achievement_idle_data.current_item++;
         return G_SOURCE_CONTINUE;
     }
@@ -135,7 +150,8 @@ AsyncGuiLoader::populate_achievements() {
         m_achievement_idle_data.current_item = 0;
         m_achievement_idle_data.state = ACH_STATE_STARTED;
         m_concurrent_icon_downloads = 0;
-        m_window->reset_achievements_list();
+        m_window->reset_achievement_list();
+        m_window->reset_stat_list();
         m_window->show_fetch_achievements_placeholder();
 
         Glib::signal_idle().connect(sigc::mem_fun(this, &AsyncGuiLoader::load_achievements_idle), G_PRIORITY_LOW);

@@ -3,6 +3,7 @@
 #include "../types/Game.h"
 #include "AsyncGuiLoader.h"
 #include "AchievementBoxRow.h"
+#include "StatBoxRow.h"
 #include "InputAppidBoxRow.h"
 #include "AppBoxRow.h"
 
@@ -40,7 +41,13 @@ public:
      * Empty the achievements list, leaving only the placeholder widget,
      * which means the loading widget.
      */
-    void reset_achievements_list();
+    void reset_achievement_list();
+
+    /**
+     * Empty the stats list, leaving only the placeholder widget,
+     * which means the loading widget.
+     */
+    void reset_stat_list();
 
     /**
      * Adds a game to the game list. The new item will be added and saved,
@@ -55,6 +62,12 @@ public:
     void add_to_achievement_list(const Achievement_t& achievement);
 
     /**
+     * Adds stat to the stat list. The new item will be added 
+     * and saved, but not drawn.
+     */
+    void add_to_stat_list(const StatValue_t& stat);
+
+    /**
      * Shows all widget that has been added to the list, removes all
      * the deleted entries from the GUI list.
      */
@@ -65,6 +78,12 @@ public:
      * the deleted entries from the GUI list.
      */
     void confirm_achievement_list();
+
+    /**
+     * Shows all widget that has been added to the list, removes all
+     * the deleted entries from the GUI list.
+     */
+    void confirm_stat_list();
 
     /**
      * When a game is added to the list, the "missing icon" is used by default
@@ -134,11 +153,12 @@ private:
     Gtk::ModelButton *m_invert_all_achievements_button;
     Gtk::ListBox *m_game_list;
     Gtk::ListBox *m_achievement_list;
+    Gtk::ListBox *m_stat_list;
     Gtk::Stack *m_main_stack;
     Gtk::SearchEntry *m_game_search_bar;
     Gtk::SearchEntry *m_achievement_search_bar;
     Gtk::ScrolledWindow *m_game_list_view;
-    Gtk::Notebook *m_achievement_and_stat_list_view;
+    Gtk::Notebook *m_achievement_and_stat_notebook;
     Gtk::Box *m_fetch_games_placeholder;
     Gtk::Box *m_no_games_found_placeholder;
     Gtk::Box *m_fetch_achievements_placeholder;
@@ -148,5 +168,6 @@ private:
 
     std::vector<AppBoxRow*> m_app_list_rows;
     std::vector<AchievementBoxRow*> m_achievement_list_rows;
+    std::vector<StatBoxRow*> m_stat_list_rows;
     AsyncGuiLoader m_async_loader;
 };

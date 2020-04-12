@@ -92,7 +92,7 @@ public:
     /**
      * Makes a list of all achievements for the currently running app
      */
-    void refresh_stats_and_achievements();
+    void refresh_achievements_and_stats();
 
     /**
      * Get achievements of the launched app
