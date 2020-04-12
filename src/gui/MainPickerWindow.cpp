@@ -21,7 +21,7 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("about_dialog", m_about_dialog);
     m_builder->get_widget("main_stack", m_main_stack);
     m_builder->get_widget("game_list_view", m_game_list_view);
-    m_builder->get_widget("achievement_list_view", m_achievement_list_view);
+    m_builder->get_widget("achievement_and_stat_list_view", m_achievement_and_stat_list_view);
     m_builder->get_widget("back_button", m_back_button);
     m_builder->get_widget("store_button", m_store_button);
     m_builder->get_widget("refresh_games_button", m_refresh_games_button);
@@ -355,7 +355,7 @@ MainPickerWindow::switch_to_achievement_page() {
     m_refresh_games_button->set_visible(false);
     m_game_search_bar->set_visible(false);
 
-    m_main_stack->set_visible_child(*m_achievement_list_view);
+    m_main_stack->set_visible_child(*m_achievement_and_stat_list_view);
 }
 // => switch_to_achievement_page
 

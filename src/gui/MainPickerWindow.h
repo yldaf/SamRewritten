@@ -13,6 +13,7 @@
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/searchentry.h>
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
+#include <gtkmm-3.0/gtkmm/notebook.h>
 #include <gtkmm-3.0/gtkmm/modelbutton.h>
 #include <gtkmm-3.0/gtkmm/aboutdialog.h>
 #include <gtkmm-3.0/gtkmm/stack.h>
@@ -137,7 +138,7 @@ private:
     Gtk::SearchEntry *m_game_search_bar;
     Gtk::SearchEntry *m_achievement_search_bar;
     Gtk::ScrolledWindow *m_game_list_view;
-    Gtk::ScrolledWindow *m_achievement_list_view;
+    Gtk::Notebook *m_achievement_and_stat_list_view;
     Gtk::Box *m_fetch_games_placeholder;
     Gtk::Box *m_no_games_found_placeholder;
     Gtk::Box *m_fetch_achievements_placeholder;
