@@ -114,3 +114,33 @@ void escape_html(std::string& data) {
 int zenity(const std::string text, const std::string type) {
     return system( std::string("zenity " + type + " --text=\"" + text + "\" 2> /dev/null").c_str() );
 }
+
+bool convert_user_stat_value(UserStatType type, std::string buf, std::any* new_value) {
+    bool valid_conversion;
+    size_t idx = 0;
+
+    try {
+        // Cast these in their native steam implementation so
+        // we don't truncate any user input precision
+        //
+        // We could also plumb in input validation for the
+        // min/max/incremental values here
+        if (type == UserStatType::Integer) {
+            *new_value = std::stoi(buf, &idx);
+        } else if (type == UserStatType::Float) {
+            *new_value = std::stof(buf, &idx);
+        } else {
+            valid_conversion = false;
+        }
+    } catch(std::exception& e) {
+        // Invalid user input, but this is not fatal to the program
+        valid_conversion = false;
+    }
+
+    // If the whole string hasn't been consumed, treat it as invalid
+    if (buf[idx] != '\0') {
+        valid_conversion = false;
+    }
+
+    return valid_conversion;
+}

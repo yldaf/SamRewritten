@@ -197,10 +197,10 @@ MySteam::refresh_achievements_and_stats() {
  * Adds an achievement to the list of achievements to unlock/lock
  */
 void 
-MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) {
-    std::cout << "Adding modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
+MySteam::add_modification_ach(const std::string& ach_id, bool new_value) {
+    std::cout << "Adding achievement modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
-        m_pending_ach_modifications.insert( std::pair<std::string, bool>(ach_id, new_value) );
+        m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value} ) );
     } else {
         std::cerr << "Warning: Cannot append " << ach_id << ", value already exists." << std::endl;
     }
@@ -212,7 +212,7 @@ MySteam::add_modification_ach(const std::string& ach_id, const bool& new_value) 
  */
 void 
 MySteam::remove_modification_ach(const std::string& ach_id) {
-    std::cout << "Removing modification: " << ach_id << std::endl;
+    std::cout << "Removing achievement modification: " << ach_id << std::endl;
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
         std::cerr << "WARNING: Could not cancel: modification was not pending: " << ach_id << std::endl;
     } else {
@@ -222,6 +222,45 @@ MySteam::remove_modification_ach(const std::string& ach_id) {
 // => remove_modification_ach
 
 /**
+ * Adds a stat modification to be done on the launched app.
+ * Commit the change with commit_changes
+ */
+void
+MySteam::add_modification_stat(const StatValue_t& stat, std::any new_value) {
+    // The value must already be the proper type for it to be added to the list
+    std::cout << "Adding stat modification: " << stat.id << ", ";
+    if (stat.type == UserStatType::Integer) {
+        std::cout << "Integer " << std::to_string(std::any_cast<long long>(new_value));
+    } else if (stat.type == UserStatType::Float) {
+        std::cout << "Float " << std::to_string(std::any_cast<double>(new_value));
+    } else {
+        // Input has already been checked in StatBoxRow
+        exit(EXIT_FAILURE);
+    }
+    std::cout << std::endl;
+
+    if ( m_pending_stat_modifications.find(stat.id) == m_pending_stat_modifications.end() ) {
+        m_pending_stat_modifications.insert( std::pair<std::string, StatChange_t>(stat.id, (StatChange_t){stat.type, stat.id, new_value} ) );
+    } else {
+        std::cerr << "Warning: Cannot append " << stat.id << ", value already exists." << std::endl;
+    }
+}
+// => add_modification_stat
+
+/**
+ * Removes a stat modification that would have been done on the launched app.
+ */
+void
+MySteam::remove_modification_stat(const StatValue_t& stat) {
+    std::cout << "Removing stat modification: " << stat.id << std::endl;
+    // If there's not one pending, don't treat it as a warning currently
+    // because we don't really care to differentiate the
+    // 0->1 and 2->1 character length transitions over in StatBoxRow
+    m_pending_stat_modifications.erase(stat.id);
+}
+// => remove_modification_stat
+
+/**
  * Commit pending achievement changes
  */
 void
@@ -229,9 +268,10 @@ MySteam::commit_changes() {
     std::vector<AchievementChange_t> changes;
 
     for ( const auto& [key, val] : m_pending_ach_modifications) {
-        std::cerr << "key " << key << "val " << val << std::endl;
-        changes.push_back( (AchievementChange_t){ key, val } );
+        changes.push_back(val);
     }
+
+    //TODO: pending_stat_modifications
     
     std::string response = m_ipc_socket->request_response(make_store_achivements_request_string(changes));
 
@@ -241,6 +281,7 @@ MySteam::commit_changes() {
 
     // Clear all pending changes
     m_pending_ach_modifications.clear();
+    m_pending_stat_modifications.clear();
 }
 // => commit_changes
 
@@ -248,6 +289,7 @@ void
 MySteam::clear_changes() {
     // Clear all pending changes
     m_pending_ach_modifications.clear();
+    m_pending_stat_modifications.clear();
 }
 // => clear_changes
 

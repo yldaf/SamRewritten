@@ -203,7 +203,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                     sv.display_name = cast->DisplayName;
                     sv.id = cast->Id;
                     sv.incrementonly = cast->IncrementOnly;
-                    sv.original_value = value;
                     sv.value = value;
                     sv.permission = cast->Permission;
 
@@ -230,7 +229,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                     sv.display_name = cast->DisplayName;
                     sv.id = cast->Id;
                     sv.incrementonly = cast->IncrementOnly;
-                    sv.original_value = value;
                     sv.value = value;
                     sv.permission = cast->Permission;
 

@@ -1,8 +1,10 @@
 #pragma once
 
 #include <string>
+#include <any>
 #include "../globals.h"
 #include "../../steam/steam_api.h"
+#include "../types/UserStatType.h"
 
 /**
  * Stats hold a value of type any, but can be either int or float.
@@ -69,6 +71,13 @@ void escape_html(std::string& data);
 
 /**
  * Show a regular dialog box. Return value is ignored for now,
- * but feel free to add functionnlitie to this
+ * but feel free to add functionnlity to this
  */
 int zenity(const std::string text = "An internal error occurred, please open a Github issue with the console output to get it fixed!", const std::string type = "--error --no-wrap");
+
+/**
+ * Convert a user stat value string buffer to the specified stat type
+ * Directly modifies new_value
+ * Returns whether the conversion was successful
+ */
+bool convert_user_stat_value(UserStatType type, std::string buf, std::any* new_value);
