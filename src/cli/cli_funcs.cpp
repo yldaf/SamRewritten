@@ -228,19 +228,20 @@ bool go_cli_mode(int argc, char* argv[]) {
 		const std::vector<std::string> stat_values = result["statvalues"].as<std::vector<std::string>>();
 
 		for (size_t i = 0; i < num_stats; i++) {
-			// We don't know the type at this point, so try both of them
 			StatValue_t stat;
 			bool valid_conversion;
 			std::any new_value;
 
-			valid_conversion = convert_user_stat_value(UserStatType::Integer, stat_values[i], &new_value);
+			// We don't know the type at this point, so try both of them
+			// Try float first to not get the wrong type: an int can be a float, but a float can't be an int
+			valid_conversion = convert_user_stat_value(UserStatType::Float, stat_values[i], &new_value);
 
 			if (valid_conversion) {
-				stat.type = UserStatType::Integer;
+				stat.type = UserStatType::Float;
 			} else {
-				valid_conversion = convert_user_stat_value(UserStatType::Float, stat_values[i], &new_value);
+				valid_conversion = convert_user_stat_value(UserStatType::Integer, stat_values[i], &new_value);
 				if (valid_conversion) {
-					stat.type = UserStatType::Float;
+					stat.type = UserStatType::Integer;
 				}
 			}
 

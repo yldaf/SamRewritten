@@ -180,7 +180,7 @@ MySteam::refresh_achievements_and_stats() {
         exit(EXIT_FAILURE);
     }
 
-    std::string response = m_ipc_socket->request_response(make_get_achivements_request_string());
+    std::string response = m_ipc_socket->request_response(make_get_achievements_request_string());
 
     if (!decode_ack(response)) {
         std::cerr << "Failed to receive ack!" << std::endl;
@@ -261,19 +261,22 @@ MySteam::remove_modification_stat(const StatValue_t& stat) {
 // => remove_modification_stat
 
 /**
- * Commit pending achievement changes
+ * Commit pending achievement and stat changes
  */
 void
 MySteam::commit_changes() {
-    std::vector<AchievementChange_t> changes;
+    std::vector<AchievementChange_t> achievement_changes;
+    std::vector<StatChange_t> stat_changes;
 
     for ( const auto& [key, val] : m_pending_ach_modifications) {
-        changes.push_back(val);
+        achievement_changes.push_back(val);
     }
 
-    //TODO: pending_stat_modifications
+    for ( const auto& [key, val] : m_pending_stat_modifications) {
+        stat_changes.push_back(val);
+    }
     
-    std::string response = m_ipc_socket->request_response(make_store_achivements_request_string(changes));
+    std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_changes, stat_changes));
 
     if (!decode_ack(response)) {
         std::cerr << "Failed to store achievement changes!" << std::endl;

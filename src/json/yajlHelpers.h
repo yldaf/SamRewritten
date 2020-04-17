@@ -51,7 +51,12 @@ std::vector<StatValue_t> decode_stats(std::string response);
 /**
  * Encode just achievement changes into a handle
  */
-void encode_changes(yajl_gen handle, std::vector<AchievementChange_t> changes);
+void encode_achievement_changes(yajl_gen handle, std::vector<AchievementChange_t> changes);
+
+/**
+ * Encode just stat changes into a handle
+ */
+void encode_stat_changes(yajl_gen handle, std::vector<StatChange_t> changes);
 
 /**
  * To be used by the server
@@ -62,13 +67,15 @@ std::vector<AchievementChange_t> decode_changes(const ProcessedGameServerRequest
 
 /**
  * Generate a GET_ACHIEVEMENTS request string
+ * Retrieves both achievements and stats
  */
-std::string make_get_achivements_request_string();
+std::string make_get_achievements_request_string();
 
 /**
- * Generate a STORE_ACHIEVEMENTS request string
+ * Generate a COMMIT_CHANGES request string to store
+ * both achievements and stats changes
  */
-std::string make_store_achivements_request_string(const std::vector<AchievementChange_t>& changes);
+std::string make_commit_changes_request_string(const std::vector<AchievementChange_t>& achievement_changes, const std::vector<StatChange_t>& stat_changes);
 
 /**
  * Generate a KILL_SERVER request string

@@ -3,6 +3,7 @@
 #include <vector>
 #include "../types/Actions.h"
 #include "../types/Achievement.h"
+#include "../types/StatValue.h"
 
 /**
  * This is a serverside class
@@ -14,10 +15,11 @@ public:
     ~ProcessedGameServerRequest();
 
     SAM_ACTION getAction() const {return m_action;};
-    yajl_val getPayload() const {return m_payload;};
-    std::vector<AchievementChange_t> payload_to_ach_changes() const;
+    std::vector<AchievementChange_t> get_achievement_changes() const;
+    std::vector<StatChange_t> get_stat_changes() const;
 protected:
     SAM_ACTION m_action;
-    yajl_val m_payload;
     yajl_val m_fulltree;
+    yajl_val m_achievement_changes_array;
+    yajl_val m_stat_changes_array;
 };

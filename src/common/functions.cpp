@@ -116,19 +116,22 @@ int zenity(const std::string text, const std::string type) {
 }
 
 bool convert_user_stat_value(UserStatType type, std::string buf, std::any* new_value) {
-    bool valid_conversion;
+    bool valid_conversion = true;
     size_t idx = 0;
 
     try {
         // Cast these in their native steam implementation so
-        // we don't truncate any user input precision
+        // we don't truncate any user input precision,
+        // then upcast to version used in JSON transport.
         //
         // We could also plumb in input validation for the
         // min/max/incremental values here
         if (type == UserStatType::Integer) {
-            *new_value = std::stoi(buf, &idx);
+            int a = std::stoi(buf, &idx);
+            *new_value = static_cast<long long>(a);
         } else if (type == UserStatType::Float) {
-            *new_value = std::stof(buf, &idx);
+            float a = std::stof(buf, &idx);
+            *new_value = static_cast<double>(a);
         } else {
             valid_conversion = false;
         }

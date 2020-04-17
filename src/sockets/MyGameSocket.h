@@ -21,7 +21,7 @@ public:
     void populate_stats_and_achievements(void);
     bool get_global_stats(void);
     bool get_global_achievements_stats(void);
-    void process_changes(std::vector<AchievementChange_t> changes);
+    void process_changes(std::vector<AchievementChange_t> changes, std::vector<StatChange_t> changes2);
 
     /**
      * Simple getters

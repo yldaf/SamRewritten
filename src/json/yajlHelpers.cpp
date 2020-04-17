@@ -378,7 +378,7 @@ decode_achievements(std::string response) {
  * Encode an individual achievement change into a given YAJL handle
  */
 void 
-encode_change(yajl_gen handle, AchievementChange_t change) {
+encode_achievement_change(yajl_gen handle, AchievementChange_t change) {
     yajl_gen_string_wrap(handle, ID_STR);
     yajl_gen_string_wrap(handle, change.id.c_str());
 
@@ -389,7 +389,7 @@ encode_change(yajl_gen handle, AchievementChange_t change) {
 }
 
 void
-encode_changes(yajl_gen handle, std::vector<AchievementChange_t> changes) {
+encode_achievement_changes(yajl_gen handle, std::vector<AchievementChange_t> changes) {
 
     yajl_gen_string_wrap(handle, ACHIEVEMENT_LIST_STR);
 
@@ -402,7 +402,67 @@ encode_changes(yajl_gen handle, std::vector<AchievementChange_t> changes) {
             std::cerr << "failed to make json" << std::endl;
         }
 
-        encode_change(handle, change);
+        encode_achievement_change(handle, change);
+
+        if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }            
+    }
+
+    if (yajl_gen_array_close(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+}
+
+/**
+ * Encode an individual stat change into a given YAJL handle
+ */
+void 
+encode_stat_change(yajl_gen handle, StatChange_t change) {
+    yajl_gen_string_wrap(handle, STAT_ID_STR);
+    yajl_gen_string_wrap(handle, change.id.c_str());
+
+    yajl_gen_string_wrap(handle, STAT_TYPE_STR);
+    if (yajl_gen_integer(handle, (int)change.type) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    if (change.type == UserStatType::Integer)
+    {
+        long long value = std::any_cast<long long>(change.new_value);
+        
+        yajl_gen_string_wrap(handle, STAT_VALUE_STR);
+        if (yajl_gen_integer(handle, value) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+    }
+    else if (change.type == UserStatType::Float)
+    {
+        double value = std::any_cast<double>(change.new_value);
+
+        yajl_gen_string_wrap(handle, STAT_VALUE_STR);
+        if (yajl_gen_double(handle, value) != yajl_gen_status_ok) {
+                std::cerr << "failed to make json" << std::endl;
+        }
+    }
+}
+
+void
+encode_stat_changes(yajl_gen handle, std::vector<StatChange_t> changes) {
+
+    yajl_gen_string_wrap(handle, STAT_LIST_STR);
+
+    if (yajl_gen_array_open(handle) != yajl_gen_status_ok) {
+        std::cerr << "failed to make json" << std::endl;
+    }
+
+    for (StatChange_t change : changes) {
+
+        if (yajl_gen_map_open(handle) != yajl_gen_status_ok) {
+            std::cerr << "failed to make json" << std::endl;
+        }
+
+        encode_stat_change(handle, change);
 
         if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
             std::cerr << "failed to make json" << std::endl;
@@ -415,7 +475,7 @@ encode_changes(yajl_gen handle, std::vector<AchievementChange_t> changes) {
 }
 
 std::string 
-make_get_achivements_request_string() {
+make_get_achievements_request_string() {
     const unsigned char * buf;
     size_t len;
     std::string ret;
@@ -439,7 +499,7 @@ make_get_achivements_request_string() {
 }
 
 std::string 
-make_store_achivements_request_string(const std::vector<AchievementChange_t>& changes) {
+make_commit_changes_request_string(const std::vector<AchievementChange_t>& achievement_changes, const std::vector<StatChange_t>& stat_changes) {
     const unsigned char * buf; 
     size_t len;
     std::string ret;
@@ -453,8 +513,9 @@ make_store_achivements_request_string(const std::vector<AchievementChange_t>& ch
         std::cerr << "failed to make json" << std::endl;
     }
 
-    encode_request(handle, STORE_ACHIEVEMENTS_STR);
-    encode_changes(handle, changes);
+    encode_request(handle, COMMIT_CHANGES_STR);
+    encode_achievement_changes(handle, achievement_changes);
+    encode_stat_changes(handle, stat_changes);
 
     if (yajl_gen_map_close(handle) != yajl_gen_status_ok) {
         std::cerr << "failed to make json" << std::endl;
