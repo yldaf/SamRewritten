@@ -19,7 +19,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Box* title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
 
     Gtk::MenuButton* more_info_button = Gtk::make_managed<Gtk::MenuButton>();
-    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-info", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
     Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
     Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
@@ -34,6 +34,14 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Glib::RefPtr<Gtk::Adjustment> adjustment;
 
     set_size_request(-1, 40);
+    m_invalid_conversion_box.set_valign(Gtk::Align::ALIGN_CENTER);
+    m_invalid_conversion_box.set_margin_end(10);
+    // Invalid_conversion_image is set up lazily in on_new_value_changed
+    // to avoid ancestors calls to show_all from showing it and having to implement
+    // logic to go hide it again.
+    // Reserve space for image
+    m_invalid_conversion_box.set_size_request(20, -1);
+
     more_info_label->set_markup("<b>Additional information</b>");
     more_info_button->set_popover(*popover_menu);
     more_info_button->set_valign(Gtk::Align::ALIGN_CENTER);
@@ -80,6 +88,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     values_box->pack_start(*cur_value_label, false, true, 0);
     values_box->pack_start(*new_values_box, false, true, 0);
     layout->pack_start(*title_box, true, true, 0);
+    layout->pack_start(m_invalid_conversion_box, false, true, 0);
     layout->pack_start(*more_info_button, false, true, 0);
     layout->pack_start(*values_box, false, true, 0);
 
@@ -111,11 +120,19 @@ StatBoxRow::on_new_value_changed(void) {
 
     // Remove pending modifications with different values, if any
     g_steam->remove_modification_stat(m_data);
-    
+
     // Note that currently, if a stat's new_value entry is changed all,
     // the new value will always be sent to steam even if it's returned to its
     // original value. This isn't that big of a deal.
     if (valid_conversion) {
         g_steam->add_modification_stat(m_data, new_value);
+    } else {
+        if (!m_b_has_invalid_conversion_image_been_set_up) {
+            Gtk::Image* invalid_conversion_image = Gtk::make_managed<Gtk::Image>("gtk-dialog-warning", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+            invalid_conversion_image->set_tooltip_text("The entered value is invalid and will not be sent to Steam");
+            m_invalid_conversion_box.pack_start(*invalid_conversion_image, false, true, 0);
+            invalid_conversion_image->show();
+            m_b_has_invalid_conversion_image_been_set_up = true;
+        }
     }
 }
