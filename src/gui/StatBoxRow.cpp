@@ -7,13 +7,24 @@
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/label.h>
 #include <gtkmm-3.0/gtkmm/adjustment.h>
+#include <gtkmm-3.0/gtkmm/popovermenu.h>
+#include <gtkmm-3.0/gtkmm/separator.h>
+#include <gtkmm-3.0/gtkmm/menubutton.h>
+
 
 StatBoxRow::StatBoxRow(const StatValue_t& data) 
 : m_data(data)
 {
     Gtk::Box* layout = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_HORIZONTAL, 0);
     Gtk::Box* title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
-    Gtk::Box* type_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
+
+    Gtk::MenuButton* more_info_button = Gtk::make_managed<Gtk::MenuButton>();
+    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
+    Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
+    Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
+    Gtk::Separator* sep_one = Gtk::make_managed<Gtk::Separator>();
+
     Gtk::Box* values_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
     Gtk::Box* new_values_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_HORIZONTAL, 0);
     Gtk::Label* title_label = Gtk::make_managed<Gtk::Label>("");
@@ -23,7 +34,13 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Glib::RefPtr<Gtk::Adjustment> adjustment;
 
     set_size_request(-1, 40);
-    type_box->set_size_request(150, -1);
+    more_info_label->set_markup("<b>Additional information</b>");
+    more_info_button->set_popover(*popover_menu);
+    more_info_button->set_valign(Gtk::Align::ALIGN_CENTER);
+    more_info_button->set_margin_end(10);
+    popover_box->set_border_width(5);
+    more_info_button->get_style_context()->add_class("circular");
+
     values_box->set_size_request(150, -1);
 
     m_new_value_entry.set_width_chars(10);
@@ -58,14 +75,20 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
 
     title_label->set_label(data.display_name);
     title_box->pack_start(*title_label, false, true, 0);
-    type_box->pack_start(*type_label, false, true, 0);
     new_values_box->pack_start(*new_value_label, true, true, 0);
     new_values_box->pack_start(m_new_value_entry, true, true, 0);
     values_box->pack_start(*cur_value_label, false, true, 0);
     values_box->pack_start(*new_values_box, false, true, 0);
     layout->pack_start(*title_box, true, true, 0);
-    layout->pack_start(*type_box, false, true, 0);
+    layout->pack_start(*more_info_button, false, true, 0);
     layout->pack_start(*values_box, false, true, 0);
+
+    more_info_button->add(*more_info_image);
+    popover_box->pack_start(*more_info_label, false, true, 0);
+    popover_box->pack_start(*sep_one, false, true, 0);
+    popover_box->pack_start(*type_label, false, true, 0);
+    popover_menu->add(*popover_box);
+    popover_box->show_all();
 
     add(*layout);
 
