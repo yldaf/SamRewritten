@@ -25,5 +25,6 @@ private:
     StatValue_t m_data;
     Gtk::SpinButton m_new_value_entry;
     Gtk::Box m_invalid_conversion_box;
+    Gtk::Image m_invalid_conversion_image;
     bool m_b_has_invalid_conversion_image_been_set_up = false;
 };

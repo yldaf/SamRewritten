@@ -126,13 +126,16 @@ StatBoxRow::on_new_value_changed(void) {
     // original value. This isn't that big of a deal.
     if (valid_conversion) {
         g_steam->add_modification_stat(m_data, new_value);
+        if (m_b_has_invalid_conversion_image_been_set_up) {
+            m_invalid_conversion_image.hide();
+        }
     } else {
         if (!m_b_has_invalid_conversion_image_been_set_up) {
-            Gtk::Image* invalid_conversion_image = Gtk::make_managed<Gtk::Image>("gtk-dialog-warning", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
-            invalid_conversion_image->set_tooltip_text("The entered value is invalid and will not be sent to Steam");
-            m_invalid_conversion_box.pack_start(*invalid_conversion_image, false, true, 0);
-            invalid_conversion_image->show();
+            m_invalid_conversion_image = Gtk::Image("gtk-dialog-warning", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+            m_invalid_conversion_image.set_tooltip_text("The entered value is invalid and will not be sent to Steam");
+            m_invalid_conversion_box.pack_start(m_invalid_conversion_image, false, true, 0);
             m_b_has_invalid_conversion_image_been_set_up = true;
         }
+        m_invalid_conversion_image.show();
     }
 }
