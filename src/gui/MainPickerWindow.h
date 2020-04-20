@@ -136,6 +136,8 @@ private:
     // Gtk Callbacks
     void on_game_search_changed();
     void on_achievement_search_changed();
+    void on_stat_search_changed();
+    void on_page_switched(Widget* page, guint page_number);
     void on_game_row_activated(Gtk::ListBoxRow* row);
     void on_refresh_games_button_clicked();
     void on_refresh_achievements_button_clicked();
@@ -169,6 +171,7 @@ private:
     Gtk::Stack *m_main_stack;
     Gtk::SearchEntry *m_game_search_bar;
     Gtk::SearchEntry *m_achievement_search_bar;
+    Gtk::SearchEntry *m_stat_search_bar;
     Gtk::ScrolledWindow *m_game_list_view;
     Gtk::Notebook *m_achievement_and_stat_notebook;
     Gtk::Box *m_fetch_games_placeholder;

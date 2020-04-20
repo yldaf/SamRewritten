@@ -16,12 +16,13 @@ public:
     StatBoxRow(const StatValue_t& stat);
     virtual ~StatBoxRow();
 
+    StatValue_t get_stat() { return m_data; };
+private:
     /**
      * Interpret a change in the text field
      */
     void on_new_value_changed(void);
 
-private:
     StatValue_t m_data;
     Gtk::SpinButton m_new_value_entry;
     Gtk::Box m_invalid_conversion_box;
