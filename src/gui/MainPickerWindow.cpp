@@ -385,6 +385,9 @@ MainPickerWindow::switch_to_achievement_page() {
     m_game_search_bar->set_visible(false);
 
     m_main_stack->set_visible_child(*m_achievement_and_stat_notebook);
+    // Always switch to achievements page because a previously
+    // launched app may have left it on the stat tab
+    m_achievement_and_stat_notebook->set_current_page(0);
 }
 // => switch_to_achievement_page
 

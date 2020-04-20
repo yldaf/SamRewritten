@@ -261,7 +261,8 @@ MySteam::remove_modification_stat(const StatValue_t& stat) {
 // => remove_modification_stat
 
 /**
- * Commit pending achievement and stat changes
+ * Commit pending achievement and stat changes and clear the current
+ * list because it's now stale
  */
 void
 MySteam::commit_changes() {
@@ -279,7 +280,7 @@ MySteam::commit_changes() {
     std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_changes, stat_changes));
 
     if (!decode_ack(response)) {
-        std::cerr << "Failed to store achievement changes!" << std::endl;
+        std::cerr << "Failed to commit changes!" << std::endl;
     }
 
     // Clear all pending changes
