@@ -73,6 +73,7 @@ AsyncGuiLoader::load_achievements_idle()
                 g_perfmon->log("Achievements retrieved, no icons (Achievement farming app).");
                 m_achievement_idle_data.state = ACH_STATE_FINISHED;
                 m_window->show_no_achievements_found_placeholder();
+                m_window->show_no_stats_found_placeholder();
                 m_achievement_refresh_lock.unlock();
                 return G_SOURCE_REMOVE;
             }
@@ -96,6 +97,7 @@ AsyncGuiLoader::load_achievements_idle()
             m_achievement_idle_data.state = ACH_STATE_FINISHED;
             g_perfmon->log("Achievements retrieved with icons.");
             m_window->show_no_achievements_found_placeholder();
+            m_window->show_no_stats_found_placeholder();
             m_achievement_refresh_lock.unlock();
 
             #ifdef DEBUG_CERR
@@ -153,6 +155,7 @@ AsyncGuiLoader::populate_achievements() {
         m_window->reset_achievement_list();
         m_window->reset_stat_list();
         m_window->show_fetch_achievements_placeholder();
+        m_window->show_fetch_stats_placeholder();
 
         Glib::signal_idle().connect(sigc::mem_fun(this, &AsyncGuiLoader::load_achievements_idle), G_PRIORITY_LOW);
 

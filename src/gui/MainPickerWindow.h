@@ -116,10 +116,22 @@ public:
     void show_fetch_achievements_placeholder();
 
     /**
+     * Set the stat_list placeholder to the no stat found placeholder
+     * and show it
+     */
+    void show_fetch_stats_placeholder();
+
+    /**
      * Set the game_list placeholder to the fetching achievements placeholder
      * and show it
      */
     void show_no_achievements_found_placeholder();
+
+    /**
+     * Set the stat_list placeholder to the fetching stats placeholder
+     * and show it
+     */
+    void show_no_stats_found_placeholder();
 private:
     // Gtk Callbacks
     void on_game_search_changed();
@@ -162,7 +174,9 @@ private:
     Gtk::Box *m_fetch_games_placeholder;
     Gtk::Box *m_no_games_found_placeholder;
     Gtk::Box *m_fetch_achievements_placeholder;
+    Gtk::Box *m_fetch_stats_placeholder;
     Gtk::Box *m_no_achievements_found_placeholder;
+    Gtk::Box *m_no_stats_found_placeholder;
     
     InputAppidBoxRow m_input_appid_row;
 

@@ -34,8 +34,10 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("fetch_games_placeholder", m_fetch_games_placeholder);
     m_builder->get_widget("no_games_found_placeholder", m_no_games_found_placeholder);
     m_builder->get_widget("fetch_achievements_placeholder", m_fetch_achievements_placeholder);
+    m_builder->get_widget("fetch_stats_placeholder", m_fetch_stats_placeholder);
     m_builder->get_widget("no_achievements_found_placeholder", m_no_achievements_found_placeholder);
-
+    m_builder->get_widget("no_stats_found_placeholder", m_no_stats_found_placeholder);
+    
     // Connect them manually to slots
     signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_delete));
     signal_show().connect(sigc::mem_fun(this, &MainPickerWindow::on_refresh_games_button_clicked));
@@ -365,11 +367,25 @@ MainPickerWindow::show_fetch_achievements_placeholder() {
 // => show_fetch_achievements_placeholder
 
 void
+MainPickerWindow::show_fetch_stats_placeholder() {
+    m_stat_list->set_placeholder(*m_fetch_stats_placeholder);
+    m_fetch_stats_placeholder->show();
+}
+// => show_fetch_stats_placeholder
+
+void
 MainPickerWindow::show_no_achievements_found_placeholder() {
     m_achievement_list->set_placeholder(*m_no_achievements_found_placeholder);
     m_no_achievements_found_placeholder->show();
 }
 // => show_no_achievements_found_placeholder
+
+void
+MainPickerWindow::show_no_stats_found_placeholder() {
+    m_stat_list->set_placeholder(*m_no_stats_found_placeholder);
+    m_no_stats_found_placeholder->show();
+}
+// => show_no_stats_found_placeholder
 
 void
 MainPickerWindow::switch_to_achievement_page() {
