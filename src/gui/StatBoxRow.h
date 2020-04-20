@@ -4,7 +4,7 @@
 
 #include <string>
 #include <gtkmm-3.0/gtkmm/listboxrow.h>
-#include <gtkmm-3.0/gtkmm/entry.h>
+#include <gtkmm-3.0/gtkmm/spinbutton.h>
 
 /**
  * This class represents a stat entry on the stats view
@@ -22,5 +22,5 @@ public:
 
 private:
     StatValue_t m_data;
-    Gtk::Entry m_new_value_entry;
+    Gtk::SpinButton m_new_value_entry;
 };

@@ -6,7 +6,7 @@
 #include <string>
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/label.h>
-#include <gtkmm-3.0/gtkmm/entry.h>
+#include <gtkmm-3.0/gtkmm/adjustment.h>
 
 StatBoxRow::StatBoxRow(const StatValue_t& data) 
 : m_data(data)
@@ -20,6 +20,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Label* type_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* cur_value_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* new_value_label = Gtk::make_managed<Gtk::Label>("");
+    Glib::RefPtr<Gtk::Adjustment> adjustment;
 
     set_size_request(-1, 40);
     type_box->set_size_request(150, -1);
@@ -30,21 +31,27 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     // Bound this to some reasonable value
     m_new_value_entry.set_max_length(100);
 
+    // We don't really care to clamp the min/max of these entries
     if (data.type == UserStatType::Integer) {
         type_label->set_label("Type: Integer");
-        // TODO: may want to bound the size of this
-        cur_value_label->set_label("Current value: " + std::to_string(std::any_cast<long long>(data.value)));
+        cur_value_label->set_label("Current value:   " + std::to_string(std::any_cast<long long>(data.value)));
+        adjustment = Gtk::Adjustment::create(std::any_cast<long long>(data.value), -DBL_MAX, DBL_MAX, 1.0, 5.0, 0.0);
+        m_new_value_entry.configure(adjustment, 1, 0);
     } else if (data.type == UserStatType::Float) {
         type_label->set_label("Type: Float");
-        // TODO: may want to bound the size of this
-        cur_value_label->set_label("Current value: " + std::to_string(std::any_cast<double>(data.value)));
+        cur_value_label->set_label("Current value:   " + std::to_string(std::any_cast<double>(data.value)));
+        adjustment = Gtk::Adjustment::create(std::any_cast<double>(data.value), -DBL_MAX, DBL_MAX, 0.01, 5.0, 0.0);
+        // Reasonably chosen clime rate and digits, can be changed if someone complains..
+        m_new_value_entry.configure(adjustment, 0.01, 5);
     } else {
         type_label->set_label("Type: Unknown");
         cur_value_label->set_label("Current value: Unknown");
+        adjustment = Gtk::Adjustment::create(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        m_new_value_entry.configure(adjustment, 0.0, 0);
     }
 
+    cur_value_label->set_max_width_chars(10);
     new_value_label->set_label("New value:      ");
-
     // Left align labels
     cur_value_label->set_xalign(0);
     new_value_label->set_xalign(0);
@@ -82,6 +89,9 @@ StatBoxRow::on_new_value_changed(void) {
     // Remove pending modifications with different values, if any
     g_steam->remove_modification_stat(m_data);
     
+    // Note that currently, if a stat's new_value entry is changed all,
+    // the new value will always be sent to steam even if it's returned to its
+    // original value. This isn't that big of a deal.
     if (valid_conversion) {
         g_steam->add_modification_stat(m_data, new_value);
     }
