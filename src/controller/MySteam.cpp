@@ -228,16 +228,21 @@ MySteam::remove_modification_ach(const std::string& ach_id) {
 void
 MySteam::add_modification_stat(const StatValue_t& stat, std::any new_value) {
     // The value must already be the proper type for it to be added to the list
+    #ifdef DEBUG_CERR
     std::cout << "Adding stat modification: " << stat.id << ", ";
     if (stat.type == UserStatType::Integer) {
         std::cout << "Integer " << std::to_string(std::any_cast<long long>(new_value));
     } else if (stat.type == UserStatType::Float) {
         std::cout << "Float " << std::to_string(std::any_cast<double>(new_value));
-    } else {
-        // Input has already been checked in StatBoxRow
-        exit(EXIT_FAILURE);
     }
     std::cout << std::endl;
+    #endif
+
+    if (stat.type != UserStatType::Integer && stat.type != UserStatType::Float)
+    {
+        zenity("This stat isn't well understood by SamRewritten yet. Please notify the developers on Github.");
+        return;
+    }
 
     if ( m_pending_stat_modifications.find(stat.id) == m_pending_stat_modifications.end() ) {
         m_pending_stat_modifications.insert( std::pair<std::string, StatChange_t>(stat.id, (StatChange_t){stat.type, stat.id, new_value} ) );
@@ -252,7 +257,10 @@ MySteam::add_modification_stat(const StatValue_t& stat, std::any new_value) {
  */
 void
 MySteam::remove_modification_stat(const StatValue_t& stat) {
+    #ifdef DEBUG_CERR
     std::cout << "Removing stat modification: " << stat.id << std::endl;
+    #endif
+
     // If there's not one pending, don't treat it as a warning currently
     // because we don't really care to differentiate the
     // 0->1 and 2->1 character length transitions over in StatBoxRow

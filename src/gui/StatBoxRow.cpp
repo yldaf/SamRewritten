@@ -19,7 +19,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Box* title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
 
     Gtk::MenuButton* more_info_button = Gtk::make_managed<Gtk::MenuButton>();
-    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-info", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
     Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
     Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
@@ -30,7 +30,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Label* title_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* type_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* cur_value_label = Gtk::make_managed<Gtk::Label>("");
-    Gtk::Label* new_value_label = Gtk::make_managed<Gtk::Label>("");
+    Gtk::Label* incr_only_label = Gtk::make_managed<Gtk::Label>("");
     Glib::RefPtr<Gtk::Adjustment> adjustment;
 
     set_size_request(-1, 40);
@@ -59,14 +59,13 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     // We don't really care to clamp the min/max of these entries
     if (data.type == UserStatType::Integer) {
         type_label->set_label("Type: Integer");
-        cur_value_label->set_label("Current value:   " + std::to_string(std::any_cast<long long>(data.value)));
+        cur_value_label->set_label("Current value: " + std::to_string(std::any_cast<long long>(data.value)));
         adjustment = Gtk::Adjustment::create(std::any_cast<long long>(data.value), -DBL_MAX, DBL_MAX, 1.0, 5.0, 0.0);
         m_new_value_entry.configure(adjustment, 1, 0);
     } else if (data.type == UserStatType::Float) {
         type_label->set_label("Type: Float");
-        cur_value_label->set_label("Current value:   " + std::to_string(std::any_cast<double>(data.value)));
+        cur_value_label->set_label("Current value: " + std::to_string(std::any_cast<double>(data.value)));
         adjustment = Gtk::Adjustment::create(std::any_cast<double>(data.value), -DBL_MAX, DBL_MAX, 0.01, 5.0, 0.0);
-        // Reasonably chosen clime rate and digits, can be changed if someone complains..
         m_new_value_entry.configure(adjustment, 0.01, 5);
     } else {
         type_label->set_label("Type: Unknown");
@@ -75,17 +74,16 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
         m_new_value_entry.configure(adjustment, 0.0, 0);
     }
 
-    cur_value_label->set_max_width_chars(10);
-    new_value_label->set_label("New value:      ");
-    // Left align labels
-    cur_value_label->set_xalign(0);
-    new_value_label->set_xalign(0);
+    if (data.incrementonly) {
+        incr_only_label->set_label("Increment Only: Yes");
+    } else {
+        incr_only_label->set_label("Increment Only: No");
+    }
 
-    title_label->set_label(data.display_name);
+    title_label->set_label(data.display_name == "" ? data.id : data.display_name);
+
     title_box->pack_start(*title_label, false, true, 0);
-    new_values_box->pack_start(*new_value_label, true, true, 0);
     new_values_box->pack_start(m_new_value_entry, true, true, 0);
-    values_box->pack_start(*cur_value_label, false, true, 0);
     values_box->pack_start(*new_values_box, false, true, 0);
     layout->pack_start(*title_box, true, true, 0);
     layout->pack_start(m_invalid_conversion_box, false, true, 0);
@@ -96,9 +94,12 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     popover_box->pack_start(*more_info_label, false, true, 0);
     popover_box->pack_start(*sep_one, false, true, 0);
     popover_box->pack_start(*type_label, false, true, 0);
+    popover_box->pack_start(*cur_value_label, false, true, 0);
+    popover_box->pack_start(*incr_only_label, false, true, 0);
     popover_menu->add(*popover_box);
     popover_box->show_all();
 
+    layout->set_valign(Gtk::Align::ALIGN_CENTER);
     add(*layout);
 
     m_new_value_entry.signal_changed().connect(sigc::mem_fun(this, &StatBoxRow::on_new_value_changed));
