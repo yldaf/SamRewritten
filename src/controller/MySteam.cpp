@@ -198,7 +198,10 @@ MySteam::refresh_achievements_and_stats() {
  */
 void 
 MySteam::add_modification_ach(const std::string& ach_id, bool new_value) {
+    #ifdef DEBUG_CERR
     std::cout << "Adding achievement modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
+    #endif
+    
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
         m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value} ) );
     } else {
@@ -212,7 +215,10 @@ MySteam::add_modification_ach(const std::string& ach_id, bool new_value) {
  */
 void 
 MySteam::remove_modification_ach(const std::string& ach_id) {
+    #ifdef DEBUG_CERR
     std::cout << "Removing achievement modification: " << ach_id << std::endl;
+    #endif
+
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
         std::cerr << "WARNING: Could not cancel: modification was not pending: " << ach_id << std::endl;
     } else {
