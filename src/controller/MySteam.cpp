@@ -246,7 +246,9 @@ MySteam::add_modification_stat(const StatValue_t& stat, std::any new_value) {
 
     if (stat.type != UserStatType::Integer && stat.type != UserStatType::Float)
     {
-        zenity("This stat isn't well understood by SamRewritten yet. Please notify the developers on Github.");
+        std::cerr << "The stat with id \"" + stat.id + "\" has unrecognized type, but this should have been caught in the caller" << std::endl;
+        zenity("An internal programming error for \"" + stat.id + "\" has occured. Please notify the developers on Github.");
+        // This isn't fatal, so let's not annoy the user by exiting.
         return;
     }
 

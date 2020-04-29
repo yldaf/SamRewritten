@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.0 
+<!-- Generated with glade 3.22.2 
 
 Copyright (C) 
 
@@ -41,6 +41,9 @@ telans (telans)</property>
     <property name="artists">Rejedai (rejedai)</property>
     <property name="logo">../assets/icon_256.png</property>
     <property name="license_type">gpl-3-0</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
@@ -58,9 +61,6 @@ telans (telans)</property>
           </packing>
         </child>
       </object>
-    </child>
-    <child type="titlebar">
-      <placeholder/>
     </child>
   </object>
   <object class="GtkBox" id="fetch_achievements_placeholder">
@@ -489,6 +489,113 @@ Did you make a typo? Or maybe this game has no stats.</property>
     <property name="height_request">500</property>
     <property name="can_focus">False</property>
     <property name="icon">../assets/icon_256.png</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="title">SamRewritten</property>
+        <property name="subtitle">Steam Achievement Manager</property>
+        <property name="show_close_button">True</property>
+        <child>
+          <object class="GtkButton" id="back_button">
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Return to the game list</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">go-previous-symbolic</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSearchEntry" id="game_search_bar">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="width_chars">26</property>
+            <property name="primary_icon_name">edit-find-symbolic</property>
+            <property name="primary_icon_activatable">False</property>
+            <property name="primary_icon_sensitive">False</property>
+            <property name="placeholder_text" translatable="yes">Game name or AppID..</property>
+            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSearchEntry" id="achievement_search_bar">
+            <property name="can_focus">True</property>
+            <property name="width_chars">26</property>
+            <property name="primary_icon_name">edit-find-symbolic</property>
+            <property name="primary_icon_activatable">False</property>
+            <property name="primary_icon_sensitive">False</property>
+            <property name="placeholder_text" translatable="yes">Name of the achievement...</property>
+            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+          </object>
+          <packing>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSearchEntry" id="stat_search_bar">
+            <property name="can_focus">True</property>
+            <property name="width_chars">26</property>
+            <property name="primary_icon_name">edit-find-symbolic</property>
+            <property name="primary_icon_activatable">False</property>
+            <property name="primary_icon_sensitive">False</property>
+            <property name="placeholder_text" translatable="yes">Name of the stat...</property>
+            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
+          </object>
+          <packing>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkMenuButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="popover">popovermenu</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">open-menu-symbolic</property>
+                <property name="icon_size">1</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="store_button">
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Confirm changes &amp; send to Steam</property>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="icon_name">document-save-symbolic</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pack_type">end</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+    </child>
     <child>
       <object class="GtkStack" id="main_stack">
         <property name="visible">True</property>
@@ -605,113 +712,6 @@ Did you make a typo? Or maybe this game has no stats.</property>
         </child>
       </object>
     </child>
-    <child type="titlebar">
-      <object class="GtkHeaderBar">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="title">SamRewritten</property>
-        <property name="subtitle">Steam Achievement Manager</property>
-        <property name="show_close_button">True</property>
-        <child>
-          <object class="GtkButton" id="back_button">
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Return to the game list</property>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">go-previous-symbolic</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSearchEntry" id="game_search_bar">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="width_chars">26</property>
-            <property name="primary_icon_name">edit-find-symbolic</property>
-            <property name="primary_icon_activatable">False</property>
-            <property name="primary_icon_sensitive">False</property>
-            <property name="placeholder_text" translatable="yes">Game name or AppID..</property>
-            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-          </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSearchEntry" id="achievement_search_bar">
-            <property name="can_focus">True</property>
-            <property name="width_chars">26</property>
-            <property name="primary_icon_name">edit-find-symbolic</property>
-            <property name="primary_icon_activatable">False</property>
-            <property name="primary_icon_sensitive">False</property>
-            <property name="placeholder_text" translatable="yes">Name of the achievement...</property>
-            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-          </object>
-          <packing>
-            <property name="position">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSearchEntry" id="stat_search_bar">
-            <property name="can_focus">True</property>
-            <property name="width_chars">26</property>
-            <property name="primary_icon_name">edit-find-symbolic</property>
-            <property name="primary_icon_activatable">False</property>
-            <property name="primary_icon_sensitive">False</property>
-            <property name="placeholder_text" translatable="yes">Name of the stat...</property>
-            <property name="input_hints">GTK_INPUT_HINT_NO_SPELLCHECK | GTK_INPUT_HINT_NONE</property>
-          </object>
-          <packing>
-            <property name="position">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkMenuButton">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="popover">popovermenu</property>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">open-menu-symbolic</property>
-                <property name="icon_size">1</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="store_button">
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Confirm changes &amp; send to Steam</property>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">document-save-symbolic</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="pack_type">end</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-      </object>
-    </child>
   </object>
   <object class="GtkWindow" id="settings_window">
     <property name="height_request">250</property>
@@ -720,6 +720,9 @@ Did you make a typo? Or maybe this game has no stats.</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>
     <property name="icon_name">preferences-system</property>
+    <child type="titlebar">
+      <placeholder/>
+    </child>
     <child>
       <object class="GtkPaned">
         <property name="visible">True</property>
@@ -950,9 +953,6 @@ Did you make a typo? Or maybe this game has no stats.</property>
           </packing>
         </child>
       </object>
-    </child>
-    <child type="titlebar">
-      <placeholder/>
     </child>
   </object>
 </interface>

@@ -133,6 +133,7 @@ bool convert_user_stat_value(UserStatType type, std::string buf, std::any* new_v
             float a = std::stof(buf, &idx);
             *new_value = static_cast<double>(a);
         } else {
+            std::cerr << "The stat value being converted has unrecognized type" << std::endl;
             valid_conversion = false;
         }
     } catch(std::exception& e) {
