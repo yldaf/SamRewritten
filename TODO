@@ -1,4 +1,2 @@
-
--- done? I finished the stat encoding, but did not test. ALso, now do the decoding
-
-Next task: try printing stats in the client side. I just finished decode_stats.
+GUI when no stats are available
+VSCode CPP Intellisense is always broken, find a fix or change editor / linter?
