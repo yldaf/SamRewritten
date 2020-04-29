@@ -10,7 +10,6 @@ OBJDIR=obj
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
 
 all: CXXFLAGS += -O3
-all: init
 all: ${CURDIR}/bin/samrewritten
 	@echo -e "==== Use '\033[1mmake dev\033[0m' to keep debug symbols"
 	@echo -e "==== Use '\033[1mmake clean\033[0m' to remove object files"
