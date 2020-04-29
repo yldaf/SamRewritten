@@ -49,6 +49,8 @@ bool go_cli_mode(int argc, char* argv[]) {
 		("sort", "Sort option for --ls. You can leave empty or set to 'unlock_rate'", cxxopts::value<std::string>())
 		("unlock", "Unlock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
 		("lock", "Lock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
+		("statnames", "Change stats for an AppId. Separate stat names by a comma. Use with statvalues to name the values in order", cxxopts::value<std::vector<std::string>>())
+		("statvalues", "Change stats for an AppId. Separate stat values by a comma. Use with statnames to name the values in order", cxxopts::value<std::vector<std::string>>())
 		("launch", "Actually just launch the app.");
 
 
@@ -58,7 +60,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 	bool cli = false;
 	AppId_t app = 0;
 
-	if (result.count("help"))
+	if (result.count("help") > 0)
     {
 		std::cout << options.help() << std::endl;
 		return true;
@@ -105,7 +107,7 @@ bool go_cli_mode(int argc, char* argv[]) {
 		}
 
 		g_steam->launch_app(app);
-		g_steam->refresh_stats_and_achievements();
+		g_steam->refresh_achievements_and_stats();
 		auto achievements = g_steam->get_achievements();
 		auto stats = g_steam->get_stats();
 		g_steam->quit_game();
@@ -144,15 +146,21 @@ bool go_cli_mode(int argc, char* argv[]) {
 		else
 		{
 			std::cout << "\nSTATS\n";
-			std::cout << "API Name \t\tValue \t\t Increment Only\n";
+			std::cout << "API Name \t\tType \t\t Value \t\tIncrement Only\n";
 			std::cout << "----------------------------------------" << std::endl;
 			for (auto stat : stats )
 			{
-				std::cout 
-					<< stat.id << " \t"
-					<< GET_STAT_VALUE(stat) << " \t"
-					<< (stat.incrementonly ? "Yes" : "No")
-					<< std::endl;
+				std::cout << stat.id << " \t";
+
+				if (stat.type == UserStatType::Integer) {
+					std::cout << "Integer \t" << std::to_string(std::any_cast<long long>(stat.value)) << " \t";
+				} else if (stat.type == UserStatType::Float) {
+					std::cout << "Float \t" << std::to_string(std::any_cast<double>(stat.value)) << " \t";
+				} else {
+					std::cout << "Unknown \tUnknown \t";
+				}
+
+				std::cout << (stat.incrementonly ? "Yes" : "No") << std::endl;
 			}
 		}
 		
@@ -193,6 +201,58 @@ bool go_cli_mode(int argc, char* argv[]) {
 		for ( std::string it : ids )
 		{
 			g_steam->add_modification_ach(it, false);
+		}
+
+		g_steam->launch_app(app);
+		g_steam->commit_changes();
+		g_steam->quit_game();
+	}
+
+	if (result.count("statnames") > 0 || result.count("statvalues") > 0)
+	{
+		if (app == 0)
+		{
+			std::cout << "Please provide an AppId argument before changing stats." << std::endl;
+			return true;
+		}
+		if (result.count("statnames") != result.count("statvalues"))
+		{
+			std::cout << "Number of statnames does not equal number of statvalues." << std::endl;
+			return true;
+		}
+
+		cli = true;
+		size_t num_stats = result.count("statnames");
+
+		const std::vector<std::string> stat_names = result["statnames"].as<std::vector<std::string>>();
+		const std::vector<std::string> stat_values = result["statvalues"].as<std::vector<std::string>>();
+
+		for (size_t i = 0; i < num_stats; i++) {
+			StatValue_t stat;
+			bool valid_conversion;
+			std::any new_value;
+
+			// We don't know the type at this point, so try both of them
+			// Try float first to not get the wrong type: an int can be a float, but a float can't be an int
+			valid_conversion = convert_user_stat_value(UserStatType::Float, stat_values[i], &new_value);
+
+			if (valid_conversion) {
+				stat.type = UserStatType::Float;
+			} else {
+				valid_conversion = convert_user_stat_value(UserStatType::Integer, stat_values[i], &new_value);
+				if (valid_conversion) {
+					stat.type = UserStatType::Integer;
+				}
+			}
+
+			if (!valid_conversion) {
+				g_steam->clear_changes();
+				return true;
+			}
+
+			// No validation done for the name
+			stat.id = stat_names[i];
+			g_steam->add_modification_stat(stat, new_value);
 		}
 
 		g_steam->launch_app(app);

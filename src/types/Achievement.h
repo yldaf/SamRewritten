@@ -44,7 +44,6 @@ typedef struct Achievement_t Achievement_t;
  * AchievementChange structure
  * Minimum information needed to change an
  * achievement
- * TODO add stats
  */
 struct AchievementChange_t {
     std::string id;

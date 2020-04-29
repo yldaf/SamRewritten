@@ -92,7 +92,7 @@ public:
     /**
      * Makes a list of all achievements for the currently running app
      */
-    void refresh_stats_and_achievements();
+    void refresh_achievements_and_stats();
 
     /**
      * Get achievements of the launched app
@@ -116,20 +116,26 @@ public:
     AppId_t get_current_appid() const { return m_app_id; };
 
     /**
-     * Adds a modification to be done on the launched app.
+     * Adds an achievement modification to be done on the launched app.
+     * Commit the change with commit_changes
      */
-    void add_modification_ach(const std::string& ach_id, const bool& new_value);
+    void add_modification_ach(const std::string& ach_id, bool new_value);
 
     /**
-     * Adds a modification to be done on the launched app.
+     * Removes an achievement modificatiothat would have been done on the launched app.
      */
     void remove_modification_ach(const std::string& ach_id);
 
     /**
-     * Adds a modification to be done on the launched app.
-     * Commit the change with commit_modifications.
+     * Adds a stat modification to be done on the launched app.
+     * Commit the change with commit_changes
      */
-    //void add_modification_stat(const std::string& stat_id, const double& new_value); // TODO: IMPLEMENT
+    void add_modification_stat(const StatValue_t& stat, std::any new_value);
+
+    /**
+     * Removes a stat modification that would have been done on the launched app.
+     */
+    void remove_modification_stat(const StatValue_t& stat);
 
     /**
      * Commit pending changes
@@ -171,6 +177,6 @@ private:
     std::vector<Achievement_t> m_achievements;
     std::vector<StatValue_t> m_stats;
 
-    std::map<std::string, bool> m_pending_ach_modifications;
-    std::map<std::string, double> m_pending_stat_modifications;
+    std::map<std::string, AchievementChange_t> m_pending_ach_modifications;
+    std::map<std::string, StatChange_t> m_pending_stat_modifications;
 };

@@ -17,11 +17,13 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("game_list", m_game_list);
     m_builder->get_widget("game_search_bar", m_game_search_bar);
     m_builder->get_widget("achievement_search_bar", m_achievement_search_bar);
+    m_builder->get_widget("stat_search_bar", m_stat_search_bar);
     m_builder->get_widget("achievement_list", m_achievement_list);
+    m_builder->get_widget("stat_list", m_stat_list);
     m_builder->get_widget("about_dialog", m_about_dialog);
     m_builder->get_widget("main_stack", m_main_stack);
     m_builder->get_widget("game_list_view", m_game_list_view);
-    m_builder->get_widget("achievement_list_view", m_achievement_list_view);
+    m_builder->get_widget("achievement_and_stat_notebook", m_achievement_and_stat_notebook);
     m_builder->get_widget("back_button", m_back_button);
     m_builder->get_widget("store_button", m_store_button);
     m_builder->get_widget("refresh_games_button", m_refresh_games_button);
@@ -33,14 +35,18 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("fetch_games_placeholder", m_fetch_games_placeholder);
     m_builder->get_widget("no_games_found_placeholder", m_no_games_found_placeholder);
     m_builder->get_widget("fetch_achievements_placeholder", m_fetch_achievements_placeholder);
+    m_builder->get_widget("fetch_stats_placeholder", m_fetch_stats_placeholder);
     m_builder->get_widget("no_achievements_found_placeholder", m_no_achievements_found_placeholder);
-
+    m_builder->get_widget("no_stats_found_placeholder", m_no_stats_found_placeholder);
+    
     // Connect them manually to slots
     signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_delete));
     signal_show().connect(sigc::mem_fun(this, &MainPickerWindow::on_refresh_games_button_clicked));
     m_game_list->signal_row_activated().connect(sigc::mem_fun(this, &MainPickerWindow::on_game_row_activated));
     m_game_search_bar->signal_search_changed().connect(sigc::mem_fun(this, &MainPickerWindow::on_game_search_changed));
     m_achievement_search_bar->signal_search_changed().connect(sigc::mem_fun(this, &MainPickerWindow::on_achievement_search_changed));
+    m_stat_search_bar->signal_search_changed().connect(sigc::mem_fun(this, &MainPickerWindow::on_stat_search_changed));
+    m_achievement_and_stat_notebook->signal_switch_page().connect(sigc::mem_fun(this, &MainPickerWindow::on_page_switched));
     m_refresh_games_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_refresh_games_button_clicked));
     m_refresh_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_refresh_achievements_button_clicked));
     m_back_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_back_button_clicked));
@@ -110,6 +116,36 @@ MainPickerWindow::on_achievement_search_changed() {
     }
 }
 // => on_achievement_search_changed
+
+void
+MainPickerWindow::on_stat_search_changed() {
+    const std::string filter_text = m_stat_search_bar->get_text();
+    m_stat_list->show_all();
+
+    if ( filter_text.empty() ) {
+        return;
+    }
+
+    for ( StatBoxRow* row : m_stat_list_rows ) {    
+        // stats don't have names, so use ids
+        if ( !strstri(row->get_stat().id, filter_text) ) {
+            row->hide();
+        }
+    }
+}
+// => on_stat_search_changed
+
+void
+MainPickerWindow::on_page_switched(Widget* page, guint page_number) {
+    // We only have two pages
+    if (page_number == 0) {
+        m_achievement_search_bar->set_visible(true);
+        m_stat_search_bar->set_visible(false);
+    } else {
+        m_achievement_search_bar->set_visible(false);
+        m_stat_search_bar->set_visible(true);
+    }
+}
 
 void
 MainPickerWindow::on_game_row_activated(Gtk::ListBoxRow* row) {
@@ -227,7 +263,7 @@ MainPickerWindow::reset_game_list() {
 // => reset_game_list
 
 void
-MainPickerWindow::reset_achievements_list() {
+MainPickerWindow::reset_achievement_list() {
     for ( AchievementBoxRow* row : m_achievement_list_rows) {    
         delete row;
         row = nullptr;
@@ -235,7 +271,18 @@ MainPickerWindow::reset_achievements_list() {
 
     m_achievement_list_rows.clear();
 }
-// => reset_achievements_list
+// => reset_achievement_list
+
+void
+MainPickerWindow::reset_stat_list() {
+    for ( StatBoxRow* row : m_stat_list_rows) {    
+        delete row;
+        row = nullptr;
+    }
+
+    m_stat_list_rows.clear();
+}
+// => reset_stat_list
 
 /**
  * Add a game to the list.
@@ -259,14 +306,13 @@ MainPickerWindow::add_to_achievement_list(const Achievement_t& achievement) {
 }
 // => add_to_achievement_list
 
-/**
- * Draws all the achievements that have not been shown yet
- */
 void
-MainPickerWindow::confirm_achievement_list() {
-    m_achievement_list->show_all();
+MainPickerWindow::add_to_stat_list(const StatValue_t& stat) {
+    StatBoxRow* row = new StatBoxRow(stat);
+    m_stat_list->insert(*row, -1);
+    m_stat_list_rows.push_back(row);
 }
-// => confirm_achievement_list
+// => add_to_stat_list
 
 /**
  * Draws all the games that have not been shown yet
@@ -277,6 +323,24 @@ MainPickerWindow::confirm_game_list() {
     m_input_appid_row.hide();
 }
 // => confirm_game_list
+
+/**
+ * Draws all the achievements that have not been shown yet
+ */
+void
+MainPickerWindow::confirm_achievement_list() {
+    m_achievement_list->show_all();
+}
+// => confirm_achievement_list
+
+/**
+ * Draws all the stats that have not been shown yet
+ */
+void
+MainPickerWindow::confirm_stat_list() {
+    m_stat_list->show_all();
+}
+// => confirm_stat_list
 
 /**
  * Refreshes the icon for the specified app ID
@@ -336,6 +400,13 @@ MainPickerWindow::show_fetch_achievements_placeholder() {
 // => show_fetch_achievements_placeholder
 
 void
+MainPickerWindow::show_fetch_stats_placeholder() {
+    m_stat_list->set_placeholder(*m_fetch_stats_placeholder);
+    m_fetch_stats_placeholder->show();
+}
+// => show_fetch_stats_placeholder
+
+void
 MainPickerWindow::show_no_achievements_found_placeholder() {
     m_achievement_list->set_placeholder(*m_no_achievements_found_placeholder);
     m_no_achievements_found_placeholder->show();
@@ -343,9 +414,17 @@ MainPickerWindow::show_no_achievements_found_placeholder() {
 // => show_no_achievements_found_placeholder
 
 void
+MainPickerWindow::show_no_stats_found_placeholder() {
+    m_stat_list->set_placeholder(*m_no_stats_found_placeholder);
+    m_no_stats_found_placeholder->show();
+}
+// => show_no_stats_found_placeholder
+
+void
 MainPickerWindow::switch_to_achievement_page() {
     m_back_button->set_visible(true);
     m_achievement_search_bar->set_visible(true);
+    m_stat_search_bar->set_visible(false);
     m_store_button->set_visible(true);
     m_refresh_achievements_button->set_visible(true);
     m_unlock_all_achievements_button->set_visible(true);
@@ -355,7 +434,10 @@ MainPickerWindow::switch_to_achievement_page() {
     m_refresh_games_button->set_visible(false);
     m_game_search_bar->set_visible(false);
 
-    m_main_stack->set_visible_child(*m_achievement_list_view);
+    m_main_stack->set_visible_child(*m_achievement_and_stat_notebook);
+    // Always switch to achievements page because a previously
+    // launched app may have left it on the stat tab
+    m_achievement_and_stat_notebook->set_current_page(0);
 }
 // => switch_to_achievement_page
 
@@ -363,6 +445,7 @@ void
 MainPickerWindow::switch_to_games_page() {
     m_back_button->set_visible(false);
     m_achievement_search_bar->set_visible(false);
+    m_stat_search_bar->set_visible(false);
     m_store_button->set_visible(false);
     m_refresh_achievements_button->set_visible(false);
     m_unlock_all_achievements_button->set_visible(false);
@@ -374,6 +457,8 @@ MainPickerWindow::switch_to_games_page() {
 
     m_main_stack->set_visible_child(*m_game_list_view);
     m_achievement_search_bar->set_text("");
-    reset_achievements_list();
+    m_stat_search_bar->set_text("");
+    reset_achievement_list();
+    reset_stat_list();
 }
 // => switch_to_games_page

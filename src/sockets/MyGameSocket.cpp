@@ -39,8 +39,8 @@ MyGameSocket::process_request(std::string request, bool& quit) {
             encode_achievements(handle, get_achievements(), get_stats());  // Write achievements to handle
             break;
 
-        case STORE_ACHIEVEMENTS:
-            process_changes( r.payload_to_ach_changes() );
+        case COMMIT_CHANGES:
+            process_changes(r.get_achievement_changes(), r.get_stat_changes());
             break;
 
         case QUIT_GAME:
@@ -203,7 +203,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                     sv.display_name = cast->DisplayName;
                     sv.id = cast->Id;
                     sv.incrementonly = cast->IncrementOnly;
-                    sv.original_value = value;
                     sv.value = value;
                     sv.permission = cast->Permission;
 
@@ -230,7 +229,6 @@ MyGameSocket::OnUserStatsReceived(UserStatsReceived_t *callback) {
                     sv.display_name = cast->DisplayName;
                     sv.id = cast->Id;
                     sv.incrementonly = cast->IncrementOnly;
-                    sv.original_value = value;
                     sv.value = value;
                     sv.permission = cast->Permission;
 
@@ -287,31 +285,59 @@ MyGameSocket::OnGlobalAchievementPercentagesReceived(GlobalAchievementPercentage
 }
 
 void
-MyGameSocket::process_changes(std::vector<AchievementChange_t> changes) {
+MyGameSocket::process_changes(std::vector<AchievementChange_t> achievement_changes, std::vector<StatChange_t> stat_changes) {
     ISteamUserStats *stats_api = SteamUserStats();
 
-    for (AchievementChange_t change : changes) {
+    for (AchievementChange_t change : achievement_changes) {
 
         const char* achievement_id = change.id.c_str();
 
         if (change.achieved) {
             // We want to unlock an achievement
-            if (!stats_api->SetAchievement(achievement_id)) {
-                std::cerr << "Unlocking achievement " << achievement_id << " failed " << std::endl;
+            std::cerr << "Unlocking achievement " << achievement_id;
+            if (stats_api->SetAchievement(achievement_id)) {
+                std::cerr << " succeeded";
             } else {
-                std::cerr << "Unlocked achievement " << achievement_id << std::endl;
+               std::cerr << " failed";
             }
         } else {
             // We want to relock an achievement
-            if (!stats_api->ClearAchievement(achievement_id)) {
-                std::cerr << "Relocking achievement " << achievement_id << " failed" << std::endl;
+            std::cerr << "Relocking achievement " << achievement_id << std::endl;
+            if (stats_api->ClearAchievement(achievement_id)) {
+                std::cerr << " succeeded";
             } else {
-                std::cerr << "Relocked achievement " << achievement_id << std::endl;
+               std::cerr << " failed";
             }
         }
+        std::cerr << std::endl;
+    }
 
-        //TODO: stats
+    for (StatChange_t change : stat_changes) {
 
+        const char* stat_id = change.id.c_str();
+
+        if (change.type == UserStatType::Integer) {
+            std::cerr << "Changing Integer stat to value " << std::to_string(std::any_cast<int>(change.new_value));
+
+            if (stats_api->SetStat(stat_id, std::any_cast<int>(change.new_value))) {
+                std::cerr << " succeeded";
+            } else {
+               std::cerr << " failed";
+            }
+        } else if (change.type == UserStatType::Float) {
+            std::cerr << "Changing Float stat to value" << std::to_string(std::any_cast<float>(change.new_value));
+            
+            if(stats_api->SetStat(stat_id, std::any_cast<float>(change.new_value))) {
+                std::cerr << " succeeded";
+            } else {
+               std::cerr << " failed";
+            }
+        } else {
+            // We would error out here, but we can't uncleanly shut down the child,
+            // and there's nothing else we can do.
+            std::cerr << "Not changing stat because type is unknown!";
+        }
+        std::cerr << std::endl;    
     }
 
     // Auto-commit after we receive everything

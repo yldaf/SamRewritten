@@ -3,6 +3,7 @@
 #include "../types/Game.h"
 #include "AsyncGuiLoader.h"
 #include "AchievementBoxRow.h"
+#include "StatBoxRow.h"
 #include "InputAppidBoxRow.h"
 #include "AppBoxRow.h"
 
@@ -13,6 +14,7 @@
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/searchentry.h>
 #include <gtkmm-3.0/gtkmm/scrolledwindow.h>
+#include <gtkmm-3.0/gtkmm/notebook.h>
 #include <gtkmm-3.0/gtkmm/modelbutton.h>
 #include <gtkmm-3.0/gtkmm/aboutdialog.h>
 #include <gtkmm-3.0/gtkmm/stack.h>
@@ -39,7 +41,13 @@ public:
      * Empty the achievements list, leaving only the placeholder widget,
      * which means the loading widget.
      */
-    void reset_achievements_list();
+    void reset_achievement_list();
+
+    /**
+     * Empty the stats list, leaving only the placeholder widget,
+     * which means the loading widget.
+     */
+    void reset_stat_list();
 
     /**
      * Adds a game to the game list. The new item will be added and saved,
@@ -54,6 +62,12 @@ public:
     void add_to_achievement_list(const Achievement_t& achievement);
 
     /**
+     * Adds stat to the stat list. The new item will be added 
+     * and saved, but not drawn.
+     */
+    void add_to_stat_list(const StatValue_t& stat);
+
+    /**
      * Shows all widget that has been added to the list, removes all
      * the deleted entries from the GUI list.
      */
@@ -64,6 +78,12 @@ public:
      * the deleted entries from the GUI list.
      */
     void confirm_achievement_list();
+
+    /**
+     * Shows all widget that has been added to the list, removes all
+     * the deleted entries from the GUI list.
+     */
+    void confirm_stat_list();
 
     /**
      * When a game is added to the list, the "missing icon" is used by default
@@ -96,14 +116,28 @@ public:
     void show_fetch_achievements_placeholder();
 
     /**
+     * Set the stat_list placeholder to the no stat found placeholder
+     * and show it
+     */
+    void show_fetch_stats_placeholder();
+
+    /**
      * Set the game_list placeholder to the fetching achievements placeholder
      * and show it
      */
     void show_no_achievements_found_placeholder();
+
+    /**
+     * Set the stat_list placeholder to the fetching stats placeholder
+     * and show it
+     */
+    void show_no_stats_found_placeholder();
 private:
     // Gtk Callbacks
     void on_game_search_changed();
     void on_achievement_search_changed();
+    void on_stat_search_changed();
+    void on_page_switched(Widget* page, guint page_number);
     void on_game_row_activated(Gtk::ListBoxRow* row);
     void on_refresh_games_button_clicked();
     void on_refresh_achievements_button_clicked();
@@ -133,19 +167,24 @@ private:
     Gtk::ModelButton *m_invert_all_achievements_button;
     Gtk::ListBox *m_game_list;
     Gtk::ListBox *m_achievement_list;
+    Gtk::ListBox *m_stat_list;
     Gtk::Stack *m_main_stack;
     Gtk::SearchEntry *m_game_search_bar;
     Gtk::SearchEntry *m_achievement_search_bar;
+    Gtk::SearchEntry *m_stat_search_bar;
     Gtk::ScrolledWindow *m_game_list_view;
-    Gtk::ScrolledWindow *m_achievement_list_view;
+    Gtk::Notebook *m_achievement_and_stat_notebook;
     Gtk::Box *m_fetch_games_placeholder;
     Gtk::Box *m_no_games_found_placeholder;
     Gtk::Box *m_fetch_achievements_placeholder;
+    Gtk::Box *m_fetch_stats_placeholder;
     Gtk::Box *m_no_achievements_found_placeholder;
+    Gtk::Box *m_no_stats_found_placeholder;
     
     InputAppidBoxRow m_input_appid_row;
 
     std::vector<AppBoxRow*> m_app_list_rows;
     std::vector<AchievementBoxRow*> m_achievement_list_rows;
+    std::vector<StatBoxRow*> m_stat_list_rows;
     AsyncGuiLoader m_async_loader;
 };

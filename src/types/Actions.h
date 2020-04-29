@@ -3,7 +3,7 @@
 // Message format shall be
 // all GET format
 #define GET_ACHIEVEMENTS_STR "GET_ACHIEVEMENTS"
-#define STORE_ACHIEVEMENTS_STR "STORE_ACHIEVEMENTS"
+#define COMMIT_CHANGES_STR "COMMIT_CHANGES"
 #define QUIT_GAME_STR "QUIT_GAME"
 
 // Mirroring structure of Achievement_t, should be combined with that
@@ -33,7 +33,7 @@
 // Would require more reorg of code structure
 enum SAM_ACTION {
     GET_ACHIEVEMENTS,
-    STORE_ACHIEVEMENTS,
+    COMMIT_CHANGES,
     QUIT_GAME,
     INVALID
 };
@@ -49,7 +49,7 @@ shown are taken in account.
 The server can also answer with more keys, but if so their value will likely be garbage value.
 
 
-# 1. Get all achievements for active game
+# 1. Get all achievements and stats for active game
 
 Request
 Client --> Server
@@ -98,12 +98,23 @@ Server --> Client
 Client --> Server
 
 {
-    SAM_ACTION_STR: STORE_ACHIEVEMENTS_STR
+    SAM_ACTION_STR: COMMIT_CHANGES_STR,
     ACHIEVEMENT_LIST_STR:
         [
             {
                 ID_STR: "ID"
                 ACHIEVED_STR: true/fase
+            },
+            .
+            .
+            .
+        ],
+    STAT_LIST_STR:
+        [
+            {
+                STAT_ID_STR: "ID",
+                STAT_TYPE_STR: <int cast of UserStatType>,
+                STAT_VALUE_STR: <int or float>
             },
             .
             .

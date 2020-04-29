@@ -114,3 +114,37 @@ void escape_html(std::string& data) {
 int zenity(const std::string text, const std::string type) {
     return system( std::string("zenity " + type + " --text=\"" + text + "\" 2> /dev/null").c_str() );
 }
+
+bool convert_user_stat_value(UserStatType type, std::string buf, std::any* new_value) {
+    bool valid_conversion = true;
+    size_t idx = 0;
+
+    try {
+        // Cast these in their native steam implementation so
+        // we don't truncate any user input precision,
+        // then upcast to version used in JSON transport.
+        //
+        // We could also plumb in input validation for the
+        // min/max/incremental values here
+        if (type == UserStatType::Integer) {
+            int a = std::stoi(buf, &idx);
+            *new_value = static_cast<long long>(a);
+        } else if (type == UserStatType::Float) {
+            float a = std::stof(buf, &idx);
+            *new_value = static_cast<double>(a);
+        } else {
+            std::cerr << "The stat value being converted has unrecognized type" << std::endl;
+            valid_conversion = false;
+        }
+    } catch(std::exception& e) {
+        // Invalid user input, but this is not fatal to the program
+        valid_conversion = false;
+    }
+
+    // If the whole string hasn't been consumed, treat it as invalid
+    if (buf[idx] != '\0') {
+        valid_conversion = false;
+    }
+
+    return valid_conversion;
+}

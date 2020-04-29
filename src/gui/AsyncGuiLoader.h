@@ -25,8 +25,9 @@ enum {
 
 enum {
     ACH_STATE_STARTED,                  /* start state */
-    ACH_STATE_WAITING_FOR_ACHIEVEMENTS, /* waiting for child to fetch achievements */
-    ACH_STATE_LOADING_GUI,              /* feeding game rows to the model */
+    ACH_STATE_WAITING_FOR_ACHIEVEMENTS_AND_STATS, /* waiting for child to fetch achievements and stats */
+    ACH_STATE_LOADING_ACHIEVEMENTS_GUI, /* feeding achievement rows to the model */
+    ACH_STATE_LOADING_STATS_GUI,        /* feeding stats rows to the model */
     ACH_STATE_DOWNLOADING_ICONS,        /* fire off icon downloads (to be added to the model) */
     ACH_STATE_FINISHED                  /* fin ish state */
 };
@@ -75,7 +76,6 @@ private:
     std::map<std::string, std::future<void>> m_achievement_icon_download_futures;
     std::future<void> m_owned_apps_future;
     std::future<void> m_achievements_future;
-    std::future<bool> m_schema_parser_future;
 
     /**
      * Mutex to prevent on_refresh_games_button_clicked from being reentrant
