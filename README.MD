@@ -37,7 +37,7 @@ If you're encountering issues building SamRewritten, make sure you have installe
 
 * **Arch** and variants: `$ sudo pacman -S gtkmm3 glibc gnutls yajl`
 
-* **openSUSE** Tumbleweed: `$ sudo zypper install gtkmm3 gcc-c++ gnutls libcurl-devel libyajl-devel-static`
+* **openSUSE** Tumbleweed, Leap 15.2+: `$ sudo zypper install gtkmm3 gcc-c++ gnutls libcurl-devel libyajl-devel-static`
 
 To run SamRewritten, simply launch `$ ./bin/launch.sh`
 
