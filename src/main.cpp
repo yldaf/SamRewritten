@@ -20,7 +20,6 @@
  *  Declare global variables imported from globals.h
  **************************************/
 MySteam* g_steam = nullptr;
-MainPickerWindow* g_main_gui = nullptr;
 MySteamClient* g_steamclient = nullptr;
 PerfMon* g_perfmon = nullptr;
 
@@ -46,9 +45,9 @@ main(int argc, char *argv[])
     // from a command-line interface
     if(!go_cli_mode(argc, argv)) {
         auto app = Gtk::Application::create(argc, argv);
-        g_main_gui = MainPickerWindowFactory::create();
+        MainPickerWindow* main_gui = MainPickerWindowFactory::create();
 
-        app->run(*g_main_gui);
+        app->run(*main_gui);
     }
 
     return EXIT_SUCCESS;

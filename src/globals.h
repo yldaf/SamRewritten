@@ -1,7 +1,6 @@
 #pragma once
 
 class MySteam;
-class MainPickerWindow;
 class MySteamClient;
 class PerfMon;
 
@@ -21,11 +20,6 @@ extern MySteamClient *g_steamclient;
  * stats, achievement icons, etc.
  */
 extern MySteam *g_steam;
-
-/**
- * g_main_gui is the main application window.
- */
-extern MainPickerWindow *g_main_gui;
 
 /**
  * A basic performance monitor. Used to log stuff along with process info.

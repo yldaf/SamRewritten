@@ -16,12 +16,7 @@ all: ${CURDIR}/bin/samrewritten
 	@echo -e "==== Nothing left to do."
 
 dev: CXXFLAGS += -g -DDEBUG_CERR
-dev: init
 dev: ${CURDIR}/bin/samrewritten
-
-init:
-	git config core.hooksPath .githooks
-	@echo "Hooks set to .githooks"
 
 clean:
 	${RMDIR} ${OBJDIR}
