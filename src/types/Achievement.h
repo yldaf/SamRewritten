@@ -49,6 +49,7 @@ typedef struct Achievement_t Achievement_t;
 struct AchievementChange_t {
     std::string id;
     bool achieved;
+    uint64_t num;
 };
 
 typedef struct AchievementChange_t AchievementChange_t;

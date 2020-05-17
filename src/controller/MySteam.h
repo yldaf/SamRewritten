@@ -8,6 +8,16 @@
 #include <vector>
 #include <map>
 
+enum MODIFICATION_SPACING {
+    EVEN_SPACING = 0,
+    RANDOM_SPACING = 1,
+};
+
+enum MODIFICATION_ORDER {
+    SELECTION_ORDER = 0,
+    RANDOM_ORDER = 1,
+};
+
 /**
  * MySteam is the highest-level class of the program. Use it to 
  * fake launch games, request unlocks, get icons, etc.
@@ -143,6 +153,11 @@ public:
     void commit_changes();
 
     /**
+     * Do a timed unlock
+     */
+    void commit_timed_modifications(uint64_t time, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order);
+
+    /**
      * Clear pending changes without committing them.
      */
     void clear_changes();
@@ -156,6 +171,11 @@ private:
      * Compare the app_name of a Game_t for sorting
      */
     static bool comp_app_name(Game_t app1, Game_t app2);
+
+    /**
+     * Compare the modification number for retriving the selection order
+     */
+    static bool comp_change_num(AchievementChange_t change1, AchievementChange_t change2);
 
     /**
      * Add special flags to achievements

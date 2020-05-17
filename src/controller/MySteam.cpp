@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <dirent.h>
 #include <bits/stdc++.h>
+#include <chrono>
 
 MySteam::MySteam() {
     // Cache folder
@@ -67,6 +68,15 @@ MySteam::comp_app_name(Game_t app1, Game_t app2) {
     return strcasecmp(app1.app_name.c_str(), app2.app_name.c_str()) < 0;
 }
 // => comp_app_name
+
+/**
+ * Compare the modification number for retriving the selection order
+ */
+bool 
+MySteam::comp_change_num(AchievementChange_t change1, AchievementChange_t change2) {
+    return change1.num < change2.num;
+}
+// => comp_change_num
 
 /**
  * Gets the unique instance. See "Singleton design pattern" for help
@@ -201,9 +211,28 @@ MySteam::add_modification_ach(const std::string& ach_id, bool new_value) {
     #ifdef DEBUG_CERR
     std::cout << "Adding achievement modification: " << ach_id << ", " << (new_value ? "to unlock" : "to relock") << std::endl;
     #endif
-    
+
+    // A value to save off the order we put them in the map
+    static uint64_t modification_num = 0;
+
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
-        m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value} ) );
+
+        modification_num++;
+        if (modification_num == 0) {
+            // We've overflowed UINT64_MAX modifications.. impressive
+            // Reset the current array
+            for (auto& [key, val] : m_pending_ach_modifications) {
+                val.num = ++modification_num;
+            }
+            modification_num++;
+            if (modification_num == 0) {
+                std::cerr << "Error: more than UINT64_MAX achievement modifications" << std::endl;
+                zenity();
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+        m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value, modification_num} ) );
     } else {
         std::cerr << "Warning: Cannot append " << ach_id << ", value already exists." << std::endl;
     }
@@ -304,6 +333,74 @@ MySteam::commit_changes() {
     m_pending_stat_modifications.clear();
 }
 // => commit_changes
+
+void
+MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order) {
+    // TODO: yield to GUI
+
+    // One more idea is to add the ability to commit modifications in
+    // the order of % players achieved, but that requires going and
+    // retrieving or otherwise carrying along that value. We can add
+    // that if anyone really wants it. That would also require actually
+    // fetching achievements in CLI mode.
+
+    std::vector<AchievementChange_t> achievement_changes;
+    std::vector<uint64_t> times;
+    uint64_t total_time_spent = 0;
+    size_t size = m_pending_ach_modifications.size();
+
+    if (size == 0) {
+        return;
+    }
+
+    // Generate spacings
+    for (size_t i = 0; i < size; i++)
+    {
+        if (spacing == EVEN_SPACING) {
+            times.push_back((i + 1) * (seconds / size));
+        } else {
+            times.push_back(seconds * (((double)rand()) / RAND_MAX));
+        }
+    }
+    
+    // Put times in order since we'll use the differences from one to the next
+    std::sort(times.begin(), times.end());
+
+    for ( const auto& [key, val] : m_pending_ach_modifications) {
+        achievement_changes.push_back(val);
+    }
+
+    // Apply ordering
+    if (order == SELECTION_ORDER) {
+        std::sort(achievement_changes.begin(), achievement_changes.end(), comp_change_num);
+    } else {
+        std::random_shuffle(achievement_changes.begin(), achievement_changes.end());
+    }
+
+    for (size_t i = 0; i < size; i++) {
+        std::cout << achievement_changes[i].id << std::endl;
+    }
+
+    // Execute
+    for (size_t i = 0; i < size; i++) {
+        std::this_thread::sleep_for(std::chrono::seconds(times[i] - total_time_spent));
+        total_time_spent += times[i];
+
+        // Give the function a dummy array with just the one change
+        std::vector<AchievementChange_t> achievement_change;
+        achievement_change.push_back(achievement_changes[i]);
+        std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_change, stat_changes));
+        if (!decode_ack(response)) {
+            std::cerr << "Failed to commit change!" << std::endl;
+        }
+
+        achievement_change.clear();
+    }
+
+    // Clear all pending achievement changes
+    m_pending_ach_modifications.clear();
+}
+// => commit_timed_modifications
 
 void
 MySteam::clear_changes() {
