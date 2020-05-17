@@ -33,7 +33,7 @@ For Arch users, there is also a PKGBUILD within the `package` folder if you wish
 
 If you're encountering issues building SamRewritten, make sure you have installed the required packages on your machine. You'll most likely need Steam, curl, yajl, GTK 3, and GLib.
 
-* **Ubuntu 19.04** and above: `$ sudo apt install libgtkmm-3.0-dev libcurl4-gnutls-dev libyajl-dev`
+* **Ubuntu 18.04** and above: `$ sudo apt install libgtkmm-3.0-dev libcurl4-gnutls-dev libyajl-dev`
 
 * **Arch** and variants: `$ sudo pacman -S gtkmm3 glibc gnutls yajl`
 
