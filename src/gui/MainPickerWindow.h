@@ -200,6 +200,7 @@ private:
     Gtk::RadioButton* m_order_of_selection_button;
     Gtk::RadioButton* m_order_of_percent_players_achieved_button;
     Gtk::RadioButton* m_order_random_button;
+    Gtk::CheckButton* m_exit_game_after_done_button;
     Gtk::Label* m_applying_modifications_label;
     Gtk::Button* m_submit_timed_modifications_button;
 

@@ -53,6 +53,7 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("applying_modifications_label", m_applying_modifications_label);
     m_builder->get_widget("cancel_timed_modifications_button", cancel_timed_modifications_button);
     m_builder->get_widget("submit_timed_modifications_button", m_submit_timed_modifications_button);
+    m_builder->get_widget("exit_game_after_done_button", m_exit_game_after_done_button);
 
     // Connect them manually to slots
     signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_delete));
@@ -286,6 +287,7 @@ MainPickerWindow::on_submit_timed_modifications_button_clicked() {
     uint64_t time = m_modifications_time_amount->get_value();
     MODIFICATION_SPACING spacing = EVEN_SPACING;
     MODIFICATION_ORDER order = SELECTION_ORDER;
+    bool exit_game_after_done = false;
     
     std::string active_time_id = m_modifications_time_unit->get_active_id();
 
@@ -321,6 +323,12 @@ MainPickerWindow::on_submit_timed_modifications_button_clicked() {
     }
 
     g_steam->commit_timed_modifications(time, spacing, order);
+
+    // Allows users to modify this while the modifications are taking place
+    // I guess that's a feature?
+    if (m_exit_game_after_done_button->get_active()) {
+        on_back_button_clicked();
+    }
 }
 // => on_submit_timed_modifications_button_clicked
 

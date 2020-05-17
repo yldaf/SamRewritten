@@ -379,18 +379,18 @@ MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spaci
     }
 
     for (size_t i = 0; i < size; i++) {
-        std::cout << "Unlock achievement" << achievement_changes[i].id << " in " << times[i] << " seconds"
+        std::cout << "Unlock achievement " << achievement_changes[i].id << " in " << times[i] << " seconds"
                   << " (or " << (((double)times[i]) / 60) << " minutes or " << (((double)times[i]) / 60) << " hours)" << std::endl;
     }
 
     // Execute
     for (size_t i = 0; i < size; i++) {
         uint64_t sleep_time = times[i] - total_time_spent;
-        std::cout << "Unlocking achievement" << achievement_changes[i].id << " in " << sleep_time << " seconds"
+        std::cout << "Unlocking achievement " << achievement_changes[i].id << " in " << sleep_time << " seconds"
                   << " (or " << (((double)sleep_time) / 60) << " minutes or " << ((((double)sleep_time) / 60) / 60) << " hours)" << std::endl;
 
         std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
-        total_time_spent += times[i];
+        total_time_spent = times[i];
 
         // Give the function a dummy array with just the one change
         std::vector<AchievementChange_t> achievement_change;
