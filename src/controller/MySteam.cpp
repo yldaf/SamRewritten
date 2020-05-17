@@ -345,6 +345,7 @@ MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spaci
     // fetching achievements in CLI mode.
 
     std::vector<AchievementChange_t> achievement_changes;
+    std::vector<StatChange_t> stat_changes;
     std::vector<uint64_t> times;
     uint64_t total_time_spent = 0;
     size_t size = m_pending_ach_modifications.size();
@@ -378,12 +379,17 @@ MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spaci
     }
 
     for (size_t i = 0; i < size; i++) {
-        std::cout << achievement_changes[i].id << std::endl;
+        std::cout << "Unlock achievement" << achievement_changes[i].id << " in " << times[i] << " seconds"
+                  << " (or " << (((double)times[i]) / 60) << " minutes or " << (((double)times[i]) / 60) << " hours)" << std::endl;
     }
 
     // Execute
     for (size_t i = 0; i < size; i++) {
-        std::this_thread::sleep_for(std::chrono::seconds(times[i] - total_time_spent));
+        uint64_t sleep_time = times[i] - total_time_spent;
+        std::cout << "Unlocking achievement" << achievement_changes[i].id << " in " << sleep_time << " seconds"
+                  << " (or " << (((double)sleep_time) / 60) << " minutes or " << ((((double)sleep_time) / 60) / 60) << " hours)" << std::endl;
+
+        std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
         total_time_spent += times[i];
 
         // Give the function a dummy array with just the one change
