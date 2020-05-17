@@ -40,7 +40,6 @@ AchievementBoxRow::AchievementBoxRow(const Achievement_t& data)
     // This is easy to workaround by using set_from_icon_name instead.
     Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>();
     more_info_image->set_from_icon_name("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
-    Gtk::Image yes = Gtk::Image("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
     Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
     Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
