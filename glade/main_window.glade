@@ -373,6 +373,7 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">random_spacing_button</property>
               </object>
@@ -388,6 +389,7 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -429,6 +431,7 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="active">True</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -444,6 +447,7 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="halign">start</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">order_of_selection_button</property>
               </object>
@@ -466,6 +470,7 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">False</property>
+            <property name="halign">start</property>
             <property name="active">True</property>
             <property name="draw_indicator">True</property>
           </object>

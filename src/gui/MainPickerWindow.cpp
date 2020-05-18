@@ -271,9 +271,7 @@ MainPickerWindow::on_close_timed_modifications_window(GdkEventAny* evt) {
     // here - maybe the user wants to use the same settings
     // for the next timed unlock!
 
-    m_submit_timed_modifications_button->show();
-    m_applying_modifications_label->hide();
-    m_timed_modifications_window->hide();
+    on_cancel_timed_modifications_button_clicked();
     return false;
 }
 // => on_close_timed_modifications_window
@@ -287,7 +285,6 @@ MainPickerWindow::on_submit_timed_modifications_button_clicked() {
     uint64_t time = m_modifications_time_amount->get_value();
     MODIFICATION_SPACING spacing = EVEN_SPACING;
     MODIFICATION_ORDER order = SELECTION_ORDER;
-    bool exit_game_after_done = false;
     
     std::string active_time_id = m_modifications_time_unit->get_active_id();
 
@@ -323,6 +320,9 @@ MainPickerWindow::on_submit_timed_modifications_button_clicked() {
     }
 
     g_steam->commit_timed_modifications(time, spacing, order);
+
+    // Reset the timed modifications window
+    on_cancel_timed_modifications_button_clicked();
 
     // Allows users to modify this while the modifications are taking place
     // I guess that's a feature?

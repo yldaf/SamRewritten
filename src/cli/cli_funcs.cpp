@@ -49,10 +49,14 @@ bool go_cli_mode(int argc, char* argv[]) {
         ("sort", "Sort option for --ls. You can leave empty or set to 'unlock_rate'", cxxopts::value<std::string>())
         ("unlock", "Unlock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
         ("lock", "Lock achievements for an AppId. Separate achievement names by a comma.", cxxopts::value<std::vector<std::string>>())
+        ("timed", "Do a timed achievement modification. Arguments that affect this are --amount, --units, --spacing, and --order")
+        ("amount", "Control the amount of time spent for --timed modifications. Specify units with --units. Default is 1000", cxxopts::value<uint64_t>())
+        ("units", "Control the units of time spent for --timed modifications. Set to 'seconds', 'minutes', 'hours', or 'days'. Default is seconds", cxxopts::value<std::string>())
+        ("spacing", "Control the spacing between appying each modification for --timed modifications. Set to 'even' or 'random'. Default is even", cxxopts::value<std::string>())
+        ("order", "Control the order --timed achievement modifications are applied in. Set to 'selection' or 'random'. Default is selection", cxxopts::value<std::string>())
         ("statnames", "Change stats for an AppId. Separate stat names by a comma. Use with statvalues to name the values in order", cxxopts::value<std::vector<std::string>>())
         ("statvalues", "Change stats for an AppId. Separate stat values by a comma. Use with statnames to name the values in order", cxxopts::value<std::vector<std::string>>())
         ("launch", "Actually just launch the app.");
-
 
     options.parse_positional({"app"});
 
@@ -165,7 +169,6 @@ bool go_cli_mode(int argc, char* argv[]) {
                 << (is_permission_protected(stat.permission) ? "Yes" : "No") << std::endl;
             }
         }
-        
     }
 
     if (result.count("unlock") > 0)
@@ -183,10 +186,6 @@ bool go_cli_mode(int argc, char* argv[]) {
         {
             g_steam->add_modification_ach(it, true);
         }
-
-        g_steam->launch_app(app);
-        g_steam->commit_changes();
-        g_steam->quit_game();
     }
 
     if (result.count("lock") > 0)
@@ -204,7 +203,68 @@ bool go_cli_mode(int argc, char* argv[]) {
         {
             g_steam->add_modification_ach(it, false);
         }
+    }
 
+    if (result.count("timed") > 0) {
+        cli = true;
+        if (app == 0)
+        {
+            std::cout << "Please provide an AppId argument before unlocking achievements." << std::endl;
+            return true;
+        }
+
+        uint64_t time = 1000; 
+        MODIFICATION_SPACING spacing = EVEN_SPACING;
+        MODIFICATION_ORDER order = SELECTION_ORDER;
+
+        if (result.count("amount") > 0) {
+            time = result["amount"].as<uint64_t>();
+        }
+
+        std::cout << "time: " << time << std::endl; 
+
+        if (result.count("units") > 0) {
+            std::string units = result["units"].as<std::string>();
+
+            if (units == "seconds") {
+                // Do nothing
+            } else if (units == "minutes") {
+                time *= 60;
+            } else if (units == "hours") {
+                time *= 60 * 60;
+            } else if (units == "days") {
+                time *= 60 * 60 * 24;
+            } else {
+                std::cerr << "invalid time units:" << units << std::endl;
+                return true;
+            }
+        }
+
+        if (result.count("spacing") > 0) {
+            std::string spacing_input = result["spacing"].as<std::string>();
+
+            if (spacing_input == "even") {
+                spacing = EVEN_SPACING;
+            } else if (spacing_input == "random") {
+                spacing = RANDOM_SPACING;
+            }
+        }
+
+        if (result.count("order") > 0) {
+            std::string order_input = result["order"].as<std::string>();
+
+            if (order_input == "selection") {
+                order = SELECTION_ORDER;
+            } else if (order_input == "random") {
+                order = RANDOM_ORDER;
+            }
+        }
+
+        g_steam->launch_app(app);
+        g_steam->commit_timed_modifications(time, spacing, order);
+        g_steam->quit_game();
+
+    } else {
         g_steam->launch_app(app);
         g_steam->commit_changes();
         g_steam->quit_game();
