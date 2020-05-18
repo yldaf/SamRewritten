@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <dirent.h>
 #include <bits/stdc++.h>
-#include <chrono>
 
 MySteam::MySteam() {
     // Cache folder
@@ -311,47 +310,37 @@ MySteam::remove_modification_stat(const StatValue_t& stat) {
  */
 void
 MySteam::commit_changes() {
-    std::vector<AchievementChange_t> achievement_changes;
-    std::vector<StatChange_t> stat_changes;
-
     for ( const auto& [key, val] : m_pending_ach_modifications) {
-        achievement_changes.push_back(val);
+        m_achievement_changes.push_back(val);
     }
 
     for ( const auto& [key, val] : m_pending_stat_modifications) {
-        stat_changes.push_back(val);
+        m_stat_changes.push_back(val);
     }
     
-    std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_changes, stat_changes));
+    std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(m_achievement_changes, m_stat_changes));
 
     if (!decode_ack(response)) {
         std::cerr << "Failed to commit changes!" << std::endl;
     }
 
-    // Clear all pending changes
-    m_pending_ach_modifications.clear();
-    m_pending_stat_modifications.clear();
+    clear_changes();
 }
 // => commit_changes
 
-void
-MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order) {
-    // TODO: yield to GUI
-
+std::vector<uint64_t>
+MySteam::setup_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order) {
     // One more idea is to add the ability to commit modifications in
     // the order of % players achieved, but that requires going and
     // retrieving or otherwise carrying along that value. We can add
     // that if anyone really wants it. That would also require actually
     // fetching achievements in CLI mode.
 
-    std::vector<AchievementChange_t> achievement_changes;
-    std::vector<StatChange_t> stat_changes;
     std::vector<uint64_t> times;
-    uint64_t total_time_spent = 0;
     size_t size = m_pending_ach_modifications.size();
 
     if (size == 0) {
-        return;
+        return times;
     }
 
     // Generate spacings
@@ -363,56 +352,62 @@ MySteam::commit_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spaci
             times.push_back(seconds * (((double)rand()) / RAND_MAX));
         }
     }
-    
-    // Put times in order since we'll use the differences from one to the next
-    std::sort(times.begin(), times.end());
 
     for ( const auto& [key, val] : m_pending_ach_modifications) {
-        achievement_changes.push_back(val);
+        m_achievement_changes.push_back(val);
     }
 
     // Apply ordering
     if (order == SELECTION_ORDER) {
-        std::sort(achievement_changes.begin(), achievement_changes.end(), comp_change_num);
+        std::sort(m_achievement_changes.begin(), m_achievement_changes.end(), comp_change_num);
     } else {
-        std::random_shuffle(achievement_changes.begin(), achievement_changes.end());
+        std::random_shuffle(m_achievement_changes.begin(), m_achievement_changes.end());
     }
 
     for (size_t i = 0; i < size; i++) {
-        std::cout << "Unlock achievement " << achievement_changes[i].id << " in " << times[i] << " seconds"
+        std::cout << "Modify achievement " << m_achievement_changes[i].id << " in " << times[i] << " seconds"
                   << " (or " << (((double)times[i]) / 60) << " minutes or " << (((double)times[i]) / 60) << " hours)" << std::endl;
     }
 
-    // Execute
-    for (size_t i = 0; i < size; i++) {
-        uint64_t sleep_time = times[i] - total_time_spent;
-        std::cout << "Unlocking achievement " << achievement_changes[i].id << " in " << sleep_time << " seconds"
-                  << " (or " << (((double)sleep_time) / 60) << " minutes or " << ((((double)sleep_time) / 60) / 60) << " hours)" << std::endl;
+    // Put times in order since we'll use the differences from one to the next
+    std::sort(times.begin(), times.end());
 
-        std::this_thread::sleep_for(std::chrono::seconds(sleep_time));
-        total_time_spent = times[i];
-
-        // Give the function a dummy array with just the one change
-        std::vector<AchievementChange_t> achievement_change;
-        achievement_change.push_back(achievement_changes[i]);
-        std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_change, stat_changes));
-        if (!decode_ack(response)) {
-            std::cerr << "Failed to commit change!" << std::endl;
-        }
-
-        achievement_change.clear();
+    // Make relative times
+    for (size_t i = 1; i < size; i++)
+    {
+        times[i] = times[i] - times[i - 1];
     }
 
-    // Clear all pending achievement changes
-    m_pending_ach_modifications.clear();
+    return times;   
 }
 // => commit_timed_modifications
+
+void
+MySteam::commit_next_timed_modification() {
+    // Give the function a dummy array with just the one change
+    std::vector<AchievementChange_t> achievement_change;
+    achievement_change.push_back(m_achievement_changes[0]);
+    std::string response = m_ipc_socket->request_response(make_commit_changes_request_string(achievement_change, m_stat_changes));
+    if (!decode_ack(response)) {
+        std::cerr << "Failed to commit change!" << std::endl;
+    }
+
+    m_achievement_changes.erase(m_achievement_changes.begin());
+
+    if (m_achievement_changes.empty()) {
+        // Just clear the stats for now even though we don't apply them...
+        // The GUI caller is going to reset the display anyway
+        clear_changes();
+    }
+}
 
 void
 MySteam::clear_changes() {
     // Clear all pending changes
     m_pending_ach_modifications.clear();
     m_pending_stat_modifications.clear();
+    m_achievement_changes.clear();
+    m_stat_changes.clear();
 }
 // => clear_changes
 

@@ -155,6 +155,9 @@ private:
     void on_cancel_timed_modifications_button_clicked();
     bool on_close_timed_modifications_window(GdkEventAny* evt);
     void on_submit_timed_modifications_button_clicked();
+    bool on_timer_expire();
+    void schedule_timer();
+
     bool on_delete(GdkEventAny* evt);
 
     // Private Methods
@@ -198,7 +201,6 @@ private:
     Gtk::RadioButton* m_even_spacing_button;
     Gtk::RadioButton* m_random_spacing_button;
     Gtk::RadioButton* m_order_of_selection_button;
-    Gtk::RadioButton* m_order_of_percent_players_achieved_button;
     Gtk::RadioButton* m_order_random_button;
     Gtk::CheckButton* m_exit_game_after_done_button;
     Gtk::Label* m_applying_modifications_label;
@@ -210,4 +212,7 @@ private:
     std::vector<AchievementBoxRow*> m_achievement_list_rows;
     std::vector<StatBoxRow*> m_stat_list_rows;
     AsyncGuiLoader m_async_loader;
+
+    sigc::connection m_timed_modifications_timer;
+    std::vector<uint64_t> m_timed_modification_times;
 };

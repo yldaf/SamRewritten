@@ -67,6 +67,20 @@ Usage:
                         achievement names by a comma.
       --lock arg        Lock achievements for an AppId. Separate achievement
                         names by a comma.
+      --timed           Do a timed achievement modification. Arguments that
+                        affect this are --amount, --units, --spacing, and
+                        --order
+      --amount arg      Control the amount of time spent for --timed
+                        modifications. Specify units with --units. Default is 1000
+      --units arg       Control the units of time spent for --timed
+                        modifications. Set to 'seconds', 'minutes', 'hours', or 'days'.
+                        Default is seconds
+      --spacing arg     Control the spacing between appying each modification
+                        for --timed modifications. Set to 'even' or 'random'.
+                        Default is even
+      --order arg       Control the order --timed achievement modifications
+                        are applied in. Set to 'selection' or 'random'. Default
+                        is selection
       --statnames arg   Change stats for an AppId. Separate stat names by a
                         comma. Use with statvalues to name the values in order
       --statvalues arg  Change stats for an AppId. Separate stat values by a

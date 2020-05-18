@@ -153,9 +153,17 @@ public:
     void commit_changes();
 
     /**
-     * Do a timed unlock
+     * Setup a timed unlock
+     * The caller is responsible for calling commit_next_timed_modification
+     * after the next time value has elapsed. Times are relative to the previous
+     * one in the series.
      */
-    void commit_timed_modifications(uint64_t time, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order);
+    std::vector<uint64_t> setup_timed_modifications(uint64_t time, MODIFICATION_SPACING spacing, MODIFICATION_ORDER order);
+
+    /**
+     * Modify the next achievement in a series 
+     */
+    void commit_next_timed_modification(void);
 
     /**
      * Clear pending changes without committing them.
@@ -199,4 +207,7 @@ private:
 
     std::map<std::string, AchievementChange_t> m_pending_ach_modifications;
     std::map<std::string, StatChange_t> m_pending_stat_modifications;
+
+    std::vector<AchievementChange_t> m_achievement_changes;
+    std::vector<StatChange_t> m_stat_changes;
 };

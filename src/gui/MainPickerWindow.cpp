@@ -5,6 +5,7 @@
 #include "../types/Achievement.h"
 #include "../controller/MySteam.h"
 
+#include <glibmm/main.h>
 #include <iostream>
 
 
@@ -48,7 +49,6 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("even_spacing_button", m_even_spacing_button);
     m_builder->get_widget("random_spacing_button", m_random_spacing_button);
     m_builder->get_widget("order_of_selection_button", m_order_of_selection_button);
-    m_builder->get_widget("order_of_percent_players_achieved_button", m_order_of_percent_players_achieved_button);
     m_builder->get_widget("order_random_button", m_order_random_button);
     m_builder->get_widget("applying_modifications_label", m_applying_modifications_label);
     m_builder->get_widget("cancel_timed_modifications_button", cancel_timed_modifications_button);
@@ -259,6 +259,13 @@ MainPickerWindow::on_cancel_timed_modifications_button_clicked() {
     // here - maybe the user wants to use the same settings
     // for the next timed unlock!
 
+    // If timer was active, reset the list because we don't bother
+    // to keep track of what's been reset
+    if (m_timed_modifications_timer.connected()) {
+        m_timed_modifications_timer.disconnect();
+        on_refresh_achievements_button_clicked();
+    }
+
     m_submit_timed_modifications_button->show();
     m_applying_modifications_label->hide();
     m_timed_modifications_window->hide();
@@ -313,24 +320,51 @@ MainPickerWindow::on_submit_timed_modifications_button_clicked() {
 
     if (m_order_of_selection_button->get_active()) {
         order = SELECTION_ORDER;
-    } else if (m_order_random_button->get_active()){
+    } else if (m_order_random_button->get_active()) {
         order = RANDOM_ORDER;
     } else {
         std::cerr << "unkown order!" << std::endl;
     }
 
-    g_steam->commit_timed_modifications(time, spacing, order);
+    m_timed_modification_times = g_steam->setup_timed_modifications(time, spacing, order);
 
-    // Reset the timed modifications window
-    on_cancel_timed_modifications_button_clicked();
-
-    // Allows users to modify this while the modifications are taking place
-    // I guess that's a feature?
-    if (m_exit_game_after_done_button->get_active()) {
-        on_back_button_clicked();
-    }
+    schedule_timer();
 }
 // => on_submit_timed_modifications_button_clicked
+
+bool
+MainPickerWindow::on_timer_expire() {
+    m_timed_modification_times.erase(m_timed_modification_times.begin());
+    g_steam->commit_next_timed_modification();
+    schedule_timer();
+    return G_SOURCE_REMOVE;
+}
+// => on_timer_expire
+
+void
+MainPickerWindow::schedule_timer() {
+    if (!m_timed_modification_times.empty()) {
+        std::cout << "Modifying next achievement in " << m_timed_modification_times[0] << " seconds"
+                  << " (or " << (((double)m_timed_modification_times[0]) / 60) << " minutes or "
+                  << ((((double)m_timed_modification_times[0]) / 60) / 60) << " hours)" << std::endl;
+
+        m_timed_modifications_timer = Glib::signal_timeout().connect_seconds(
+                                            sigc::mem_fun(this, &MainPickerWindow::on_timer_expire),
+                                            m_timed_modification_times[0]);
+    } else {
+        // Reset the timed modifications window
+        on_cancel_timed_modifications_button_clicked();
+
+        // Allows users to modify this while the modifications are taking place
+        // I guess that's a feature?
+        if (m_exit_game_after_done_button->get_active()) {
+            on_back_button_clicked();
+        } else {
+            m_async_loader.populate_achievements();
+        }
+    }
+}
+// => schedule_timer
 
 bool
 MainPickerWindow::on_delete(GdkEventAny* evt) {
