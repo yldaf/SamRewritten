@@ -352,6 +352,10 @@ MainPickerWindow::schedule_timer() {
                                             sigc::mem_fun(this, &MainPickerWindow::on_timer_expire),
                                             m_timed_modification_times[0]);
     } else {
+        // Disconnect ourself before calling next function,
+        // which checks for connection
+        m_timed_modifications_timer.disconnect();
+
         // Reset the timed modifications window
         on_cancel_timed_modifications_button_clicked();
 
