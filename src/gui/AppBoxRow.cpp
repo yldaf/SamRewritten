@@ -3,6 +3,7 @@
  #include <gtkmm-3.0/gtkmm/box.h>
  #include <gtkmm-3.0/gtkmm/arrow.h>
  #include <gtkmm-3.0/gtkmm/label.h>
+#include "../common/GtkDefineHelper.h"
 
  #define APP_BOX_ROW_HEIGHT 80
 

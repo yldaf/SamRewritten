@@ -9,6 +9,7 @@
 #include <gtkmm-3.0/gtkmm/progressbar.h>
 #include <gtkmm-3.0/gtkmm/label.h>
 #include <gtkmm-3.0/gtkmm/menubutton.h>
+#include "../common/GtkDefineHelper.h"
 
 #define ACH_BOX_ROW_ICON_LOCKED "changes-prevent"
 #define ACH_BOX_ROW_ICON_UNLOCKED "changes-allow"

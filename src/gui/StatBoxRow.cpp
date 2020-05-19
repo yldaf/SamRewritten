@@ -10,6 +10,7 @@
 #include <gtkmm-3.0/gtkmm/popovermenu.h>
 #include <gtkmm-3.0/gtkmm/separator.h>
 #include <gtkmm-3.0/gtkmm/menubutton.h>
+#include "../common/GtkDefineHelper.h"
 
 
 StatBoxRow::StatBoxRow(const StatValue_t& data) 
