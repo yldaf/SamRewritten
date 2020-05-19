@@ -4,7 +4,7 @@
 #include <iostream>
 
 MainPickerWindow*
-MainPickerWindowFactory::create() {
+MainPickerWindowFactory::create(AppId_t initial_app_id) {
     const std::string ui_file = "glade/main_window.glade";
     Glib::RefPtr<Gtk::Builder> builder;
 
@@ -18,7 +18,7 @@ MainPickerWindowFactory::create() {
     }
     
     MainPickerWindow* window = nullptr;
-    builder->get_widget_derived("main_window", window);
+    builder->get_widget_derived("main_window", window, initial_app_id);
     
     if (window)
     {

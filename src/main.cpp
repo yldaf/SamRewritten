@@ -39,14 +39,22 @@ main(int argc, char *argv[])
     g_steam = MySteam::get_instance();
     g_steamclient = new MySteamClient();
     g_perfmon->log("Globals initialized.");
+    AppId_t initial_app_id;
 
     // Check for command-line options, which may prevent showing the GUI
     // Note that a rewriting should be done to further separate the GUI
     // from a command-line interface
-    if(!go_cli_mode(argc, argv)) {
+    if(!go_cli_mode(argc, argv, &initial_app_id)) {
         auto app = Gtk::Application::create(argc, argv);
-        MainPickerWindow* main_gui = MainPickerWindowFactory::create();
+        MainPickerWindow* main_gui = MainPickerWindowFactory::create(initial_app_id);
 
+        // Clear commandline parameters, otherwise this errors out with "Unknown option <parameter>"
+        // Constructors declarations in the gtkmm libraries have some links to bug reports about
+        // needing argc, argv...
+        if (argc > 1) {
+            argv[1] = NULL;
+        }
+        argc = 1;
         app->run(*main_gui);
     }
 

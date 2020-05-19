@@ -31,7 +31,7 @@ public:
      * Regular GtkMM constructor
      * https://developer.gnome.org/gtkmm-tutorial/stable/sec-builder-using-derived-widgets.html
      */
-    MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder);
+    MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder, AppId_t initial_app_id);
     virtual ~MainPickerWindow();
 
     /**
@@ -214,6 +214,7 @@ private:
     Gtk::Button* m_submit_timed_modifications_button;
 
     InputAppidBoxRow m_input_appid_row;
+    AppId_t m_initial_app_id;
 
     std::vector<AppBoxRow*> m_app_list_rows;
     std::vector<AchievementBoxRow*> m_achievement_list_rows;

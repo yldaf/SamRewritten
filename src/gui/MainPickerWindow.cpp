@@ -9,9 +9,10 @@
 #include <iostream>
 
 
-MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder)
+MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder, AppId_t initial_app_id)
 : Gtk::ApplicationWindow(cobject),
   m_builder(builder),
+  m_initial_app_id(initial_app_id),
   m_async_loader(this)
 {
     Gtk::Button* cancel_timed_modifications_button;
@@ -215,6 +216,13 @@ void
 MainPickerWindow::on_refresh_games_button_clicked() {
     m_game_search_bar->set_text("");
     m_async_loader.populate_apps();
+
+    if (m_initial_app_id != 0) {
+        switch_to_achievement_page();
+        g_steam->launch_app(m_initial_app_id);
+        m_async_loader.populate_achievements();
+        m_initial_app_id = 0;
+    }
 }
 // => on_refresh_games_button_clicked
 

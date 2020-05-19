@@ -94,8 +94,6 @@ MySteam::get_instance() {
 bool 
 MySteam::launch_app(AppId_t appID) {
     // Print an error if a game is already launched
-    // allow multiple games at the same time in the future via new window launching
-
     if (m_ipc_socket != nullptr) {
         std::cerr << "I will not launch the game as one is already running" << std::endl;
         return false;

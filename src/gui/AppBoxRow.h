@@ -15,6 +15,7 @@ public:
     Game_t get_app() const;
 
 private:
+    void launch_new_window();
     Game_t m_app;
 
 protected:
