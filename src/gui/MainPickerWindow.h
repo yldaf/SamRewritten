@@ -175,6 +175,13 @@ private:
     Gtk::ModelButton *m_unlock_all_achievements_button;
     Gtk::ModelButton *m_lock_all_achievements_button;
     Gtk::ModelButton *m_invert_all_achievements_button;
+    // Currently these are checkbuttons and don't close the popover
+    // when they're clicked. That might be desirable.
+    // They could be made to be Gtk::ModelButton's like the other
+    // ones with role of Gtk::BUTTON_ROLE_CHECK, but that behaves
+    // approximately the same way and doesn't close the popover
+    Gtk::CheckButton *m_display_only_locked_button;
+    Gtk::CheckButton *m_display_only_unlocked_button;
     Gtk::ModelButton *m_start_timed_modifications_button;
     Gtk::ListBox *m_game_list;
     Gtk::ListBox *m_achievement_list;
