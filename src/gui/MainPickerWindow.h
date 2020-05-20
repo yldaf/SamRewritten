@@ -18,6 +18,9 @@
 #include <gtkmm-3.0/gtkmm/modelbutton.h>
 #include <gtkmm-3.0/gtkmm/aboutdialog.h>
 #include <gtkmm-3.0/gtkmm/stack.h>
+#include <gtkmm-3.0/gtkmm/spinbutton.h>
+#include <gtkmm-3.0/gtkmm/combobox.h>
+#include <gtkmm-3.0/gtkmm/radiobutton.h>
 
 /**
  * The main GUI class to display both the games ans the achievements to the user
@@ -144,10 +147,17 @@ private:
     void on_back_button_clicked();
     void on_store_button_clicked();
     void on_invert_all_achievements_button_clicked();
+    void on_start_timed_modifications_button_clicked();
     void on_lock_all_achievements_button_clicked();
     void on_unlock_all_achievements_button_clicked();
     void on_about_button_clicked();
     void on_close_about_dialog(int response_id);
+    void on_cancel_timed_modifications_button_clicked();
+    bool on_close_timed_modifications_window(GdkEventAny* evt);
+    void on_submit_timed_modifications_button_clicked();
+    bool on_timer_expire();
+    void schedule_timer();
+
     bool on_delete(GdkEventAny* evt);
 
     // Private Methods
@@ -165,6 +175,7 @@ private:
     Gtk::ModelButton *m_unlock_all_achievements_button;
     Gtk::ModelButton *m_lock_all_achievements_button;
     Gtk::ModelButton *m_invert_all_achievements_button;
+    Gtk::ModelButton *m_start_timed_modifications_button;
     Gtk::ListBox *m_game_list;
     Gtk::ListBox *m_achievement_list;
     Gtk::ListBox *m_stat_list;
@@ -180,11 +191,28 @@ private:
     Gtk::Box *m_fetch_stats_placeholder;
     Gtk::Box *m_no_achievements_found_placeholder;
     Gtk::Box *m_no_stats_found_placeholder;
-    
+
+    Gtk::Window *m_timed_modifications_window;
+    Gtk::SpinButton* m_modifications_time_amount;
+    Gtk::ComboBox* m_modifications_time_unit;
+    // Since GTK doesn't offer an easy way to get the active
+    // button (https://gitlab.gnome.org/GNOME/gtk/issues/243)
+    // it's simpler to just store off the few we need..
+    Gtk::RadioButton* m_even_spacing_button;
+    Gtk::RadioButton* m_random_spacing_button;
+    Gtk::RadioButton* m_order_of_selection_button;
+    Gtk::RadioButton* m_order_random_button;
+    Gtk::CheckButton* m_exit_game_after_done_button;
+    Gtk::Label* m_applying_modifications_label;
+    Gtk::Button* m_submit_timed_modifications_button;
+
     InputAppidBoxRow m_input_appid_row;
 
     std::vector<AppBoxRow*> m_app_list_rows;
     std::vector<AchievementBoxRow*> m_achievement_list_rows;
     std::vector<StatBoxRow*> m_stat_list_rows;
     AsyncGuiLoader m_async_loader;
+
+    sigc::connection m_timed_modifications_timer;
+    std::vector<uint64_t> m_timed_modification_times;
 };

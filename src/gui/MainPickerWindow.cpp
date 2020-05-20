@@ -5,6 +5,7 @@
 #include "../types/Achievement.h"
 #include "../controller/MySteam.h"
 
+#include <glibmm/main.h>
 #include <iostream>
 
 
@@ -13,6 +14,8 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
   m_builder(builder),
   m_async_loader(this)
 {
+    Gtk::Button* cancel_timed_modifications_button;
+
     // Load the required widgets through the builder
     m_builder->get_widget("game_list", m_game_list);
     m_builder->get_widget("game_search_bar", m_game_search_bar);
@@ -32,13 +35,26 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("unlock_all_achievements_button", m_unlock_all_achievements_button);
     m_builder->get_widget("lock_all_achievements_button", m_lock_all_achievements_button);
     m_builder->get_widget("invert_all_achievements_button", m_invert_all_achievements_button);
+    m_builder->get_widget("start_timed_modifications_button", m_start_timed_modifications_button);
     m_builder->get_widget("fetch_games_placeholder", m_fetch_games_placeholder);
     m_builder->get_widget("no_games_found_placeholder", m_no_games_found_placeholder);
     m_builder->get_widget("fetch_achievements_placeholder", m_fetch_achievements_placeholder);
     m_builder->get_widget("fetch_stats_placeholder", m_fetch_stats_placeholder);
     m_builder->get_widget("no_achievements_found_placeholder", m_no_achievements_found_placeholder);
     m_builder->get_widget("no_stats_found_placeholder", m_no_stats_found_placeholder);
-    
+
+    m_builder->get_widget("timed_modifications_window", m_timed_modifications_window);
+    m_builder->get_widget("modifications_time_amount", m_modifications_time_amount);
+    m_builder->get_widget("modifications_time_unit", m_modifications_time_unit);
+    m_builder->get_widget("even_spacing_button", m_even_spacing_button);
+    m_builder->get_widget("random_spacing_button", m_random_spacing_button);
+    m_builder->get_widget("order_of_selection_button", m_order_of_selection_button);
+    m_builder->get_widget("order_random_button", m_order_random_button);
+    m_builder->get_widget("applying_modifications_label", m_applying_modifications_label);
+    m_builder->get_widget("cancel_timed_modifications_button", cancel_timed_modifications_button);
+    m_builder->get_widget("submit_timed_modifications_button", m_submit_timed_modifications_button);
+    m_builder->get_widget("exit_game_after_done_button", m_exit_game_after_done_button);
+
     // Connect them manually to slots
     signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_delete));
     signal_show().connect(sigc::mem_fun(this, &MainPickerWindow::on_refresh_games_button_clicked));
@@ -52,10 +68,14 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_back_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_back_button_clicked));
     m_store_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_store_button_clicked));
     m_about_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_about_button_clicked));
-    m_invert_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_invert_all_achievements_button_clicked));
-    m_lock_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_lock_all_achievements_button_clicked));
     m_unlock_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_unlock_all_achievements_button_clicked));
+    m_lock_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_lock_all_achievements_button_clicked));
+    m_invert_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_invert_all_achievements_button_clicked));
+    m_start_timed_modifications_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_start_timed_modifications_button_clicked));
     m_about_dialog->signal_response().connect(sigc::mem_fun(this, &MainPickerWindow::on_close_about_dialog));
+    m_timed_modifications_window->signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_close_timed_modifications_window));
+    cancel_timed_modifications_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_cancel_timed_modifications_button_clicked));
+    m_submit_timed_modifications_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_submit_timed_modifications_button_clicked));
 
     // Finishing touches
     m_game_list->insert(m_input_appid_row, -1);
@@ -196,15 +216,6 @@ MainPickerWindow::on_back_button_clicked() {
 // => on_back_button_clicked
 
 void
-MainPickerWindow::on_invert_all_achievements_button_clicked() {
-    for ( AchievementBoxRow* row : m_achievement_list_rows )
-    {
-        row->invert_scripted();
-    }
-}
-// => on_invert_all_achievements_button_clicked
-
-void
 MainPickerWindow::on_lock_all_achievements_button_clicked() {
     for ( AchievementBoxRow* row : m_achievement_list_rows )
     {
@@ -221,6 +232,143 @@ MainPickerWindow::on_unlock_all_achievements_button_clicked() {
     }
 }
 // => on_unlock_all_achievements_button_clicked
+
+void
+MainPickerWindow::on_invert_all_achievements_button_clicked() {
+    for ( AchievementBoxRow* row : m_achievement_list_rows )
+    {
+        row->invert_scripted();
+    }
+}
+// => on_invert_all_achievements_button_clicked
+
+void
+MainPickerWindow::on_start_timed_modifications_button_clicked() {
+    // The main window cannot be interacted with while the
+    // timed modification window is open because the timed
+    // modification window is a dialog and has the modal
+    // attribute set. This combination lets us show/hide it
+    // without needing extra code to do set_modal/set_transient_for
+    m_timed_modifications_window->show();
+}
+// => on_start_timed_modifications_button_clicked
+
+void
+MainPickerWindow::on_cancel_timed_modifications_button_clicked() {
+    // Don't revert values in the timed modifications box
+    // here - maybe the user wants to use the same settings
+    // for the next timed unlock!
+
+    // If timer was active, reset the list because we don't bother
+    // to keep track of what's been reset
+    if (m_timed_modifications_timer.connected()) {
+        m_timed_modifications_timer.disconnect();
+        on_refresh_achievements_button_clicked();
+    }
+
+    m_submit_timed_modifications_button->show();
+    m_applying_modifications_label->hide();
+    m_timed_modifications_window->hide();
+}
+// => on_close_timed_modifications_window
+
+bool
+MainPickerWindow::on_close_timed_modifications_window(GdkEventAny* evt) {
+    // Don't revert values in the timed modifications box
+    // here - maybe the user wants to use the same settings
+    // for the next timed unlock!
+
+    on_cancel_timed_modifications_button_clicked();
+    return false;
+}
+// => on_close_timed_modifications_window
+
+void
+MainPickerWindow::on_submit_timed_modifications_button_clicked() {
+    m_submit_timed_modifications_button->hide();
+    m_applying_modifications_label->show();
+
+    // This can be overflowed, but we don't really care
+    uint64_t time = m_modifications_time_amount->get_value();
+    MODIFICATION_SPACING spacing = EVEN_SPACING;
+    MODIFICATION_ORDER order = SELECTION_ORDER;
+    
+    std::string active_time_id = m_modifications_time_unit->get_active_id();
+
+    // These are hardcoded in the glade file.
+    // Doing this is simpler than figuring out how Gtk::Builder::create_from_file
+    // generates its Gtk::TreeModel data structures.
+    if (active_time_id == "seconds_id") {
+        // Do nothing
+    } else if (active_time_id == "minutes_id") {
+        time *= 60;
+    } else if (active_time_id == "hours_id") {
+        time *= 60 * 60;
+    } else if (active_time_id == "days_id") {
+        time *= 60 * 60 * 24;
+    } else {
+        std::cerr << "unkown time unit!" << std::endl;
+    }
+
+    if (m_even_spacing_button->get_active()) {
+        spacing = EVEN_SPACING;
+    } else if (m_random_spacing_button->get_active()) {
+        spacing = RANDOM_SPACING;
+    } else {
+        std::cerr << "unkown spacing!" << std::endl;
+    }
+
+    if (m_order_of_selection_button->get_active()) {
+        order = SELECTION_ORDER;
+    } else if (m_order_random_button->get_active()) {
+        order = RANDOM_ORDER;
+    } else {
+        std::cerr << "unkown order!" << std::endl;
+    }
+
+    m_timed_modification_times = g_steam->setup_timed_modifications(time, spacing, order);
+
+    schedule_timer();
+}
+// => on_submit_timed_modifications_button_clicked
+
+bool
+MainPickerWindow::on_timer_expire() {
+    m_timed_modification_times.erase(m_timed_modification_times.begin());
+    g_steam->commit_next_timed_modification();
+    schedule_timer();
+    return G_SOURCE_REMOVE;
+}
+// => on_timer_expire
+
+void
+MainPickerWindow::schedule_timer() {
+    if (!m_timed_modification_times.empty()) {
+        std::cout << "Modifying next achievement in " << m_timed_modification_times[0] << " seconds"
+                  << " (or " << (((double)m_timed_modification_times[0]) / 60) << " minutes or "
+                  << ((((double)m_timed_modification_times[0]) / 60) / 60) << " hours)" << std::endl;
+
+        m_timed_modifications_timer = Glib::signal_timeout().connect_seconds(
+                                            sigc::mem_fun(this, &MainPickerWindow::on_timer_expire),
+                                            m_timed_modification_times[0]);
+    } else {
+        // Disconnect ourself before calling next function,
+        // which checks for connection
+        m_timed_modifications_timer.disconnect();
+
+        // Reset the timed modifications window
+        on_cancel_timed_modifications_button_clicked();
+
+        // Allows users to modify this while the modifications are taking place
+        // I guess that's a feature?
+        if (m_exit_game_after_done_button->get_active()) {
+            on_back_button_clicked();
+        } else {
+            m_async_loader.populate_achievements();
+        }
+    }
+}
+// => schedule_timer
 
 bool
 MainPickerWindow::on_delete(GdkEventAny* evt) {
@@ -430,6 +578,7 @@ MainPickerWindow::switch_to_achievement_page() {
     m_unlock_all_achievements_button->set_visible(true);
     m_lock_all_achievements_button->set_visible(true);
     m_invert_all_achievements_button->set_visible(true);
+    m_start_timed_modifications_button->set_visible(true);
 
     m_refresh_games_button->set_visible(false);
     m_game_search_bar->set_visible(false);
@@ -451,6 +600,7 @@ MainPickerWindow::switch_to_games_page() {
     m_unlock_all_achievements_button->set_visible(false);
     m_lock_all_achievements_button->set_visible(false);
     m_invert_all_achievements_button->set_visible(false);
+    m_start_timed_modifications_button->set_visible(false);
 
     m_refresh_games_button->set_visible(true);
     m_game_search_bar->set_visible(true);
