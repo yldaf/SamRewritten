@@ -10,6 +10,7 @@
 #include <gtkmm-3.0/gtkmm/popovermenu.h>
 #include <gtkmm-3.0/gtkmm/separator.h>
 #include <gtkmm-3.0/gtkmm/menubutton.h>
+#include "../common/GtkDefineHelper.h"
 
 
 StatBoxRow::StatBoxRow(const StatValue_t& data) 
@@ -19,7 +20,8 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Box* title_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 0);
 
     Gtk::MenuButton* more_info_button = Gtk::make_managed<Gtk::MenuButton>();
-    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>();
+    more_info_image->set_from_icon_name("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
     Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
     Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
@@ -140,7 +142,8 @@ StatBoxRow::on_new_value_changed(void) {
         }
     } else {
         if (!m_b_has_invalid_conversion_image_been_set_up) {
-            m_invalid_conversion_image = Gtk::Image("gtk-dialog-warning", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+            m_invalid_conversion_image = Gtk::Image();
+            m_invalid_conversion_image.set_from_icon_name("gtk-dialog-warning", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
             m_invalid_conversion_image.set_tooltip_text("The entered value is invalid and will not be sent to Steam");
             m_invalid_conversion_box.pack_start(m_invalid_conversion_image, false, true, 0);
             m_b_has_invalid_conversion_image_been_set_up = true;

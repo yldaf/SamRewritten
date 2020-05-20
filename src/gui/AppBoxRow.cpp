@@ -1,10 +1,11 @@
- #include "AppBoxRow.h"
+#include "AppBoxRow.h"
 
- #include <gtkmm-3.0/gtkmm/box.h>
- #include <gtkmm-3.0/gtkmm/arrow.h>
- #include <gtkmm-3.0/gtkmm/label.h>
- #include <gtkmm-3.0/gtkmm/button.h>
- #include <iostream>
+#include <gtkmm-3.0/gtkmm/box.h>
+#include <gtkmm-3.0/gtkmm/arrow.h>
+#include <gtkmm-3.0/gtkmm/label.h>
+#include <gtkmm-3.0/gtkmm/button.h>
+#include "../common/GtkDefineHelper.h"
+#include <iostream>
 
  #define APP_BOX_ROW_HEIGHT 80
 

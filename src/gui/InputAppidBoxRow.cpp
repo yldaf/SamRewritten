@@ -2,6 +2,7 @@
 
 #include <gtkmm-3.0/gtkmm/box.h>
 #include <gtkmm-3.0/gtkmm/arrow.h>
+#include "../common/GtkDefineHelper.h"
 
 InputAppidBoxRow::InputAppidBoxRow()
 : m_label("")
