@@ -2,6 +2,7 @@
 
 #include "../../steam/steamtypes.h"
 #include <map>
+#include <string>
 
 class SteamAppDAO
 {
