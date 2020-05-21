@@ -64,7 +64,7 @@ This last one warrants some explanation. SamRewritten allows you to specify acro
 
 # Command line options
 
-I know you linux geeks love to use command line options! SamRewritten's commandline can do all the operations its GUI can!
+I know you linux geeks love to use command line options! SamRewritten's commandline can do all the operations its GUI can! If no commandline arguments are given, the GUI will be launched.
 
 ```
 Usage:
@@ -115,19 +115,19 @@ Change an achievement or stat value:
 
 ```
 # Find what you want from the --ls command for app id 54 (you can retrieve app ids from the store page URL).
-samrewritten --ls 54
+samrewritten 54 --ls
 
 # Say we found achievements with IDs ach_500_kills and ach_found_something and stats stat_num_kills, stat_num_deaths
 # Modify them like this
-samrewritten --unlock ach_500_kills,ach_found_something 54
-samrewritten --statnames stat_num_kills,stat_num_deaths --statvalues 10,1 54
+samrewritten 54 --unlock ach_500_kills,ach_found_something
+samrewritten 54 --statnames stat_num_kills,stat_num_deaths --statvalues 10,1
 ```
 
 Use the timed unlock on the commandline
 
 ```
 # Using the same achievements from the previous example
-samrewritten --timed --unlock ach_500_kills,ach_found_something --amount 4 --units hours --spacing random --order random 54
+samrewritten 54 --timed --unlock ach_500_kills,ach_found_something --amount 4 --units hours --spacing random --order random
 ```
 
 ---

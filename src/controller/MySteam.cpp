@@ -73,7 +73,7 @@ MySteam::comp_app_name(Game_t app1, Game_t app2) {
  */
 bool 
 MySteam::comp_change_num(AchievementChange_t change1, AchievementChange_t change2) {
-    return change1.num < change2.num;
+    return change1.selection_num < change2.selection_num;
 }
 // => comp_change_num
 
@@ -210,26 +210,26 @@ MySteam::add_modification_ach(const std::string& ach_id, bool new_value) {
     #endif
 
     // A value to save off the order we put them in the map
-    static uint64_t modification_num = 0;
+    static uint64_t selection_num = 0;
 
     if ( m_pending_ach_modifications.find(ach_id) == m_pending_ach_modifications.end() ) {
 
-        modification_num++;
-        if (modification_num == 0) {
+        selection_num++;
+        if (selection_num == 0) {
             // We've overflowed UINT64_MAX modifications.. impressive
             // Reset the current array
             for (auto& [key, val] : m_pending_ach_modifications) {
-                val.num = ++modification_num;
+                val.selection_num = ++selection_num;
             }
-            modification_num++;
-            if (modification_num == 0) {
+            selection_num++;
+            if (selection_num == 0) {
                 std::cerr << "Error: more than UINT64_MAX achievement modifications" << std::endl;
                 zenity();
                 exit(EXIT_FAILURE);
             }
         }
         
-        m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value, modification_num} ) );
+        m_pending_ach_modifications.insert( std::pair<std::string, AchievementChange_t>(ach_id, (AchievementChange_t){ach_id, new_value, selection_num} ) );
     } else {
         std::cerr << "Warning: Cannot append " << ach_id << ", value already exists." << std::endl;
     }

@@ -153,7 +153,7 @@ bool go_cli_mode(int argc, char* argv[], AppId_t *return_app_id) {
                 << (is_permission_protected(achievement.permission) ? "Yes" : "No") << std::endl;
         }
 
-        std::cout << std::endl;;
+        std::cout << std::endl;
 
         if ( stats.size() == 0 )
         {

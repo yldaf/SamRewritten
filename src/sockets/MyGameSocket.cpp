@@ -303,7 +303,7 @@ MyGameSocket::process_changes(std::vector<AchievementChange_t> achievement_chang
             }
         } else {
             // We want to relock an achievement
-            std::cerr << "Relocking achievement " << achievement_id << std::endl;
+            std::cerr << "Relocking achievement " << achievement_id;
             if (stats_api->ClearAchievement(achievement_id)) {
                 std::cerr << " succeeded";
             } else {

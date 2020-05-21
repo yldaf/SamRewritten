@@ -51,7 +51,7 @@ struct AchievementChange_t {
     bool achieved;
     // Used for keeping track of the order an achievement modification
     // was put into the m_pending_ach_modifications map
-    uint64_t num;
+    uint64_t selection_num;
 };
 
 typedef struct AchievementChange_t AchievementChange_t;
