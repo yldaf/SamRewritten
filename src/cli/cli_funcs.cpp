@@ -35,7 +35,7 @@ bool compareByUnlockRateDesc(const Achievement_t &a, const Achievement_t &b)
     return a.global_achieved_rate > b.global_achieved_rate;
 }
 
-bool go_cli_mode(int argc, char* argv[]) {
+bool go_cli_mode(int argc, char* argv[], AppId_t *return_app_id) {
     cxxopts::Options options(argv[0], "Steam Achievements Manager");
     
     options
@@ -57,13 +57,14 @@ bool go_cli_mode(int argc, char* argv[]) {
         ("order", "Control the order --timed achievement modifications are applied in. Set to 'selection' or 'random'. Default is selection", cxxopts::value<std::string>())
         ("statnames", "Change stats for an AppId. Separate stat names by a comma. Use with statvalues to name the values in order", cxxopts::value<std::vector<std::string>>())
         ("statvalues", "Change stats for an AppId. Separate stat values by a comma. Use with statnames to name the values in order", cxxopts::value<std::vector<std::string>>())
+        ("p,launch_achievements", "Launch SamRewritten GUI and immediately switch to achievements page for the app.") // This is used by the GUI for launching in a new window
         ("launch", "Actually just launch the app.");
 
     options.parse_positional({"app"});
 
     auto result = options.parse(argc, argv);
-    bool cli = false;
     AppId_t app = 0;
+    *return_app_id = 0;
 
     if (result.count("help") > 0)
     {
@@ -73,14 +74,23 @@ bool go_cli_mode(int argc, char* argv[]) {
     
     if (result.count("app") > 0)
     {
-        cli = true;
         app = result["app"].as<AppId_t>();
     }
     
+    if (result.count("launch_achievements") > 0)
+    {
+        if (app == 0)
+        {
+            std::cout << "Please provide an AppId argument before launching achievements page." << std::endl;
+            return true;
+        }
+
+        *return_app_id = app;
+        return false;
+    }
+
     if (result.count("apps") > 0)
     {
-        cli = true;
-
         g_steam->refresh_owned_apps();
         auto apps = g_steam->get_subscribed_apps();
 
@@ -89,26 +99,26 @@ bool go_cli_mode(int argc, char* argv[]) {
         {
             std::cout << it.app_id << "\t " << it.app_name << std::endl;
         }
+        return true;
     }
 
     if (result.count("idle") > 0)
     {
-        cli = true;
         if (app == 0)
         {
             std::cout << "Please provide an AppId argument before idling." << std::endl;
-            return cli;
+            return true;
         }
         
         idle_app(app);
+        return true;
     }
 
     if (result.count("ls") > 0) {
-        cli = true;
         if (app == 0)
         {
             std::cout << "Please provide an AppId argument before listing stats." << std::endl;
-            return cli;
+            return true;
         }
 
         g_steam->launch_app(app);
@@ -143,7 +153,7 @@ bool go_cli_mode(int argc, char* argv[]) {
                 << (is_permission_protected(achievement.permission) ? "Yes" : "No") << std::endl;
         }
 
-        std::cout << std::endl;;
+        std::cout << std::endl;
 
         if ( stats.size() == 0 )
         {
@@ -170,6 +180,7 @@ bool go_cli_mode(int argc, char* argv[]) {
                 << (is_permission_protected(stat.permission) ? "Yes" : "No") << std::endl;
             }
         }
+        return true;
     }
 
     if (result.count("unlock") > 0)
@@ -180,13 +191,13 @@ bool go_cli_mode(int argc, char* argv[]) {
             return true;
         }
 
-        cli = true;
         const std::vector<std::string> ids = result["unlock"].as<std::vector<std::string>>();
 
         for ( std::string it : ids )
         {
             g_steam->add_modification_ach(it, true);
         }
+        // Continue on to commit the modifications
     }
 
     if (result.count("lock") > 0)
@@ -197,13 +208,13 @@ bool go_cli_mode(int argc, char* argv[]) {
             return true;
         }
 
-        cli = true;
         const std::vector<std::string> ids = result["lock"].as<std::vector<std::string>>();
 
         for ( std::string it : ids )
         {
             g_steam->add_modification_ach(it, false);
         }
+        // Continue on to commit the modifications
     }
 
     if (result.count("lock") > 0 || result.count("unlock") > 0) {
@@ -212,7 +223,6 @@ bool go_cli_mode(int argc, char* argv[]) {
             // Really we could hook this up whenever we launch the app...
             signal(SIGINT, handle_sigint_cli);
 
-            cli = true;
             if (app == 0)
             {
                 std::cout << "Please provide an AppId argument before unlocking achievements." << std::endl;
@@ -281,11 +291,12 @@ bool go_cli_mode(int argc, char* argv[]) {
                 times.erase(times.begin());
             }
             g_steam->quit_game();
-
+            return true;
         } else {
             g_steam->launch_app(app);
             g_steam->commit_changes();
             g_steam->quit_game();
+            return true;
         }
     }
 
@@ -302,7 +313,6 @@ bool go_cli_mode(int argc, char* argv[]) {
             return true;
         }
 
-        cli = true;
         size_t num_stats = result.count("statnames");
 
         const std::vector<std::string> stat_names = result["statnames"].as<std::vector<std::string>>();
@@ -339,6 +349,7 @@ bool go_cli_mode(int argc, char* argv[]) {
         g_steam->launch_app(app);
         g_steam->commit_changes();
         g_steam->quit_game();
+        return true;
     }
 
     if (result.count("launch") > 0)
@@ -351,7 +362,8 @@ bool go_cli_mode(int argc, char* argv[]) {
 
         std::cout << "Launching app with Steam. Make sure you have xdg-open installed." << std::endl;
         system(("xdg-open steam://run/" + std::to_string(app)).c_str());
+        return true;
     }
 
-    return cli;
+    return false;
 }

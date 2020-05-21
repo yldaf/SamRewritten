@@ -250,6 +250,10 @@ Give it some time, eventually it'll finish downloading all the pretty icons!</pr
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can_focus">False</property>
+        <property name="margin_left">5</property>
+        <property name="margin_right">5</property>
+        <property name="margin_top">5</property>
+        <property name="margin_bottom">5</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
@@ -744,6 +748,32 @@ Did you make a typo? Or maybe this game has no stats.</property>
           </packing>
         </child>
         <child>
+          <object class="GtkCheckButton" id="display_only_locked_button">
+            <property name="label" translatable="yes">Display Only Locked</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkCheckButton" id="display_only_unlocked_button">
+            <property name="label" translatable="yes">Display Only Unlocked</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="draw_indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkModelButton" id="start_timed_modifications_button">
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
@@ -752,7 +782,7 @@ Did you make a typo? Or maybe this game has no stats.</property>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">6</property>
+            <property name="position">8</property>
           </packing>
         </child>
       </object>

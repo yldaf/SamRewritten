@@ -49,7 +49,9 @@ typedef struct Achievement_t Achievement_t;
 struct AchievementChange_t {
     std::string id;
     bool achieved;
-    uint64_t num;
+    // Used for keeping track of the order an achievement modification
+    // was put into the m_pending_ach_modifications map
+    uint64_t selection_num;
 };
 
 typedef struct AchievementChange_t AchievementChange_t;

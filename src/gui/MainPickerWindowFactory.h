@@ -5,5 +5,5 @@
 class MainPickerWindowFactory
 {
 public:
-    static MainPickerWindow* create();
+    static MainPickerWindow* create(AppId_t app_id);
 };

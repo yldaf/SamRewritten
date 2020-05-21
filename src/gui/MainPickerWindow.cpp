@@ -9,9 +9,10 @@
 #include <iostream>
 
 
-MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder)
+MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::RefPtr<Gtk::Builder>& builder, AppId_t initial_app_id)
 : Gtk::ApplicationWindow(cobject),
   m_builder(builder),
+  m_initial_app_id(initial_app_id),
   m_async_loader(this)
 {
     Gtk::Button* cancel_timed_modifications_button;
@@ -35,6 +36,8 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("unlock_all_achievements_button", m_unlock_all_achievements_button);
     m_builder->get_widget("lock_all_achievements_button", m_lock_all_achievements_button);
     m_builder->get_widget("invert_all_achievements_button", m_invert_all_achievements_button);
+    m_builder->get_widget("display_only_locked_button", m_display_only_locked_button);
+    m_builder->get_widget("display_only_unlocked_button", m_display_only_unlocked_button);
     m_builder->get_widget("start_timed_modifications_button", m_start_timed_modifications_button);
     m_builder->get_widget("fetch_games_placeholder", m_fetch_games_placeholder);
     m_builder->get_widget("no_games_found_placeholder", m_no_games_found_placeholder);
@@ -71,6 +74,8 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_unlock_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_unlock_all_achievements_button_clicked));
     m_lock_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_lock_all_achievements_button_clicked));
     m_invert_all_achievements_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_invert_all_achievements_button_clicked));
+    m_display_only_locked_button->signal_toggled().connect(sigc::mem_fun(this, &MainPickerWindow::on_achievement_search_changed));
+    m_display_only_unlocked_button->signal_toggled().connect(sigc::mem_fun(this, &MainPickerWindow::on_achievement_search_changed));    
     m_start_timed_modifications_button->signal_clicked().connect(sigc::mem_fun(this, &MainPickerWindow::on_start_timed_modifications_button_clicked));
     m_about_dialog->signal_response().connect(sigc::mem_fun(this, &MainPickerWindow::on_close_about_dialog));
     m_timed_modifications_window->signal_delete_event().connect(sigc::mem_fun(this, &MainPickerWindow::on_close_timed_modifications_window));
@@ -123,14 +128,27 @@ MainPickerWindow::on_game_search_changed() {
 void
 MainPickerWindow::on_achievement_search_changed() {
     const std::string filter_text = m_achievement_search_bar->get_text();
+    bool only_locked = m_display_only_locked_button->get_active();
+    bool only_unlocked = m_display_only_unlocked_button->get_active();
     m_achievement_list->show_all();
-    
+
+    for ( AchievementBoxRow* row : m_achievement_list_rows ) {    
+        if ((only_locked && row->get_achievement().achieved) ||
+            (only_unlocked && !row->get_achievement().achieved)) {
+            row->hide();
+        }
+    }
+
     if ( filter_text.empty() ) {
         return;
     }
 
     for ( AchievementBoxRow* row : m_achievement_list_rows ) {    
-        if ( !strstri(row->get_achievement().name, filter_text) ) {
+        if ( !strstri(row->get_achievement().name, filter_text)
+            // Uncomment this if you want to search by description.
+            // Disabld by default because it seems too noisy
+            // && !strstri(row->get_achievement().desc, filter_text)
+            ) {
             row->hide();
         }
     }
@@ -198,6 +216,13 @@ void
 MainPickerWindow::on_refresh_games_button_clicked() {
     m_game_search_bar->set_text("");
     m_async_loader.populate_apps();
+
+    if (m_initial_app_id != 0) {
+        switch_to_achievement_page();
+        g_steam->launch_app(m_initial_app_id);
+        m_async_loader.populate_achievements();
+        m_initial_app_id = 0;
+    }
 }
 // => on_refresh_games_button_clicked
 
@@ -578,6 +603,8 @@ MainPickerWindow::switch_to_achievement_page() {
     m_unlock_all_achievements_button->set_visible(true);
     m_lock_all_achievements_button->set_visible(true);
     m_invert_all_achievements_button->set_visible(true);
+    m_display_only_locked_button->set_visible(true);
+    m_display_only_unlocked_button->set_visible(true);
     m_start_timed_modifications_button->set_visible(true);
 
     m_refresh_games_button->set_visible(false);
@@ -600,6 +627,10 @@ MainPickerWindow::switch_to_games_page() {
     m_unlock_all_achievements_button->set_visible(false);
     m_lock_all_achievements_button->set_visible(false);
     m_invert_all_achievements_button->set_visible(false);
+    m_display_only_locked_button->set_visible(false);
+    m_display_only_unlocked_button->set_visible(false);
+    m_display_only_locked_button->set_active(false);
+    m_display_only_unlocked_button->set_active(false);
     m_start_timed_modifications_button->set_visible(false);
 
     m_refresh_games_button->set_visible(true);
