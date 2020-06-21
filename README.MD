@@ -39,6 +39,8 @@ If you're encountering issues building SamRewritten, make sure you have installe
 
 * **openSUSE** Tumbleweed, Leap 15.2+: `$ sudo zypper install gtkmm3 gcc-c++ gnutls libcurl-devel libyajl-devel-static`
 
+* **Fedora 32+**: `$ sudo dnf install gtkmm30 gtkmm30-devel yajl-devel curl-devel`
+
 To run SamRewritten, simply launch `$ ./bin/launch.sh`
 
 # AUR Installation
