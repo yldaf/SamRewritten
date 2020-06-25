@@ -318,36 +318,37 @@ bool go_cli_mode(int argc, char* argv[], AppId_t *return_app_id) {
         const std::vector<std::string> stat_names = result["statnames"].as<std::vector<std::string>>();
         const std::vector<std::string> stat_values = result["statvalues"].as<std::vector<std::string>>();
 
+        std::cout << "Warning: There will be an failure for each modificaiton, but the modification will go through "
+                     "if there is at least one success for each stat." << std::endl;
+
+        // Launch the app now for below hack
+        g_steam->launch_app(app);
+
         for (size_t i = 0; i < num_stats; i++) {
             StatValue_t stat;
             bool valid_conversion;
             std::any new_value;
+             // No validation done for the name
+            stat.id = stat_names[i];
 
-            // We don't know the type at this point, so try both of them
-            // Try float first to not get the wrong type: an int can be a float, but a float can't be an int
+            // Hack: We don't know the type at this point, so try both of them
             valid_conversion = convert_user_stat_value(UserStatType::Float, stat_values[i], &new_value);
 
             if (valid_conversion) {
                 stat.type = UserStatType::Float;
-            } else {
-                valid_conversion = convert_user_stat_value(UserStatType::Integer, stat_values[i], &new_value);
-                if (valid_conversion) {
-                    stat.type = UserStatType::Integer;
-                }
+                g_steam->add_modification_stat(stat, new_value);
+                g_steam->commit_changes();
             }
 
-            if (!valid_conversion) {
-                g_steam->clear_changes();
-                return true;
-            }
+            valid_conversion = convert_user_stat_value(UserStatType::Integer, stat_values[i], &new_value);
 
-            // No validation done for the name
-            stat.id = stat_names[i];
-            g_steam->add_modification_stat(stat, new_value);
+            if (valid_conversion) {
+                stat.type = UserStatType::Integer;
+                g_steam->add_modification_stat(stat, new_value);
+                g_steam->commit_changes();
+            }
         }
 
-        g_steam->launch_app(app);
-        g_steam->commit_changes();
         g_steam->quit_game();
         return true;
     }
