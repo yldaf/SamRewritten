@@ -17,7 +17,7 @@ AppBoxRow::AppBoxRow(const Game_t& app)
     Gtk::Box* layout = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_HORIZONTAL, 0);
     Gtk::Label* label = Gtk::make_managed<Gtk::Label>(app.app_name);
     Gtk::Button* new_window_button = Gtk::make_managed<Gtk::Button>();
-    new_window_button->set_image_from_icon_name("document-export-symbolic", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    new_window_button->set_image_from_icon_name("window-new-symbolic", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     new_window_button->set_tooltip_text("Launch game in a new window of SamRewritten");
     // Make this square, depends on APP_BOX_ROW_HEIGHT
     new_window_button->set_margin_top(20);
