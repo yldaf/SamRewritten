@@ -21,7 +21,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
 
     Gtk::MenuButton* more_info_button = Gtk::make_managed<Gtk::MenuButton>();
     Gtk::Image* more_info_image = Gtk::make_managed<Gtk::Image>();
-    more_info_image->set_from_icon_name("gtk-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
+    more_info_image->set_from_icon_name("help-about", Gtk::BuiltinIconSize::ICON_SIZE_BUTTON);
     Gtk::PopoverMenu* popover_menu = Gtk::make_managed<Gtk::PopoverMenu>();
     Gtk::Box* popover_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_VERTICAL, 3);
     Gtk::Label* more_info_label  = Gtk::make_managed<Gtk::Label>();
@@ -31,6 +31,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     Gtk::Box* new_values_box = Gtk::make_managed<Gtk::Box>(Gtk::Orientation::ORIENTATION_HORIZONTAL, 0);
     Gtk::Label* title_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* type_label = Gtk::make_managed<Gtk::Label>("");
+    Gtk::Label* id_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* cur_value_label = Gtk::make_managed<Gtk::Label>("");
     Gtk::Label* incr_only_label = Gtk::make_managed<Gtk::Label>("");
     Glib::RefPtr<Gtk::Adjustment> adjustment;
@@ -83,6 +84,7 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     }
 
     title_label->set_label(data.display_name == "" ? data.id : data.display_name);
+    id_label->set_label(data.id);
 
     title_box->pack_start(*title_label, false, true, 0);
     new_values_box->pack_start(m_new_value_entry, true, true, 0);
@@ -103,9 +105,11 @@ StatBoxRow::StatBoxRow(const StatValue_t& data)
     more_info_button->add(*more_info_image);
     popover_box->pack_start(*more_info_label, false, true, 0);
     popover_box->pack_start(*sep_one, false, true, 0);
-    popover_box->pack_start(*type_label, false, true, 0);
     popover_box->pack_start(*cur_value_label, false, true, 0);
+    popover_box->pack_start(*type_label, false, true, 0);
     popover_box->pack_start(*incr_only_label, false, true, 0);
+    popover_box->pack_start(*id_label, false, true, 0);
+
     popover_menu->add(*popover_box);
     popover_box->show_all();
 
