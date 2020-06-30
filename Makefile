@@ -5,6 +5,7 @@ PREFIX=/usr
 HFILES:=$(shell find src/ -type f -iname *.h -print)
 CXXFILES:=$(shell find src/ -type f -iname *.cpp -print)
 GTKFLAGS:=$(shell pkg-config gtkmm-3.0 --cflags --libs)
+# For now, leave it to the distro to provide preferred extra flags
 CXXFLAGS+=$(GTKFLAGS) -Wall -lsteam_api -lcurl -lyajl -ldl
 LDFLAGS+=-L${CURDIR}/bin
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
@@ -23,6 +24,7 @@ clean:
 
 .PHONY: install
 install: bin/launch.sh bin/samrewritten bin/libsteam_api.so
+	# TODO: use install for all of these?
 	mkdir -p ${DESTDIR}${PREFIX}/${LIBDIR}/SamRewritten/{bin,glade,assets}
 	mkdir -p ${DESTDIR}${PREFIX}/share/icons/hicolor/{64x64,256x256}/apps
 	mkdir -p ${DESTDIR}${PREFIX}/share/applications
