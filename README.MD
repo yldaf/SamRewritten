@@ -43,11 +43,17 @@ If you're encountering issues building SamRewritten, make sure you have installe
 
 To run SamRewritten, simply launch `$ ./bin/launch.sh`
 
-# AUR Installation
+## AUR Installation
 
 You can install SamRewritten from the AUR by installing the `samrewritten-git` package.
 
 Run SamRewritten by opening the corresponding desktop entry, or by using the `samrewritten` command.
+
+## Gentoo Installation
+
+SamRewritten is available as `games-util/samrewritten` through the following overlay:
+
+https://github.com/telans/EBUILDS
 
 # Features
 
