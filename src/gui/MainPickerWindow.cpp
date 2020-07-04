@@ -33,11 +33,14 @@ MainPickerWindow::MainPickerWindow(GtkApplicationWindow* cobject, const Glib::Re
     m_builder->get_widget("refresh_games_button", m_refresh_games_button);
     m_builder->get_widget("about_button", m_about_button);
     m_builder->get_widget("refresh_achievements_button", m_refresh_achievements_button);
+    m_builder->get_widget("separator_lock", m_separator_lock);
     m_builder->get_widget("unlock_all_achievements_button", m_unlock_all_achievements_button);
     m_builder->get_widget("lock_all_achievements_button", m_lock_all_achievements_button);
     m_builder->get_widget("invert_all_achievements_button", m_invert_all_achievements_button);
+    m_builder->get_widget("separator_display", m_separator_display);
     m_builder->get_widget("display_only_locked_button", m_display_only_locked_button);
     m_builder->get_widget("display_only_unlocked_button", m_display_only_unlocked_button);
+    m_builder->get_widget("separator_timed", m_separator_timed);
     m_builder->get_widget("start_timed_modifications_button", m_start_timed_modifications_button);
     m_builder->get_widget("fetch_games_placeholder", m_fetch_games_placeholder);
     m_builder->get_widget("no_games_found_placeholder", m_no_games_found_placeholder);
@@ -600,11 +603,14 @@ MainPickerWindow::switch_to_achievement_page() {
     m_stat_search_bar->set_visible(false);
     m_store_button->set_visible(true);
     m_refresh_achievements_button->set_visible(true);
+    m_separator_lock->set_visible(true);
     m_unlock_all_achievements_button->set_visible(true);
     m_lock_all_achievements_button->set_visible(true);
     m_invert_all_achievements_button->set_visible(true);
+    m_separator_display->set_visible(true);
     m_display_only_locked_button->set_visible(true);
     m_display_only_unlocked_button->set_visible(true);
+    m_separator_timed->set_visible(true);
     m_start_timed_modifications_button->set_visible(true);
 
     m_refresh_games_button->set_visible(false);
@@ -624,13 +630,16 @@ MainPickerWindow::switch_to_games_page() {
     m_stat_search_bar->set_visible(false);
     m_store_button->set_visible(false);
     m_refresh_achievements_button->set_visible(false);
+    m_separator_lock->set_visible(false);
     m_unlock_all_achievements_button->set_visible(false);
     m_lock_all_achievements_button->set_visible(false);
     m_invert_all_achievements_button->set_visible(false);
+    m_separator_display->set_visible(false);
     m_display_only_locked_button->set_visible(false);
     m_display_only_unlocked_button->set_visible(false);
     m_display_only_locked_button->set_active(false);
     m_display_only_unlocked_button->set_active(false);
+    m_separator_timed->set_visible(false);
     m_start_timed_modifications_button->set_visible(false);
 
     m_refresh_games_button->set_visible(true);
