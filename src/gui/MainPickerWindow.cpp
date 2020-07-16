@@ -212,6 +212,8 @@ void
 MainPickerWindow::on_refresh_achievements_button_clicked() {
     g_steam->clear_changes();
     m_async_loader.populate_achievements();
+    m_display_only_locked_button->set_active(false);
+    m_display_only_unlocked_button->set_active(false);
 }
 // => on_refresh_achievements_button_clicked
 
@@ -299,6 +301,8 @@ MainPickerWindow::on_cancel_timed_modifications_button_clicked() {
     m_submit_timed_modifications_button->show();
     m_applying_modifications_label->hide();
     m_timed_modifications_window->hide();
+    m_display_only_locked_button->set_active(false);
+    m_display_only_unlocked_button->set_active(false);
 }
 // => on_close_timed_modifications_window
 
