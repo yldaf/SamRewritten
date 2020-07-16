@@ -365,7 +365,7 @@ MySteam::setup_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacin
 
     for (size_t i = 0; i < size; i++) {
         std::cout << "Modify achievement " << m_achievement_changes[i].id << " in " << times[i] << " seconds"
-                  << " (or " << (((double)times[i]) / 60) << " minutes or " << (((double)times[i]) / 60) << " hours)" << std::endl;
+                  << " (or " << (((double)times[i]) / 60) << " minutes or " << ((((double)times[i]) / 60) / 60) << " hours)" << std::endl;
     }
 
     // Put times in order since we'll use the differences from one to the next
@@ -441,3 +441,4 @@ MySteam::set_special_flags() {
         m_achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
     }
 }
+
