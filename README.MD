@@ -22,6 +22,8 @@ It comes with third-party tools integration and a nice user interface.
 
 SamRewritten is constantly under development, if you think you can give us a hand, feel free to reach us :)
 
+### ⚠️ As of now, SamRewritten only works if Steam has been installed through your package manager (apt, pacman, ...)
+
 # Building
 
 To build this project, clone this repository on your PC, and run the `make` command within the repository folder that you downloaded.
