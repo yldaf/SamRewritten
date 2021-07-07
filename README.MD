@@ -148,4 +148,4 @@ SamRewritten uses JSON to communicate between the interface and the "backend log
 
 ## Footnotes
 
-This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsability over your user experience
+This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsibility over your user experience.
