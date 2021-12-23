@@ -41,5 +41,5 @@ ${CURDIR}/bin/samrewritten: $(OBJS)
 	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS}
 
 ${OBJDIR}/%.o: %.cpp $(HFILES)
-	@mkdir -p $$(dirname $@)
+	@mkdir -p $(@D)
 	$(CXX) -c -o $@ $< ${LDFLAGS} $(CXXFLAGS)
