@@ -4,9 +4,11 @@ LIBDIR?=lib
 PREFIX=/usr
 HFILES:=$(shell find src/ -type f -iname *.h -print)
 CXXFILES:=$(shell find src/ -type f -iname *.cpp -print)
-GTKFLAGS:=$(shell pkg-config gtkmm-3.0 --cflags --libs)
+GTKFLAGS:=$(shell pkg-config gtkmm-3.0 --cflags)
+GTKLIBS:=$(shell pkg-config gtkmm-3.0 --libs)
 # For now, leave it to the distro to provide preferred extra flags
-CXXFLAGS+=$(GTKFLAGS) -Wall -lsteam_api -lcurl -lyajl -ldl
+CXXFLAGS+=$(GTKFLAGS) -Wall
+LDLIBS+=$(GTKLIBS) -lsteam_api -lcurl -lyajl -ldl
 LDFLAGS+=-L${CURDIR}/bin
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
 
@@ -38,8 +40,8 @@ install: bin/launch.sh bin/samrewritten bin/libsteam_api.so
 	cp package/samrewritten.desktop ${DESTDIR}${PREFIX}/share/applications/
 
 ${CURDIR}/bin/samrewritten: $(OBJS)
-	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS}
+	${CXX} -o ${CURDIR}/bin/samrewritten $(OBJS) ${LDFLAGS} ${CXXFLAGS} ${LDLIBS}
 
 ${OBJDIR}/%.o: %.cpp $(HFILES)
 	@mkdir -p $(@D)
-	$(CXX) -c -o $@ $< ${LDFLAGS} $(CXXFLAGS)
+	$(CXX) -c -o $@ $< ${CXXFLAGS}
