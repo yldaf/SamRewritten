@@ -4,8 +4,9 @@ LIBDIR?=lib
 PREFIX=/usr
 HFILES:=$(shell find src/ -type f -iname *.h -print)
 CXXFILES:=$(shell find src/ -type f -iname *.cpp -print)
-GTKFLAGS:=$(shell pkg-config gtkmm-3.0 --cflags)
-GTKLIBS:=$(shell pkg-config gtkmm-3.0 --libs)
+PKG_CONFIG?=pkg-config
+GTKFLAGS:=$(shell $(PKG_CONFIG) gtkmm-3.0 --cflags)
+GTKLIBS:=$(shell $(PKG_CONFIG) gtkmm-3.0 --libs)
 # For now, leave it to the distro to provide preferred extra flags
 CXXFLAGS+=$(GTKFLAGS) -Wall
 LDLIBS+=$(GTKLIBS) -lsteam_api -lcurl -lyajl -ldl
