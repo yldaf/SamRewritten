@@ -1,4 +1,4 @@
-CXX=g++ -std=c++17
+CXXFLAGS+=-std=c++17
 OBJDIR=obj
 LIBDIR?=lib
 PREFIX=/usr
