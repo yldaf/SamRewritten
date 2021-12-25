@@ -13,9 +13,10 @@ LDFLAGS+=-L${CURDIR}/bin
 OBJS=$(addprefix ${OBJDIR}/,$(subst .cpp,.o,${CXXFILES}))
 
 all: ${CURDIR}/bin/samrewritten
-	@echo -e "==== Use '\033[1mmake dev\033[0m' to keep debug symbols"
-	@echo -e "==== Use '\033[1mmake clean\033[0m' to remove object files"
-	@echo -e "==== Nothing left to do."
+	@printf "==== %b\n" \
+		"Use '\033[1mmake dev\033[0m' to keep debug symbols" \
+		"Use '\033[1mmake clean\033[0m' to remove object files" \
+		"Nothing left to do."
 
 dev: CXXFLAGS += -g -DDEBUG_CERR
 dev: ${CURDIR}/bin/samrewritten
