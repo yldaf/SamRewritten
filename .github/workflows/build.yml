@@ -1,0 +1,29 @@
+# GitHub actions workflow.
+# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions
+
+name: Build CI
+
+on:
+  push:
+    branches: [master]
+    tags: [v*]
+  pull_request:
+    types: [opened]
+    branches: [master]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        cc: [gcc]
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: ${{ matrix.cc }}
+    steps:
+    - run: sudo apt-get update -y
+    - run: sudo apt-get install -y libgtkmm-3.0-dev libcurl4-gnutls-dev libyajl-dev valgrind
+    - uses: actions/checkout@v2
+    - run: make
+    - run: make clean
+    - run: make dev

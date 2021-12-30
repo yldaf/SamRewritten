@@ -335,6 +335,7 @@ MySteam::setup_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacin
     // fetching achievements in CLI mode.
 
     std::vector<uint64_t> times;
+    std::vector<uint64_t> rel_times;
     size_t size = m_pending_ach_modifications.size();
 
     if (size == 0) {
@@ -364,19 +365,20 @@ MySteam::setup_timed_modifications(uint64_t seconds, MODIFICATION_SPACING spacin
 
     for (size_t i = 0; i < size; i++) {
         std::cout << "Modify achievement " << m_achievement_changes[i].id << " in " << times[i] << " seconds"
-                  << " (or " << (((double)times[i]) / 60) << " minutes or " << (((double)times[i]) / 60) << " hours)" << std::endl;
+                  << " (or " << (((double)times[i]) / 60) << " minutes or " << ((((double)times[i]) / 60) / 60) << " hours)" << std::endl;
     }
 
     // Put times in order since we'll use the differences from one to the next
     std::sort(times.begin(), times.end());
 
     // Make relative times
+    rel_times.push_back(times[0]);
     for (size_t i = 1; i < size; i++)
     {
-        times[i] = times[i] - times[i - 1];
+        rel_times.push_back(times[i] - times[i - 1]);
     }
 
-    return times;   
+    return rel_times;   
 }
 // => commit_timed_modifications
 
@@ -439,3 +441,4 @@ MySteam::set_special_flags() {
         m_achievements[next_most_achieved_index].special |= ACHIEVEMENT_NEXT_MOST_ACHIEVED;
     }
 }
+

@@ -22,6 +22,8 @@ It comes with third-party tools integration and a nice user interface.
 
 SamRewritten is constantly under development, if you think you can give us a hand, feel free to reach us :)
 
+### ⚠️ As of now, SamRewritten only works if Steam has been installed through your package manager (apt, pacman, ...)
+
 # Building
 
 To build this project, clone this repository on your PC, and run the `make` command within the repository folder that you downloaded.
@@ -43,11 +45,17 @@ If you're encountering issues building SamRewritten, make sure you have installe
 
 To run SamRewritten, simply launch `$ ./bin/launch.sh`
 
-# AUR Installation
+## AUR Installation
 
 You can install SamRewritten from the AUR by installing the `samrewritten-git` package.
 
 Run SamRewritten by opening the corresponding desktop entry, or by using the `samrewritten` command.
+
+## Gentoo Installation
+
+SamRewritten is available as `games-util/samrewritten` through the following overlay:
+
+https://github.com/telans/EBUILDS
 
 # Features
 
@@ -140,4 +148,4 @@ SamRewritten uses JSON to communicate between the interface and the "backend log
 
 ## Footnotes
 
-This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsability over your user experience
+This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsibility over your user experience.
