@@ -146,6 +146,10 @@ samrewritten 54 --timed --unlock ach_500_kills,ach_found_something --amount 4 --
 
 SamRewritten uses JSON to communicate between the interface and the "backend logic". Communications are transmitted via unix sockets. If you plan to make an app using some of SamRewritten's features, feel free to ask for help, for features, or to contribute.
 
+## I want to contribute, where to start?
+
+You can find an overview of SamRewritten's internal logic and more [here, in the doc folder](https://github.com/PaulCombal/SamRewritten/blob/master/doc/OVERVIEW.md)
+
 ## Footnotes
 
 This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any ban using it, but we do not take any responsibility over your user experience.
