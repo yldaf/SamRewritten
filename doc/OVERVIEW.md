@@ -42,13 +42,13 @@ To give a general idea of the purpose of the SDK, it includes functions such as:
 
 The Steamworks SDK provides an accessor `SteamClient()` to interface with Steam and use all the functionnalities of the framework. However this accessor is not available unless [`SteamAPI_Init`](https://partner.steamgames.com/doc/sdk/api#SteamAPI_Init) has been called. We do not want to call this function yet, as we do not have any app to start. This is a problem.
 
-There is a way around it. Steam comes with a shared object `steamclient.so`, which include Steam's signature for the Steam Client code. We will use it instead. This can be found in [`MySteamClient.h`](https://github.com/PaulCombal/SamRewritten/blob/master/src/controller/MySteamClient.h). This shared object *must* be loaded from the Steam installation directory of the local machine.
+There is a way around it. Steam comes with a shared object `steamclient.so`, which include Steam's signature for the Steam Client code. We will use it instead. This can be found in [`MySteamClient.h`](/src/controller/MySteamClient.h). This shared object *must* be loaded from the Steam installation directory of the local machine.
 
 Now that we can access an [`ISteamClient`](https://partner.steamgames.com/doc/api/ISteamClient), we need to retrieve the game list of the current user. The only method at our disposal is `ISteamApps::BIsSubscribedApp`. As far as we know, there is no way to retrieve the list of owned apps and games.
 
 That is why we started another project, which is to make a database of all apps on Steam with their AppID and name. The database can be created/updated with [this tool](https://github.com/PaulCombal/SteamAppsList), and the database itself is found [here](https://github.com/PaulCombal/SteamAppsListDumps). This database (which is really just a big JSON file) is seldom updated, feel free to help there too.
 
-What happens is that SamRewritten downloads that list of apps and caches it, then tests for each app one by one if it is owned by the current user by calling `ISteamApps::BIsSubscribedApp`. The retrieval is implemnted at [`SteamAppDAO.cpp#L60`](https://github.com/PaulCombal/SamRewritten/blob/master/src/controller/SteamAppDAO.cpp#L60). With this information we can deduce the user's app library.
+What happens is that SamRewritten downloads that list of apps and caches it, then tests for each app one by one if it is owned by the current user by calling `ISteamApps::BIsSubscribedApp`. The retrieval is implemnted at [`SteamAppDAO.cpp#L60`](/src/controller/SteamAppDAO.cpp#L60). With this information we can deduce the user's app library.
 
 While writing this documentation, I noticed a new interface [`ISteamAppList`](https://github.com/Facepunch/Facepunch.Steamworks/blob/master/Generator/steam_sdk/isteamapplist.h). Could this help?
 
@@ -56,7 +56,7 @@ While writing this documentation, I noticed a new interface [`ISteamAppList`](ht
 
 When starting a game, SamRewritten `fork`s, and the child process will follow the setup functions from the Steamworks SDK to act as if it were the selected game booting up. This is done by setting the environment variable `SteamAppId` and calling [`SteamAPI_Init`](https://partner.steamgames.com/doc/sdk/api#SteamAPI_Init), as every game should do. Basically, a child process is created, and it notifies Steam that an app started, as instructed in the documentation.
 
-This can be observed in [`src/controller/GameServerManager`](https://github.com/PaulCombal/SamRewritten/blob/master/src/controller/GameServerManager.cpp).
+This can be observed in [`src/controller/GameServerManager`](/src/controller/GameServerManager.cpp).
 
 Internally, the child process is called server, and the parent process, client (GUI side). They communicate via sockets.
 
@@ -68,13 +68,13 @@ Both the client and server send JSON serialized data through a UNIX socket. Like
 
 When building SamRewritten in `dev` mode, you can see in plain text the messages being exchanged in the console.
 
-The (de)serialization implementation is found under [`src/json`](https://github.com/PaulCombal/SamRewritten/tree/master/src/json).
+The (de)serialization implementation is found under [`src/json`](/src/json).
 
-The socket implementation is found under [`src/sockets`](https://github.com/PaulCombal/SamRewritten/tree/master/src/sockets). The file names are explicit, except for for `MyGameSocket`, which also includes request processing, the "backend" logic behind SamRewritten.
+The socket implementation is found under [`src/sockets`](/src/sockets). The file names are explicit, except for for [`MyGameSocket`](/src/sockets/MyGameSocket.cpp), which also includes request processing, the "backend" logic behind SamRewritten.
 
 ## How does the server process retrieves achievements and stats data?
 
-As mentionned above, [`MyGameSocket`](https://github.com/PaulCombal/SamRewritten/blob/master/src/sockets/MyGameSocket.cpp) is responsible for server logic. It implements much of the Steamworks SDK features, so to understand it fully, we encourage you to familiarize yourself with [the framework's documentation](https://partner.steamgames.com/doc/sdk/api).
+As mentionned above, [`MyGameSocket`](/src/sockets/MyGameSocket.cpp) is responsible for server logic. It implements much of the Steamworks SDK features, so to understand it fully, we encourage you to familiarize yourself with [the framework's documentation](https://partner.steamgames.com/doc/sdk/api).
 
 If you spend more time looking at the implementation, you can see that something odd happening. Indeed, part of the achievement data is retrieved through the Steamworks API (legacy code), and the rest (as well as the stats) are retrived through a "schema parser". Indeed, some informations about the achievements cannot be retrieved through Steamworks, like the achievement icon URL.
 
@@ -86,7 +86,7 @@ This leaves us with two means of retrieving data: schema parsing and Steamworks 
 
 Stats and achievements are updated as shown in the Steamworks SDK. The full process can be summed up as emulating the app, and using this emulated app to unlock achievements as the real app would.
 
-The actual implementation can be found at [`MyGameSocket#L289`](https://github.com/PaulCombal/SamRewritten/tree/master/src/json).
+The actual implementation can be found at [`MyGameSocket#L289`](/src/sockets/MyGameSocket.cpp#L289).
 
 We can always wonder, is this bannable or detectable? Maybe, in any case we strongly advise avoiding VAC-enabled games, and as said in the README, the contributors are not responsible for any consequences on your usage of SamRewritten. It was written for fun, and educational purposes only (believe it or not).
 

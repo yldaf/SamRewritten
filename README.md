@@ -148,7 +148,7 @@ SamRewritten uses JSON to communicate between the interface and the "backend log
 
 ## I want to contribute, where to start?
 
-You can find an overview of SamRewritten's internal logic and more [here, in the doc folder](https://github.com/PaulCombal/SamRewritten/blob/master/doc/OVERVIEW.md)
+You can find an overview of SamRewritten's internal logic and more [here, in the doc folder](doc/OVERVIEW.md).
 
 ## Footnotes
 
