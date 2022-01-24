@@ -5,7 +5,7 @@ name: Build CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, fix-*, feat-*]
     tags: [v*]
   pull_request:
     types: [opened]
@@ -25,5 +25,6 @@ jobs:
     - run: sudo apt-get install -y libgtkmm-3.0-dev libcurl4-gnutls-dev libyajl-dev valgrind
     - uses: actions/checkout@v2
     - run: make
+    - run: sudo make install
     - run: make clean
-    - run: make dev
+    - run: which samrewritten
