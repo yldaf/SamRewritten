@@ -51,6 +51,13 @@ You can install SamRewritten from the AUR by installing the `samrewritten-git` p
 
 Run SamRewritten by opening the corresponding desktop entry, or by using the `samrewritten` command.
 
+
+## Gentoo Installation
+
+SamRewritten is available as `games-util/samrewritten` through the GURU overlay:
+
+https://wiki.gentoo.org/wiki/Project:GURU
+
 # Features
 
 SamRewritten's features match and exceed the original SAM:
