@@ -53,9 +53,9 @@ Run SamRewritten by opening the corresponding desktop entry, or by using the `sa
 
 ## Gentoo Installation
 
-SamRewritten is available as `games-util/samrewritten` through the following overlay:
+SamRewritten is available as `games-util/samrewritten` through the GURU overlay:
 
-https://github.com/telans/EBUILDS
+https://wiki.gentoo.org/wiki/Project:GURU
 
 # Features
 
