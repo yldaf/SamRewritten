@@ -76,7 +76,7 @@ The socket implementation is found under [`src/sockets`](/src/sockets). The file
 
 As mentioned above, [`MyGameSocket`](/src/sockets/MyGameSocket.cpp) is responsible for server logic. It implements much of the Steamworks SDK features, so to understand it fully, we encourage you to familiarize yourself with [the framework's documentation](https://partner.steamgames.com/doc/sdk/api).
 
-If you spend more time looking at the implementation, you can see that something odd happening. Indeed, part of the achievement data is retrieved through the Steamworks API (legacy code), and the rest (as well as the stats) are retrieved through a "schema parser". Indeed, some information about the achievements cannot be retrieved through Steamworks, like the achievement icon URL.
+If you spend more time looking at the implementation, you can see that something odd happening. Indeed, part of the achievement data is retrieved through the Steamworks API (legacy code), and the rest (as well as the stats) are retrieved through a ["schema parser"](/src/schema_parser). Indeed, some information about the achievements cannot be retrieved through Steamworks, like the achievement icon URL.
 
 That is why we implemented a parser, that will explore Steam's internal cache files to retrieve additional information. Note that the relevant cache isn't always loaded until the app is started: we did not find a way around calling [`SteamAPI_Init`](https://partner.steamgames.com/doc/sdk/api#SteamAPI_Init) with reliable results. 
 
