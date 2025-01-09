@@ -156,3 +156,5 @@ You can find an overview of SamRewritten's internal logic and more [in the doc f
 ## Footnotes
 
 This software is licensed under the GNU GPL v3 and comes with no warranty. Use it at your own risk. We believe you should not get any Steam ban using it, but we do not take any responsibility over your user experience.
+
+SamRewritten includes third party libraries such as the Steam Steamworks SDK, which are subject to licensing by Valve Software. 
